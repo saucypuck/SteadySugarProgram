@@ -1,0 +1,58 @@
+<%# One landing page: headline stats + the campaigns and ads sending it traffic. Expects `pg`. %>
+<% const m = pg.m; const variant = locals.variantLabel; %>
+<article class="lp-block" id="lp-<%= pg.slug %>">
+  <header class="lp-head">
+    <div>
+      <div class="lp-title">
+        <% if (variant) { %><span class="variant-tag"><%= variant %></span><% } %>
+        <h3><%= pg.name %></h3>
+        <span class="status s-<%= pg.status %>"><%= pg.status %></span>
+      </div>
+      <p class="lp-sub">“<%= pg.headline %>” · <a href="/lp/<%= pg.slug %>" target="_blank" rel="noopener">/lp/<%= pg.slug %> ↗</a></p>
+    </div>
+    <div class="lp-actions">
+      <a href="/admin/marketing/pages/<%= pg.id %>/edit" class="btn btn-ghost btn-sm">Edit page</a>
+      <a href="/admin/marketing/ads/new?destination=lp:<%= pg.id %>" class="btn btn-ghost btn-sm">+ Ad</a>
+    </div>
+  </header>
+
+  <div class="lp-stats">
+    <div><small>Views</small><strong><%= fmt.num(m.views) %></strong></div>
+    <div><small>Lead rate</small><strong><%= fmt.pct(m.leadRate) %></strong></div>
+    <div><small>Customers</small><strong><%= fmt.num(m.customers) %></strong></div>
+    <div><small>Revenue</small><strong><%= fmt.money(m.revenue) %></strong></div>
+    <div><small>Ad spend</small><strong><%= fmt.money(pg.paid.spend) %></strong></div>
+    <div><small>ROAS</small><strong class="<%= pg.paid.roas >= 1 ? 'good' : pg.paid.roas != null ? 'warn' : '' %>"><%= fmt.x(pg.paid.roas) %></strong></div>
+  </div>
+
+  <% if (!pg.traffic.length && !pg.organic.views) { %>
+    <p class="lp-empty">No traffic yet. <a href="/admin/marketing/ads/new?destination=lp:<%= pg.id %>">Point an ad at this page →</a></p>
+  <% } else { %>
+    <div class="table-wrap">
+      <table class="traffic">
+        <thead><tr><th>Traffic source</th><th>Spend</th><th>Views</th><th>Leads</th><th>CPL</th><th>Cust.</th><th>ROAS</th></tr></thead>
+        <tbody>
+          <% pg.traffic.forEach((t) => { %>
+            <tr class="camp-row">
+              <td><span class="chan chan-<%= t.campaign.channel %>"><%= t.campaign.channel %></span> <%= t.campaign.name %> <span class="status s-<%= t.campaign.status %>"><%= t.campaign.status %></span></td>
+              <td><%= fmt.money(t.m.spend) %></td><td><%= fmt.num(t.m.views) %></td><td><%= fmt.num(t.m.leads) %></td>
+              <td><%= fmt.money2(t.m.cpl) %></td><td><%= fmt.num(t.m.customers) %></td>
+              <td class="<%= t.m.roas >= 1 ? 'good' : t.m.roas != null ? 'warn' : '' %>"><%= fmt.x(t.m.roas) %></td>
+            </tr>
+            <% t.ads.forEach((a) => { %>
+              <tr class="ad-row">
+                <td><a href="/admin/marketing/ads/<%= a.ad.id %>/edit"><%= a.ad.name %></a><% if (a.ad.status !== 'active') { %> <span class="status s-<%= a.ad.status %>"><%= a.ad.status %></span><% } %><% if (a.shared) { %> <small class="muted" title="This ad feeds an A/B test; spend is split by views">· split</small><% } %></td>
+                <td><%= fmt.money(a.m.spend) %></td><td><%= fmt.num(a.m.views) %></td><td><%= fmt.num(a.m.leads) %></td>
+                <td><%= fmt.money2(a.m.cpl) %></td><td><%= fmt.num(a.m.customers) %></td>
+                <td class="<%= a.m.roas >= 1 ? 'good' : a.m.roas != null ? 'warn' : '' %>"><%= fmt.x(a.m.roas) %></td>
+              </tr>
+            <% }) %>
+          <% }) %>
+          <% if (pg.organic.views) { %>
+            <tr class="camp-row"><td><span class="chan">organic</span> Direct / untagged</td><td>—</td><td><%= fmt.num(pg.organic.views) %></td><td><%= fmt.num(pg.organic.leads) %></td><td>—</td><td><%= fmt.num(pg.organic.customers) %></td><td>—</td></tr>
+          <% } %>
+        </tbody>
+      </table>
+    </div>
+  <% } %>
+</article>

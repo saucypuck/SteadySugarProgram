@@ -66,14 +66,13 @@
     if (first) select(first.getAttribute('data-day'));
   });
 
-  // Copy tracking URLs (admin → marketing)
+  // Copy ad tracking links (admin → marketing)
   document.querySelectorAll('[data-copy]').forEach(function (btn) {
     btn.addEventListener('click', function () {
-      var input = btn.previousElementSibling;
-      input.select();
-      (navigator.clipboard ? navigator.clipboard.writeText(input.value) : Promise.reject()).catch(function () { document.execCommand('copy'); });
-      btn.textContent = 'Copied ✓';
-      setTimeout(function () { btn.textContent = 'Copy URL'; }, 1500);
+      var text = btn.getAttribute('data-copy');
+      var done = function () { btn.textContent = 'Copied ✓'; setTimeout(function () { btn.textContent = 'Copy link'; }, 1500); };
+      if (navigator.clipboard) navigator.clipboard.writeText(text).then(done, function () { window.prompt('Copy this link:', text); });
+      else window.prompt('Copy this link:', text);
     });
   });
 

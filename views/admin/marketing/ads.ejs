@@ -1,64 +1,73 @@
 <%- include('../../partials/header') %>
 <%- include('_tabs') %>
 
-<div class="cta-row mb-2">
-  <a href="/admin/marketing/campaigns/new" class="btn btn-secondary btn-sm">+ New campaign</a>
-  <a href="/admin/marketing/ads/new" class="btn btn-primary btn-sm">+ New ad</a>
+<div class="section-head mt-0">
+  <p class="muted small mb-0"><%= r.campaigns.length %> campaigns · <%= r.ads.filter((a) => a.status === 'active').length %> active ads · <%= fmt.money(r.paid.spend) %> spent · ROAS <%= fmt.x(r.paid.roas) %></p>
+  <div class="cta-row mt-0">
+    <a href="/admin/marketing/campaigns/new" class="btn btn-secondary btn-sm">+ New campaign</a>
+    <a href="/admin/marketing/ads/new" class="btn btn-primary btn-sm">+ New ad</a>
+  </div>
 </div>
 
 <% if (!r.campaigns.length) { %><div class="card"><p class="muted">Start by creating a campaign, then add the ads inside it.</p></div><% } %>
 
-<% r.campaigns.forEach((cmp) => { %>
-  <div class="card mb-2">
-    <div class="row-between wrap">
+<% r.campaigns.forEach((cmp) => { const cm = cmp.m; %>
+  <section class="lp-block">
+    <header class="lp-head">
       <div>
-        <h3 class="mb-0"><%= cmp.name %> <span class="status s-<%= cmp.status %>"><%= cmp.status %></span></h3>
-        <small class="muted"><%= cmp.channel %> · <%= cmp.objective || '—' %> · utm_campaign=<code><%= cmp.utmCampaign %></code><%= cmp.dailyBudget ? ' · ' + fmt.money(cmp.dailyBudget) + '/day' : '' %></small>
+        <div class="lp-title"><span class="chan chan-<%= cmp.channel %>"><%= cmp.channel %></span><h3><%= cmp.name %></h3><span class="status s-<%= cmp.status %>"><%= cmp.status %></span></div>
+        <p class="lp-sub"><%= cmp.objective || '—' %><%= cmp.dailyBudget ? ' · ' + fmt.money(cmp.dailyBudget) + '/day budget' : '' %> · <code><%= cmp.utmCampaign %></code></p>
       </div>
-      <div class="cta-row mt-0">
-        <span class="pill">Spend <%= fmt.money(cmp.m.spend) %> · CPL <%= fmt.money2(cmp.m.cpl) %> · ROAS <%= fmt.x(cmp.m.roas) %></span>
+      <div class="lp-actions">
         <a href="/admin/marketing/campaigns/<%= cmp.id %>/edit" class="btn btn-ghost btn-sm">Edit</a>
+        <a href="/admin/marketing/ads/new?campaignId=<%= cmp.id %>" class="btn btn-ghost btn-sm">+ Ad</a>
       </div>
+    </header>
+    <div class="lp-stats">
+      <div><small>Spend</small><strong><%= fmt.money(cm.spend) %></strong></div>
+      <div><small>Leads</small><strong><%= fmt.num(cm.leads) %></strong></div>
+      <div><small>CPL</small><strong><%= fmt.money2(cm.cpl) %></strong></div>
+      <div><small>Customers</small><strong><%= fmt.num(cm.customers) %></strong></div>
+      <div><small>CAC</small><strong><%= fmt.money(cm.cac) %></strong></div>
+      <div><small>ROAS</small><strong class="<%= cm.roas >= 1 ? 'good' : cm.roas != null ? 'warn' : '' %>"><%= fmt.x(cm.roas) %></strong></div>
     </div>
-    <div class="table-wrap mt-1">
-      <table class="table num-table">
-        <thead><tr><th>Ad</th><th>Destination</th><th>Spend</th><th>Impr.</th><th>CTR</th><th>CPC</th><th>Views</th><th>Leads</th><th>CPL</th><th>Cust.</th><th>CAC</th><th>ROAS</th><th></th></tr></thead>
+    <div class="table-wrap">
+      <table class="traffic">
+        <thead><tr><th>Ad</th><th>Lands on</th><th>Spend</th><th>Clicks</th><th>Leads</th><th>Customers</th><th>ROAS</th><th></th></tr></thead>
         <tbody>
-          <% if (!cmp.ads.length) { %><tr><td colspan="13" class="muted">No ads in this campaign. <a href="/admin/marketing/ads/new?campaignId=<%= cmp.id %>">Add one</a>.</td></tr><% } %>
+          <% if (!cmp.ads.length) { %><tr><td colspan="8" class="muted">No ads yet. <a href="/admin/marketing/ads/new?campaignId=<%= cmp.id %>">Add one</a>.</td></tr><% } %>
           <% cmp.ads.forEach((ad) => { const m = ad.m; %>
             <tr>
-              <td class="ad-cell">
-                <strong><%= ad.name %></strong> <span class="status s-<%= ad.status %>"><%= ad.status %></span><br>
-                <small class="muted"><%= ad.format || '' %><%= ad.angle ? ' · “' + ad.angle + '”' : '' %></small>
-                <div class="url-copy"><input readonly value="<%= trackingUrl(ad) %>" aria-label="Tracking URL" onclick="this.select()"><button type="button" class="btn btn-ghost btn-sm" data-copy>Copy URL</button></div>
-              </td>
-              <td><small><%= ad.dest.type %>:</small><br><%= ad.dest.item ? ad.dest.item.name : '—' %></td>
-              <td><%= fmt.money(m.spend) %></td><td><%= fmt.num(m.impressions) %></td><td><%= fmt.pct(m.ctr) %></td><td><%= fmt.money2(m.cpc) %></td>
-              <td><%= fmt.num(m.views) %></td><td><%= fmt.num(m.leads) %></td><td><%= fmt.money2(m.cpl) %></td>
-              <td><%= fmt.num(m.customers) %></td><td><%= fmt.money(m.cac) %></td>
-              <td class="<%= m.roas >= 1 ? 'good' : m.roas != null ? 'warn' : '' %>"><%= fmt.x(m.roas) %></td>
-              <td><a href="/admin/marketing/ads/<%= ad.id %>/edit" class="small">Edit</a></td>
+              <td><a href="/admin/marketing/ads/<%= ad.id %>/edit"><strong><%= ad.name %></strong></a> <span class="status s-<%= ad.status %>"><%= ad.status %></span><br><small class="muted"><%= [ad.format, ad.angle && '“' + ad.angle + '”'].filter(Boolean).join(' · ') %></small></td>
+              <td><% if (ad.dest.item) { %><a href="<%= ad.dest.type === 'Page' ? '/admin/marketing#lp-' + ad.dest.item.slug : '/admin/marketing/experiments/' + ad.dest.item.id %>"><%= ad.dest.item.name %></a><br><small class="muted"><%= ad.dest.type %></small><% } else { %>—<% } %></td>
+              <td><%= fmt.money(m.spend) %></td>
+              <td><%= fmt.num(m.clicks) %><br><small class="muted">CTR <%= fmt.pct(m.ctr) %></small></td>
+              <td><%= fmt.num(m.leads) %><br><small class="muted">CPL <%= fmt.money2(m.cpl) %></small></td>
+              <td><%= fmt.num(m.customers) %><br><small class="muted">CAC <%= fmt.money(m.cac) %></small></td>
+              <td class="<%= m.roas >= 1 ? 'good' : m.roas != null ? 'warn' : '' %>"><strong><%= fmt.x(m.roas) %></strong></td>
+              <td><button type="button" class="btn btn-ghost btn-sm" data-copy="<%= trackingUrl(ad) %>" title="<%= trackingUrl(ad) %>">Copy link</button></td>
             </tr>
           <% }) %>
         </tbody>
       </table>
     </div>
-  </div>
+  </section>
 <% }) %>
 
-<div class="card" id="spend">
-  <h3>Log daily spend</h3>
-  <p class="muted small">Enter each ad’s daily numbers from Ads Manager. This will be replaced by an automatic daily import from the Meta and Google Ads APIs.</p>
-  <form method="post" action="/admin/marketing/spend" class="spend-form">
+<details class="card spend-card" id="spend" <%= r.ads.some((a) => a.status === 'active' && !a.m.spend) ? 'open' : '' %>>
+  <summary><strong>Log daily spend</strong> <span class="muted small">— from Ads Manager, until the Meta/Google APIs are connected</span></summary>
+  <% if (!r.ads.length) { %><p class="muted small mt-1">Create an ad first.</p><% } else { %>
+  <form method="post" action="/admin/marketing/spend" class="spend-form mt-1">
     <div class="field"><label>Ad</label>
       <select name="adId" required><% r.ads.forEach((ad) => { %><option value="<%= ad.id %>"><%= ad.campaign.name %> → <%= ad.name %></option><% }) %></select>
     </div>
     <div class="field"><label>Date</label><input type="date" name="date" value="<%= today %>" max="<%= today %>"></div>
-    <div class="field"><label>Spend ($)</label><input type="number" step="0.01" name="spend" required></div>
-    <div class="field"><label>Impressions</label><input type="number" name="impressions"></div>
-    <div class="field"><label>Clicks</label><input type="number" name="clicks"></div>
+    <div class="field"><label>Spend ($)</label><input type="number" step="0.01" min="0" name="spend" required></div>
+    <div class="field"><label>Impressions</label><input type="number" min="0" name="impressions"></div>
+    <div class="field"><label>Clicks</label><input type="number" min="0" name="clicks"></div>
     <button class="btn btn-primary">Log spend</button>
   </form>
-</div>
+  <% } %>
+</details>
 
 <%- include('../../partials/footer') %>

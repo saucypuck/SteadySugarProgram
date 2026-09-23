@@ -2,77 +2,102 @@
 <%- include('_tabs') %>
 
 <% const p = r.paid; %>
-<div class="kpi-grid">
-  <div class="card kpi"><small>Ad spend</small><strong><%= fmt.money(p.spend) %></strong></div>
-  <div class="card kpi"><small>Leads from ads</small><strong><%= fmt.num(p.leads) %></strong><em>CPL <%= fmt.money2(p.cpl) %></em></div>
-  <div class="card kpi"><small>Customers from ads</small><strong><%= fmt.num(p.customers) %></strong><em>CAC <%= fmt.money(p.cac) %></em></div>
-  <div class="card kpi"><small>Revenue from ads</small><strong><%= fmt.money(p.revenue) %></strong><em>ROAS <%= fmt.x(p.roas) %></em></div>
-  <div class="card kpi"><small>Landing page views</small><strong><%= fmt.num(r.site.views) %></strong><em>Lead rate <%= fmt.pct(r.site.leadRate) %></em></div>
-  <div class="card kpi"><small>Clicks</small><strong><%= fmt.num(p.clicks) %></strong><em>CTR <%= fmt.pct(p.ctr) %> · CPC <%= fmt.money2(p.cpc) %></em></div>
-  <div class="card kpi"><small>Live landing pages</small><strong><%= r.pages.filter((x) => x.status === 'live').length %></strong></div>
-  <div class="card kpi"><small>Running A/B tests</small><strong><%= r.experiments.filter((x) => x.status === 'running').length %></strong></div>
+<!-- 1. Headline numbers (paid traffic) -->
+<div class="stat-strip">
+  <div><small>Ad spend</small><strong><%= fmt.money(p.spend) %></strong></div>
+  <div><small>Revenue from ads</small><strong><%= fmt.money(p.revenue) %></strong><em class="<%= p.roas >= 1 ? 'good' : 'warn' %>">ROAS <%= fmt.x(p.roas) %></em></div>
+  <div><small>Leads</small><strong><%= fmt.num(p.leads) %></strong><em>CPL <%= fmt.money2(p.cpl) %></em></div>
+  <div><small>Customers</small><strong><%= fmt.num(p.customers) %></strong><em>CAC <%= fmt.money(p.cac) %></em></div>
+  <div><small>Page lead rate</small><strong><%= fmt.pct(p.leadRate) %></strong><em><%= fmt.num(p.views) %> views</em></div>
+  <div><small>Clicks</small><strong><%= fmt.num(p.clicks) %></strong><em>CTR <%= fmt.pct(p.ctr) %> · CPC <%= fmt.money2(p.cpc) %></em></div>
 </div>
 
-<div class="card mt-2">
-  <h3>Decisions needed</h3>
-  <% if (!r.decisions.length) { %><p class="muted">Nothing flagged. Numbers look steady.</p><% } %>
-  <ul class="decision-list">
-    <% r.decisions.forEach((d) => { %>
-      <li class="tone-<%= d.tone %>"><a href="<%= d.href %>"><%= d.text %></a></li>
+<!-- 2. Funnel · what's selling · to-dos -->
+<div class="dash-row">
+  <section class="card">
+    <h3>Ad funnel</h3>
+    <% const steps = [['Page views', p.views], ['Leads', p.leads], ['Checkouts', p.checkouts], ['Customers', p.customers]]; const top = Math.max(1, p.views); %>
+    <% steps.forEach(([label, n], i) => { %>
+      <div class="funnel-row">
+        <div class="row-between small"><span><%= label %></span><span><strong><%= fmt.num(n) %></strong><% if (i) { %> <span class="muted">· <%= steps[i - 1][1] ? Math.round(n / steps[i - 1][1] * 100) : 0 %>%</span><% } %></span></div>
+        <div class="bar"><span style="width:<%= Math.max(2, Math.round(n / top * 100)) %>%"></span></div>
+      </div>
     <% }) %>
-  </ul>
-</div>
+  </section>
 
-<div class="card mt-2">
-  <div class="row-between"><h3>Campaigns</h3><a href="/admin/marketing/ads?range=<%= r.range %>" class="small">All ads →</a></div>
-  <div class="table-wrap">
-    <table class="table num-table">
-      <thead><tr><th>Campaign</th><th>Status</th><th>Spend</th><th>Clicks</th><th>Leads</th><th>CPL</th><th>Customers</th><th>CAC</th><th>Revenue</th><th>ROAS</th></tr></thead>
-      <tbody>
-        <% if (!r.campaigns.length) { %><tr><td colspan="10" class="muted">No campaigns yet. <a href="/admin/marketing/campaigns/new">Create one</a>.</td></tr><% } %>
-        <% r.campaigns.forEach((cmp) => { const m = cmp.m; %>
-          <tr>
-            <td><strong><%= cmp.name %></strong><br><small class="muted"><%= cmp.channel %> · <%= cmp.ads.length %> ads</small></td>
-            <td><span class="status s-<%= cmp.status %>"><%= cmp.status %></span></td>
-            <td><%= fmt.money(m.spend) %></td><td><%= fmt.num(m.clicks) %></td><td><%= fmt.num(m.leads) %></td>
-            <td><%= fmt.money2(m.cpl) %></td><td><%= fmt.num(m.customers) %></td><td><%= fmt.money(m.cac) %></td>
-            <td><%= fmt.money(m.revenue) %></td><td class="<%= m.roas >= 1 ? 'good' : m.roas != null ? 'warn' : '' %>"><%= fmt.x(m.roas) %></td>
-          </tr>
-        <% }) %>
-      </tbody>
+  <section class="card">
+    <h3>What’s selling</h3>
+    <table class="offer-table">
+      <tr><td><strong><%= c.plans.free.name %></strong><small>$0</small></td><td><strong><%= fmt.num(r.offers.free.signups) %></strong> signups<small><%= r.offers.free.fromAds %> from ads</small></td></tr>
+      <% Object.values(c.plans).filter((pl) => pl.price).forEach((pl) => { const o = r.offers.byPlan[pl.id] || { sales: 0, revenue: 0, fromAds: 0 }; %>
+        <tr><td><strong><%= pl.name %></strong><small><%= money(pl.price) %>/mo</small></td><td><strong><%= fmt.num(o.sales) %></strong> sales · <%= fmt.money(o.revenue) %><small><%= o.fromAds %> from ads</small></td></tr>
+      <% }) %>
     </table>
+    <p class="small muted mt-1">New MRR added this period: <strong><%= fmt.money(Object.entries(r.offers.byPlan).reduce((s, [id, o]) => s + (c.plans[id] ? c.plans[id].price * o.sales : 0), 0)) %></strong> · <a href="/admin">Business overview →</a></p>
+  </section>
+
+  <section class="card">
+    <h3>Decisions needed <% if (r.decisions.length) { %><span class="count"><%= r.decisions.length %></span><% } %></h3>
+    <% if (!r.decisions.length) { %><p class="muted small">Nothing flagged — numbers look steady.</p><% } %>
+    <ul class="decision-list">
+      <% r.decisions.slice(0, 4).forEach((d) => { %><li class="tone-<%= d.tone %>"><a href="<%= d.href %>"><%= d.text %></a></li><% }) %>
+    </ul>
+    <% if (r.decisions.length > 4) { %>
+      <details class="more"><summary><%= r.decisions.length - 4 %> more</summary>
+        <ul class="decision-list"><% r.decisions.slice(4).forEach((d) => { %><li class="tone-<%= d.tone %>"><a href="<%= d.href %>"><%= d.text %></a></li><% }) %></ul>
+      </details>
+    <% } %>
+  </section>
+</div>
+
+<!-- 3. Landing pages, each with the campaigns feeding it -->
+<div class="section-head">
+  <h2>Landing pages</h2>
+  <div class="cta-row mt-0">
+    <a href="/admin/marketing/ads/new" class="btn btn-secondary btn-sm">+ New ad</a>
+    <a href="/admin/marketing/pages/new" class="btn btn-primary btn-sm">+ New landing page</a>
   </div>
 </div>
 
-<div class="grid-2 mt-2">
-  <div class="card">
-    <div class="row-between"><h3>Landing pages</h3><a href="/admin/marketing/pages?range=<%= r.range %>" class="small">Manage →</a></div>
-    <div class="table-wrap">
-      <table class="table num-table">
-        <thead><tr><th>Page</th><th>Views</th><th>Lead rate</th><th>Customers</th></tr></thead>
-        <tbody>
-          <% [...r.pages].sort((a, b) => (b.m.leadRate || 0) - (a.m.leadRate || 0)).forEach((pg) => { %>
-            <tr><td><%= pg.name %><br><small class="muted">/lp/<%= pg.slug %> · <span class="status s-<%= pg.status %>"><%= pg.status %></span></small></td><td><%= fmt.num(pg.m.views) %></td><td><strong><%= fmt.pct(pg.m.leadRate) %></strong></td><td><%= fmt.num(pg.m.customers) %></td></tr>
-          <% }) %>
-        </tbody>
-      </table>
+<% if (!testGroups.length && !activePages.length) { %>
+  <div class="card"><p class="muted">No live landing pages. <a href="/admin/marketing/pages/new">Create your first one</a>.</p></div>
+<% } %>
+
+<% testGroups.forEach((g) => { const x = g.test; %>
+  <section class="test-group">
+    <header class="row-between wrap">
+      <div>
+        <span class="test-badge">A/B test</span> <strong><%= x.name %></strong>
+        <span class="small tone-<%= x.verdict.tone %>"> — <%= x.verdict.text %></span>
+      </div>
+      <a href="/admin/marketing/experiments/<%= x.id %>?range=<%= r.range %>" class="btn btn-ghost btn-sm">Open test →</a>
+    </header>
+    <div class="test-variants">
+      <% g.pages.forEach((pg, i) => { %>
+        <%- include('_page', { pg, variantLabel: i === 0 ? 'Control' : 'Variant ' + String.fromCharCode(65 + i) }) %>
+      <% }) %>
     </div>
-  </div>
-  <div class="card">
-    <div class="row-between"><h3>A/B tests</h3><a href="/admin/marketing/experiments?range=<%= r.range %>" class="small">All tests →</a></div>
-    <% if (!r.experiments.length) { %><p class="muted">No tests yet.</p><% } %>
-    <% r.experiments.forEach((x) => { %>
-      <a class="exp-mini" href="/admin/marketing/experiments/<%= x.id %>?range=<%= r.range %>">
-        <strong><%= x.name %></strong>
-        <span class="tone-<%= x.verdict.tone %> small"><%= x.verdict.text %></span>
-        <% x.variants.forEach((v, i) => { %>
-          <div class="row-between small"><span><%= i === 0 ? 'Control' : 'Variant' %>: <%= v.page.name %></span><span><%= fmt.pct(v.m[x.metric.key === 'leads' ? 'leadRate' : 'purchaseRate']) %> <small class="muted">(<%= fmt.num(v.m.views) %> views)</small></span></div>
-        <% }) %>
-      </a>
-    <% }) %>
-  </div>
-</div>
+  </section>
+<% }) %>
 
-<p class="fine">How attribution works: ads send visitors to /lp/… or /go/… with UTM tags. The landing page and last ad clicked are stored on the visitor’s session and on every lead, signup and purchase they make. Spend is logged manually until the Meta and Google Ads APIs are connected.</p>
+<% activePages.forEach((pg) => { %>
+  <%- include('_page', { pg, variantLabel: null }) %>
+<% }) %>
+
+<% if (archivedPages.length) { %>
+  <details class="archived">
+    <summary>Drafts &amp; retired pages (<%= archivedPages.length %>)</summary>
+    <ul class="archived-list">
+      <% archivedPages.forEach((pg) => { %>
+        <li>
+          <span><span class="status s-<%= pg.status %>"><%= pg.status %></span> <strong><%= pg.name %></strong> <small class="muted">/lp/<%= pg.slug %></small></span>
+          <span><a href="/lp/<%= pg.slug %>" target="_blank" rel="noopener" class="small">Preview</a> · <a href="/admin/marketing/pages/<%= pg.id %>/edit" class="small">Edit</a></span>
+        </li>
+      <% }) %>
+    </ul>
+  </details>
+<% } %>
+
+<p class="fine">Attribution: every lead, signup and purchase is credited to the last ad clicked (UTM tags) and the landing page it arrived on. Spend is logged on the Campaigns &amp; ads tab until the Meta/Google Ads APIs are connected.</p>
 
 <%- include('../../partials/footer') %>

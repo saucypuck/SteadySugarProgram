@@ -27,8 +27,24 @@ async function load(req) {
   return { r, base: baseUrl(req), trackingUrl: (ad) => mk.trackingUrl(baseUrl(req), ad) };
 }
 
-router.get('/', h(async (req, res) => res.render('admin/marketing/overview', { title: 'Marketing', tab: 'overview', ...(await load(req)) })));
-router.get('/pages', h(async (req, res) => res.render('admin/marketing/pages', { title: 'Landing pages', tab: 'pages', ...(await load(req)) })));
+// Dashboard: stats first, then every landing page with the campaigns/ads feeding it.
+router.get('/', h(async (req, res) => {
+  const data = await load(req);
+  const { r } = data;
+  const running = r.experiments.filter((x) => x.status === 'running');
+  const inTest = new Set(running.flatMap((x) => x.variantIds || []));
+  const byRevenue = (a, b) => b.m.revenue - a.m.revenue || b.m.views - a.m.views;
+  const pageById = Object.fromEntries(r.pages.map((p) => [p.id, p]));
+  res.render('admin/marketing/overview', {
+    title: 'Marketing',
+    tab: 'overview',
+    testGroups: running.map((x) => ({ test: x, pages: (x.variantIds || []).map((id) => pageById[id]).filter(Boolean) })),
+    activePages: r.pages.filter((p) => !inTest.has(p.id) && ['live', 'winner', 'paused'].includes(p.status)).sort(byRevenue),
+    archivedPages: r.pages.filter((p) => !inTest.has(p.id) && ['draft', 'retired'].includes(p.status)),
+    ...data,
+  });
+}));
+router.get('/pages', (req, res) => res.redirect(`/admin/marketing${req.query.range ? `?range=${req.query.range}` : ''}`));
 router.get('/ads', h(async (req, res) => res.render('admin/marketing/ads', { title: 'Campaigns & ads', tab: 'ads', today: isoDate(new Date()), ...(await load(req)) })));
 router.get('/experiments', h(async (req, res) => res.render('admin/marketing/experiments', { title: 'A/B tests', tab: 'experiments', ...(await load(req)) })));
 
@@ -72,7 +88,7 @@ async function renderForm(res, entity, doc, error) {
     const opts = f.optionsFrom ? await options(f.optionsFrom) : (f.options || []).map((o) => ({ value: o, label: o }));
     fields.push({ ...f, opts });
   }
-  res.status(error ? 400 : 200).render('admin/marketing/form', { title: `${doc.id ? 'Edit' : 'New'} ${schema.label.toLowerCase()}`, tab: entity === 'campaigns' ? 'ads' : entity, entity, schema, fields, doc, error });
+  res.status(error ? 400 : 200).render('admin/marketing/form', { title: `${doc.id ? 'Edit' : 'New'} ${schema.label.toLowerCase()}`, tab: { campaigns: 'ads', ads: 'ads', pages: 'overview', experiments: 'experiments' }[entity], entity, schema, fields, doc, error });
 }
 
 const UNIQUE = { campaigns: 'utmCampaign', pages: 'slug', experiments: 'slug' };

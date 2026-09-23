@@ -48,12 +48,14 @@ Results /quiz/results  → persona + recommended plan (Free / Core / VIP)
 
 **Member area** `/app`: dashboard (next lesson, next call, glucose trend, quick log, daily habits, upgrade prompts) · courses and lessons with progress tracking · nutrition and workout plans · tracker · calls (monthly allowance per plan) · account and billing.
 
-**Marketing** `/admin/marketing`: one place for ad and landing-page decisions.
-- **Campaigns & ads**: spend, CTR, CPC, leads, CPL, customers, CAC and ROAS per ad and campaign. Each ad has a copy-ready tracking URL, and there's a daily spend log.
-- **Landing pages**: built from the admin with no code, live at `/lp/<slug>`. Each shows views, lead rate, revenue, and which ads send it traffic.
-- **A/B tests**: `/go/<slug>` splits traffic evenly between landing pages and keeps each visitor on the same variant. Results show lift and a significance test. Once you declare a winner, all traffic goes to it.
-- **Decisions needed**: flags things to act on automatically, such as ads to pause or scale, tests ready to call, and live pages with no traffic.
-- **Attribution**: the last ad clicked (UTMs) and the landing page are saved on the visitor's session and on every lead, signup and purchase.
+**Marketing** `/admin/marketing`: one lean page for ad and landing-page decisions.
+- **Dashboard**:
+  - Paid-traffic stats: spend, revenue, ROAS, leads and CPL, customers and CAC, page lead rate, CTR and CPC.
+  - The ad funnel, "What's selling" (signups and sales by plan, and how many came from ads), and "Decisions needed" (pause/scale ads, call A/B tests, pages with no traffic).
+  - Every landing page with the campaigns and ads sending it traffic nested underneath. Pages in a running A/B test are grouped with the test result, and drafts and retired pages are tucked away.
+- **Campaigns & ads**: each campaign's totals with its ads underneath, a copy-link button for each ad's tracking URL, and the daily spend log.
+- **A/B tests**: `/go/<slug>` splits traffic evenly and keeps each visitor on the same variant. Results show lift and significance; declaring a winner sends all traffic to it.
+- **Attribution**: the last ad clicked (UTMs) and the landing page are saved on every lead, signup and purchase.
 
 **Admin** `/admin`: MRR, revenue, members, leads (hot leads to call first), funnel conversion, members by plan, upcoming calls, orders with UTM source.
 

@@ -63,7 +63,7 @@ const ENTITIES = {
   pages: {
     label: 'Landing page',
     plural: 'Landing pages',
-    list: '/admin/marketing/pages',
+    list: '/admin/marketing',
     fields: [
       { name: 'name', label: 'Internal name', required: true },
       { name: 'slug', label: 'URL slug', required: true, slug: true, help: 'Page lives at /lp/<slug>' },
@@ -173,6 +173,7 @@ async function report(range = '30') {
     const a = e.utm;
     if (!a) { addEvent(get('site:direct'), e); continue; }
     if (a.lp) addEvent(get(`lp:${a.lp}`), e);
+    if (a.lp) addEvent(get(a.utm_campaign ? `adlp:${a.utm_campaign}|${a.utm_content || ''}|${a.lp}` : `lporg:${a.lp}`), e);
     if (a.exp && a.lp) addEvent(get(`var:${a.exp}|${a.lp}`), e);
     if (a.utm_campaign) {
       addEvent(get(`camp:${a.utm_campaign}`), e);
@@ -205,7 +206,33 @@ async function report(range = '30') {
     const [kind, id] = String(a.destination || '').split(':');
     return (kind === 'lp' && id === p.id) || (kind === 'exp' && (expById[id]?.variantIds || []).includes(p.id));
   });
-  const pageRows = pages.map((p) => ({ ...p, m: derive(bucket.get(`lp:${p.slug}`) || blank()), ads: adsForPage(p) }));
+  // Traffic into each page, grouped by campaign. Ads feeding an A/B test get their
+  // spend split across variants in proportion to the views each variant received.
+  function trafficFor(p) {
+    const groups = new Map();
+    for (const ad of adsForPage(p)) {
+      const m = { ...(bucket.get(`adlp:${ad.campaign.utmCampaign}|${ad.utmContent}|${p.slug}`) || blank()) };
+      const share = ad.dest.type === 'Page' ? 1 : ad.m.views ? m.views / ad.m.views : 0;
+      m.spend = ad.m.spend * share; m.impressions = Math.round(ad.m.impressions * share); m.clicks = Math.round(ad.m.clicks * share);
+      const key = ad.campaignId;
+      if (!groups.has(key)) groups.set(key, { campaign: ad.campaign, ads: [] });
+      groups.get(key).ads.push({ ad, m: derive(m), shared: share < 1 });
+    }
+    return [...groups.values()].map((g) => ({ ...g, m: sum(g.ads.map((a) => a.m)) }));
+  }
+  const expForPage = (p) => experiments.find((x) => x.status !== 'draft' && (x.variantIds || []).includes(p.id));
+  const pageRows = pages.map((p) => {
+    const traffic = trafficFor(p);
+    return {
+      ...p,
+      m: derive(bucket.get(`lp:${p.slug}`) || blank()),
+      ads: adsForPage(p),
+      traffic,
+      paid: sum(traffic.map((t) => t.m)),
+      organic: derive(bucket.get(`lporg:${p.slug}`) || blank()),
+      test: expForPage(p) || null,
+    };
+  });
 
   const experimentRows = experiments.map((x) => {
     const metric = METRICS[x.primaryMetric] || METRICS.lead_rate;
@@ -227,9 +254,20 @@ async function report(range = '30') {
   });
 
   const paid = sum(campaignRows.map((c) => c.m));
+
+  // What's selling: every signup / purchase in range, and how much came from ads.
+  const offers = { free: { signups: 0, fromAds: 0 }, byPlan: {} };
+  for (const e of inRange) {
+    const fromAds = !!(e.utm && e.utm.utm_campaign);
+    if (e.name === 'signup_free') { offers.free.signups++; if (fromAds) offers.free.fromAds++; }
+    if (e.name === 'purchase' && e.plan) {
+      const o = (offers.byPlan[e.plan] = offers.byPlan[e.plan] || { sales: 0, revenue: 0, fromAds: 0 });
+      o.sales++; o.revenue += Number(e.amount || 0); if (fromAds) o.fromAds++;
+    }
+  }
   const site = sum([...bucket.entries()].filter(([k]) => k.startsWith('lp:') || k === 'site:direct').map(([, m]) => m));
 
-  return { range, rangeLabel: RANGES[range] || RANGES[30], campaigns: campaignRows, ads: adRows, pages: pageRows, experiments: experimentRows, paid, site, decisions: decisions({ adRows, pageRows, experimentRows, paid }) };
+  return { range, rangeLabel: RANGES[range] || RANGES[30], campaigns: campaignRows, ads: adRows, pages: pageRows, experiments: experimentRows, paid, site, offers, decisions: decisions({ adRows, pageRows, experimentRows, paid }) };
 }
 
 // Rules-of-thumb that turn the numbers into a to-do list.
@@ -246,7 +284,7 @@ function decisions({ adRows, pageRows, experimentRows, paid }) {
     if (!a.m.spend && !a.m.impressions) out.push({ tone: 'muted', text: `"${a.name}" is active but has no spend logged in this range.`, href: '/admin/marketing/ads#spend' });
   }
   for (const p of pageRows.filter((r) => r.status === 'live' && !r.ads.length)) {
-    out.push({ tone: 'muted', text: `Landing page "${p.name}" is live but no ads point to it.`, href: '/admin/marketing/pages' });
+    out.push({ tone: 'muted', text: `Landing page "${p.name}" is live but no ads point to it.`, href: `/admin/marketing#lp-${p.slug}` });
   }
   return out;
 }

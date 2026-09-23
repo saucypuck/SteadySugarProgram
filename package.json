@@ -1,0 +1,21 @@
+{
+  "name": "steady-sugar-program",
+  "version": "0.1.0",
+  "private": true,
+  "description": "Steady Sugar — blood sugar coaching platform (funnel, quiz, auth, payments, courses, plans, scheduling).",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js",
+    "dev": "node --watch server.js"
+  },
+  "engines": {
+    "node": ">=18"
+  },
+  "dependencies": {
+    "bcryptjs": "^2.4.3",
+    "cookie-session": "^2.1.0",
+    "ejs": "^3.1.10",
+    "express": "^4.21.2",
+    "pg": "^8.13.1"
+  }
+}

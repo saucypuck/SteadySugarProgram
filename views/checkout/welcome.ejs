@@ -1,0 +1,40 @@
+<%- include('../partials/header') %>
+
+<section class="section">
+  <div class="container narrow">
+    <ol class="stepper">
+      <li class="done">Account</li>
+      <li class="done">Payment</li>
+      <li class="current">Your goals</li>
+      <li><%= plan && plan.callsPerMonth ? 'Book kickoff' : 'Start Week 1' %></li>
+    </ol>
+
+    <div class="center mt-3">
+      <p class="eyebrow">🎉 You’re in, <%= user.name %>!</p>
+      <h1>Let’s set your goals</h1>
+      <p class="lead">This takes 60 seconds and helps your coach personalize your plan.</p>
+    </div>
+
+    <form method="post" action="/welcome" class="card stack mt-3">
+      <% if (lead && lead.answers) { %>
+        <div class="alert alert-info">We pulled in your quiz answers — your coach will see them too.</div>
+      <% } %>
+      <div class="field">
+        <label for="w-target">What result would make the next 12 weeks a win?</label>
+        <input id="w-target" name="target" placeholder="e.g. A1C under 5.7, no 3pm crashes, lose 10 lbs">
+      </div>
+      <div class="field">
+        <label for="w-why">Why does that matter to you?</label>
+        <textarea id="w-why" name="why" rows="3" placeholder="e.g. I want to keep up with my grandkids"></textarea>
+      </div>
+      <div class="field">
+        <label for="w-a1c">Most recent A1C <small class="muted">(optional)</small></label>
+        <input id="w-a1c" name="baselineA1c" inputmode="decimal" placeholder="e.g. 6.1">
+      </div>
+      <label class="check"><input type="checkbox" name="doctorAware"> My doctor knows I’m making lifestyle changes</label>
+      <button class="btn btn-primary btn-lg btn-block"><%= plan && plan.callsPerMonth ? 'Next: book my kickoff call →' : 'Go to my dashboard →' %></button>
+    </form>
+  </div>
+</section>
+
+<%- include('../partials/footer') %>

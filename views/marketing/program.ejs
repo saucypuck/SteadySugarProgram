@@ -1,0 +1,58 @@
+<%- include('../partials/header') %>
+
+<section class="hero hero-sm">
+  <div class="container narrow center">
+    <p class="eyebrow">The program</p>
+    <h1>12 weeks to steadier blood sugar</h1>
+    <p class="lead">Each week: one short lesson, one clear action, a meal plan, a movement plan, and (on coached plans) a coach reviewing your numbers with you.</p>
+    <div class="cta-row center-row">
+      <a href="/quiz" class="btn btn-primary btn-lg">Find my plan →</a>
+      <a href="/pricing" class="btn btn-secondary btn-lg">See pricing</a>
+    </div>
+  </div>
+</section>
+
+<section class="section">
+  <div class="container">
+    <h2 class="center">Curriculum</h2>
+    <div class="grid-2 mt-3">
+      <% c.courses.forEach((course) => { %>
+        <div class="card">
+          <div class="row-between">
+            <span class="badge"><%= course.weeks === 'Bonus' ? 'VIP bonus' : 'Weeks ' + course.weeks %></span>
+            <small class="muted"><%= course.lessons.length %> lessons</small>
+          </div>
+          <h3 class="mt-1"><%= course.title %></h3>
+          <p class="muted"><%= course.summary %></p>
+          <ul class="lesson-preview">
+            <% course.lessons.forEach((l) => { %><li><span>▶</span><%= l.title %> <small class="muted"><%= l.minutes %> min</small></li><% }) %>
+          </ul>
+        </div>
+      <% }) %>
+    </div>
+  </div>
+</section>
+
+<section class="section section-soft">
+  <div class="container grid-2">
+    <div class="card">
+      <h3>🥗 Nutrition plans</h3>
+      <p class="muted">A repeatable weekly meal plan built on the Steady Plate: half veggies, a palm of protein, a fist of smart carbs.</p>
+      <ul class="check-list"><% c.nutritionPlan.targets.forEach((t) => { %><li><strong><%= t.label %>:</strong> <%= t.value %></li><% }) %></ul>
+    </div>
+    <div class="card">
+      <h3>🚶 Workout plans</h3>
+      <p class="muted">No gym required. Movement timed to when it helps your blood sugar most.</p>
+      <ul class="check-list"><% c.workoutPlan.phases.forEach((p) => { %><li><strong>Weeks <%= p.weeks %>:</strong> <%= p.body %></li><% }) %></ul>
+    </div>
+  </div>
+</section>
+
+<section class="section">
+  <div class="container narrow center">
+    <h2>Ready to see which plan fits you?</h2>
+    <a href="/quiz" class="btn btn-primary btn-lg mt-2">Take the 2-minute quiz →</a>
+  </div>
+</section>
+
+<%- include('../partials/footer') %>

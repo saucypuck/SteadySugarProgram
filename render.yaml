@@ -1,0 +1,29 @@
+# Render Blueprint — New > Blueprint > select this repo.
+services:
+  - type: web
+    name: steady-sugar
+    runtime: node
+    plan: free
+    buildCommand: npm install
+    startCommand: npm start
+    healthCheckPath: /healthz
+    autoDeploy: true
+    envVars:
+      - key: NODE_ENV
+        value: production
+      - key: NODE_VERSION
+        value: "20"
+      - key: SESSION_SECRET
+        generateValue: true
+      - key: SEED_DEMO
+        value: "true"
+      - key: ADMIN_EMAILS
+        sync: false
+      - key: DATABASE_URL
+        fromDatabase:
+          name: steady-sugar-db
+          property: connectionString
+
+databases:
+  - name: steady-sugar-db
+    plan: free

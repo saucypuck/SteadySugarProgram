@@ -1,0 +1,195 @@
+<%- include('../partials/header') %>
+
+<!-- HERO: one promise, one primary CTA (quiz), one secondary (call) -->
+<section class="hero">
+  <div class="container hero-grid">
+    <div>
+      <p class="eyebrow">12-week coach-led blood sugar program</p>
+      <h1>Steady blood sugar.<br>Steady energy.<br><span class="hl">No extreme diets.</span></h1>
+      <p class="lead">Practical food, movement and habit changes that help adults with prediabetes and type 2 diabetes lower their numbers — built around your real life, with a coach in your corner.</p>
+      <div class="cta-row">
+        <a href="/quiz" class="btn btn-primary btn-lg">Take the 2-minute quiz →</a>
+        <a href="/book-call" class="btn btn-secondary btn-lg">Book a free call</a>
+      </div>
+      <p class="micro">Free · No credit card · Get a personalized plan recommendation</p>
+    </div>
+    <div class="hero-visual">
+      <div class="wire wire-tall">Hero image / 30-sec coach video<br><small>Replace with real photo of coach or client</small></div>
+      <div class="float-card">
+        <small class="muted">Fasting glucose · 6 weeks</small>
+        <svg viewBox="0 0 200 50" class="spark"><polyline points="0,8 30,12 60,15 90,22 120,26 150,33 200,40" /></svg>
+        <strong class="good">−14 mg/dL <small>[sample]</small></strong>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- PROOF BAR -->
+<section class="proof-bar">
+  <div class="container proof-row">
+    <div><strong>[500+]</strong><span>clients coached</span></div>
+    <div><strong>[0.6%]</strong><span>avg A1C drop*</span></div>
+    <div><strong>[4.9★]</strong><span>client rating</span></div>
+    <div><strong>[CDCES]</strong><span>certified coach</span></div>
+  </div>
+</section>
+
+<!-- PROBLEM / AGITATE -->
+<section class="section">
+  <div class="container narrow center">
+    <p class="eyebrow">Sound familiar?</p>
+    <h2>Your doctor said “watch your sugar.” Then sent you home with no plan.</h2>
+  </div>
+  <div class="container grid-4 mt-3">
+    <div class="card pain"><span class="emoji">😴</span><p>You crash every afternoon and reach for sugar or coffee to get through.</p></div>
+    <div class="card pain"><span class="emoji">🍞</span><p>Cravings win by 9pm, no matter how “good” you were all day.</p></div>
+    <div class="card pain"><span class="emoji">🤯</span><p>Keto, fasting, no-carb… the advice is loud, extreme and contradictory.</p></div>
+    <div class="card pain"><span class="emoji">📈</span><p>Your A1C keeps creeping up and you’re worried about where it’s heading.</p></div>
+  </div>
+</section>
+
+<!-- HOW IT WORKS -->
+<section class="section section-soft" id="how">
+  <div class="container">
+    <div class="center narrow">
+      <p class="eyebrow">How it works</p>
+      <h2>A simple path from confused to in control</h2>
+    </div>
+    <div class="grid-3 mt-3 steps">
+      <div class="step"><span class="num">1</span><h3>Take the quiz</h3><p>2 minutes. We identify your blood sugar pattern and recommend the right level of support.</p></div>
+      <div class="step"><span class="num">2</span><h3>Get your plan</h3><p>Meet your coach on a kickoff call. Leave with meal, movement and tracking targets that fit your week.</p></div>
+      <div class="step"><span class="num">3</span><h3>Follow the roadmap</h3><p>Short weekly lessons, plans and check-ins. Watch your readings — and your energy — steady out.</p></div>
+    </div>
+    <div class="center mt-3"><a href="/quiz" class="btn btn-primary btn-lg">Find my plan →</a></div>
+  </div>
+</section>
+
+<!-- WHAT'S INCLUDED -->
+<section class="section">
+  <div class="container">
+    <div class="center narrow">
+      <p class="eyebrow">Everything you need</p>
+      <h2>Coaching + curriculum + tools, in one place</h2>
+    </div>
+    <div class="grid-3 mt-3">
+      <div class="card feature"><span class="emoji">🎓</span><h3>Video course</h3><p>12 weeks of 10-minute lessons with one clear action step each.</p></div>
+      <div class="card feature"><span class="emoji">🥗</span><h3>Meal plans</h3><p>Weekly low-spike meal plans and grocery lists. No weird ingredients.</p></div>
+      <div class="card feature"><span class="emoji">🚶</span><h3>Workout plans</h3><p>Post-meal walks + 25-minute strength sessions you can do at home.</p></div>
+      <div class="card feature"><span class="emoji">📞</span><h3>Coaching calls</h3><p>Review your numbers with a certified coach and adjust as you go.</p></div>
+      <div class="card feature"><span class="emoji">📈</span><h3>Glucose tracker</h3><p>Log fasting & post-meal readings and see your trend at a glance.</p></div>
+      <div class="card feature"><span class="emoji">💬</span><h3>Support</h3><p>Message your coach between calls so you’re never stuck.</p></div>
+    </div>
+  </div>
+</section>
+
+<!-- LEAD MAGNET (captures people not ready for the quiz) -->
+<section class="band">
+  <div class="container band-grid">
+    <div>
+      <p class="eyebrow light">Free download</p>
+      <h2>The 7-Day Steady Sugar Meal Guide</h2>
+      <p>A week of low-spike breakfasts, lunches and dinners + the grocery list. Sent straight to your inbox.</p>
+    </div>
+    <form method="post" action="/free-guide" class="inline-form">
+      <input type="email" name="email" placeholder="Your best email" required aria-label="Email">
+      <button class="btn btn-primary">Send me the guide</button>
+    </form>
+  </div>
+</section>
+
+<!-- ROADMAP -->
+<section class="section">
+  <div class="container">
+    <div class="center narrow">
+      <p class="eyebrow">The 12-week roadmap</p>
+      <h2>Small changes, stacked in the right order</h2>
+    </div>
+    <ol class="roadmap mt-3">
+      <% c.roadmap.forEach((r) => { %>
+        <li><span class="wk">Weeks <%= r.weeks %></span><h3><%= r.title %></h3><p><%= r.body %></p></li>
+      <% }) %>
+    </ol>
+  </div>
+</section>
+
+<!-- SOCIAL PROOF -->
+<section class="section section-soft">
+  <div class="container">
+    <div class="center narrow">
+      <p class="eyebrow">Client results</p>
+      <h2>Real people. Real numbers.</h2>
+      <p class="muted small">Placeholder testimonials — replace with real, consented client stories.</p>
+    </div>
+    <div class="grid-3 mt-3">
+      <% c.testimonials.forEach((t) => { %>
+        <figure class="card quote">
+          <div class="stars">★★★★★</div>
+          <blockquote>“<%= t.quote %>”</blockquote>
+          <figcaption><div class="avatar"></div><div><strong><%= t.name %></strong><small><%= t.meta %></small></div></figcaption>
+        </figure>
+      <% }) %>
+    </div>
+  </div>
+</section>
+
+<!-- COACH -->
+<section class="section">
+  <div class="container grid-2 align-center">
+    <div class="wire wire-square">Coach headshot</div>
+    <div>
+      <p class="eyebrow">Meet your coach</p>
+      <h2><%= c.brand.coach %></h2>
+      <p class="muted"><%= c.brand.coachTitle %></p>
+      <p>[Short origin story: why you do this work, who you've helped, and what makes your approach different. 3–4 sentences, first person, warm.]</p>
+      <a href="/about" class="btn btn-secondary">More about me</a>
+    </div>
+  </div>
+</section>
+
+<!-- PRICING -->
+<section class="section section-soft" id="pricing">
+  <div class="container">
+    <div class="center narrow">
+      <p class="eyebrow">Plans</p>
+      <h2>Choose your level of support</h2>
+    </div>
+    <div class="mt-3"><%- include('../partials/pricing-cards') %></div>
+  </div>
+</section>
+
+<!-- GUARANTEE -->
+<section class="section">
+  <div class="container narrow">
+    <div class="guarantee">
+      <div class="seal">30<br><small>DAY</small></div>
+      <div><h3><%= c.guarantee.title %></h3><p><%= c.guarantee.body %></p></div>
+    </div>
+  </div>
+</section>
+
+<!-- FAQ -->
+<section class="section section-soft">
+  <div class="container narrow">
+    <h2 class="center">Questions</h2>
+    <div class="faq mt-2">
+      <% c.faqs.forEach((f) => { %>
+        <details><summary><%= f.q %></summary><p><%= f.a %></p></details>
+      <% }) %>
+    </div>
+  </div>
+</section>
+
+<!-- FINAL CTA -->
+<section class="section final-cta">
+  <div class="container narrow center">
+    <h2>Your numbers can change. Let’s start with 2 minutes.</h2>
+    <p class="lead">Take the quiz to get your blood sugar profile and personalized plan.</p>
+    <a href="/quiz" class="btn btn-primary btn-lg">Take the quiz →</a>
+    <p class="micro">* Sample stats shown. Replace with verified outcomes before launch.</p>
+  </div>
+</section>
+
+<!-- Sticky mobile CTA -->
+<div class="sticky-cta"><a href="/quiz" class="btn btn-primary btn-block">Take the free 2-minute quiz →</a></div>
+
+<%- include('../partials/footer') %>

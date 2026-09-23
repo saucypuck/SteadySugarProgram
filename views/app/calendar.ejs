@@ -1,0 +1,70 @@
+<%- include('../partials/header') %>
+
+<% if (onboarding) { %>
+  <ol class="stepper">
+    <li class="done">Account</li><li class="done">Payment</li><li class="done">Your goals</li><li class="current">Book kickoff</li>
+  </ol>
+<% } %>
+
+<div class="page-head">
+  <div><p class="eyebrow">Coaching calls</p><h1><%= onboarding ? 'Book your kickoff call' : 'Calls' %></h1></div>
+  <% if (quota.allowed) { %><span class="pill"><%= quota.remaining %> of <%= quota.allowed %> coaching calls left this month</span><% } %>
+</div>
+
+<div class="booking-grid">
+  <div>
+    <% if (canBook) { %>
+      <form method="post" action="/app/calendar" class="card stack">
+        <input type="hidden" name="type" value="<%= type.id %>">
+        <input type="hidden" name="onboarding" value="<%= onboarding ? '1' : '' %>">
+        <h3><%= type.name %> <small class="muted">· <%= type.minutes %> min · video</small></h3>
+        <p class="muted small"><%= type.desc %></p>
+        <%- include('../partials/slot-picker', { days }) %>
+        <div class="field"><label for="cal-notes">Anything you want to cover?</label><textarea id="cal-notes" name="notes" rows="2"></textarea></div>
+        <button class="btn btn-primary btn-block">Book <%= type.name.toLowerCase() %></button>
+      </form>
+      <% if (onboarding) { %><p class="center small mt-1"><a href="/app">Skip for now — I’ll book later</a></p><% } %>
+    <% } else if (quota.allowed === 0) { %>
+      <div class="card upsell">
+        <h3>Get a coach in your corner</h3>
+        <p class="muted">Self-Guided doesn’t include calls. Upgrade to Coached for a kickoff call plus 2 coaching calls every month.</p>
+        <a href="/checkout?plan=coaching" class="btn btn-primary">Upgrade — <%= money(c.plans.coaching.price) %>/mo</a>
+      </div>
+    <% } else { %>
+      <div class="card upsell">
+        <h3>You’ve used this month’s calls</h3>
+        <p class="muted">Your calls reset on the 1st. Need more support? VIP includes a call every week.</p>
+        <% if (user.plan !== 'vip') { %><a href="/checkout?plan=vip" class="btn btn-primary">Upgrade to VIP</a><% } %>
+      </div>
+    <% } %>
+  </div>
+
+  <div>
+    <div class="card">
+      <h3>Upcoming</h3>
+      <% if (!upcoming.length) { %><p class="muted">Nothing scheduled.</p><% } %>
+      <ul class="call-list">
+        <% upcoming.forEach((b) => { %>
+          <li>
+            <div><strong><%= sched.CALL_TYPES[b.type].name %></strong><small><%= sched.formatDate(b.date) %> · <%= sched.formatTime(b.time) %> <%= c.brand.timezoneLabel %></small></div>
+            <div class="call-actions">
+              <a href="<%= b.joinUrl || '#' %>" class="btn btn-secondary btn-sm">Join</a>
+              <form method="post" action="/app/calendar/<%= b.id %>/cancel" data-confirm="Cancel this call?"><button class="btn btn-ghost btn-sm">Cancel</button></form>
+            </div>
+          </li>
+        <% }) %>
+      </ul>
+    </div>
+    <div class="card mt-2">
+      <h3>History</h3>
+      <% if (!past.length) { %><p class="muted">No past calls yet.</p><% } %>
+      <ul class="call-list">
+        <% past.forEach((b) => { %>
+          <li><div><strong><%= sched.CALL_TYPES[b.type].name %></strong><small><%= sched.formatDate(b.date) %> · <%= b.status %></small></div><span class="muted small">Notes & recording →</span></li>
+        <% }) %>
+      </ul>
+    </div>
+  </div>
+</div>
+
+<%- include('../partials/footer') %>

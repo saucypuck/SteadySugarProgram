@@ -1,0 +1,70 @@
+<%- include('../partials/header') %>
+
+<section class="checkout">
+  <div class="container checkout-grid">
+    <form method="post" action="/checkout" class="checkout-form" data-checkout>
+      <input type="hidden" name="plan" value="<%= plan.id %>">
+      <div class="plan-switch" role="tablist" aria-label="Plan">
+        <% Object.values(c.plans).forEach((p) => { %>
+          <a href="/checkout?plan=<%= p.id %>" class="<%= p.id === plan.id ? 'active' : '' %>"><%= p.name %><small><%= money(p.price) %>/mo</small></a>
+        <% }) %>
+      </div>
+
+      <% if (error) { %><div class="alert alert-error"><%= error %></div><% } %>
+
+      <% if (!user) { %>
+        <div class="card">
+          <h3><span class="step-dot">1</span> Create your account</h3>
+          <div class="grid-2 tight">
+            <div class="field"><label for="c-name">First name</label><input id="c-name" name="name" value="<%= form.name || '' %>" autocomplete="given-name" required></div>
+            <div class="field"><label for="c-email">Email</label><input id="c-email" type="email" name="email" value="<%= form.email || '' %>" autocomplete="email" required></div>
+          </div>
+          <div class="field"><label for="c-pass">Create a password <small class="muted">(8+ characters)</small></label><input id="c-pass" type="password" name="password" minlength="8" autocomplete="new-password" required></div>
+          <p class="small muted">Already a member? <a href="/login">Log in first</a>.</p>
+        </div>
+      <% } else { %>
+        <div class="card"><h3><span class="step-dot">✓</span> Signed in as <%= user.email %></h3></div>
+      <% } %>
+
+      <div class="card">
+        <h3><span class="step-dot"><%= user ? 1 : 2 %></span> Payment</h3>
+        <div class="wire pay-wire">
+          <strong>Stripe Payment Element mounts here</strong>
+          <small>Card · Apple Pay · Google Pay · HSA/FSA</small>
+        </div>
+        <p class="small muted">🔒 Demo mode — no card is charged. Wire up in <code>src/integrations/payments.js</code>.</p>
+      </div>
+
+      <label class="bump">
+        <input type="checkbox" name="bump" data-bump>
+        <div>
+          <strong>Yes! Add the <%= c.orderBump.name %> for just <%= money(c.orderBump.price) %></strong>
+          <p><%= c.orderBump.description %></p>
+        </div>
+      </label>
+
+      <button class="btn btn-primary btn-lg btn-block">Start my program — <span data-total><%= money(plan.price) %></span> today</button>
+      <p class="micro center">Renews at <%= money(plan.price) %>/<%= plan.interval %>. Cancel anytime. By continuing you agree to the <a href="/legal/terms">Terms</a> and <a href="/legal/disclaimer">Medical Disclaimer</a>.</p>
+    </form>
+
+    <aside class="order-summary">
+      <div class="card">
+        <h3>Order summary</h3>
+        <div class="line"><span><%= c.brand.name %> — <%= plan.name %></span><span><%= money(plan.price) %>/mo</span></div>
+        <div class="line bump-line" data-bump-line hidden><span><%= c.orderBump.name %></span><span><%= money(c.orderBump.price) %></span></div>
+        <div class="line total"><span>Due today</span><span data-total data-base="<%= plan.price %>" data-bump-price="<%= c.orderBump.price %>"><%= money(plan.price) %></span></div>
+        <ul class="check-list small mt-2"><% plan.features.forEach((f) => { %><li><%= f %></li><% }) %></ul>
+      </div>
+      <div class="guarantee small-g">
+        <div class="seal">30<br><small>DAY</small></div>
+        <div><strong><%= c.guarantee.title %></strong><p class="small"><%= c.guarantee.body %></p></div>
+      </div>
+      <figure class="card quote">
+        <blockquote>“<%= c.testimonials[1].quote %>”</blockquote>
+        <figcaption><div class="avatar"></div><div><strong><%= c.testimonials[1].name %></strong><small><%= c.testimonials[1].meta %></small></div></figcaption>
+      </figure>
+    </aside>
+  </div>
+</section>
+
+<%- include('../partials/footer') %>

@@ -1,0 +1,10 @@
+<%- include('../partials/header') %>
+<div class="card upsell narrow-card center">
+  <div class="big-emoji">🔒</div>
+  <h1><%= course.title %></h1>
+  <p class="lead"><%= course.summary %></p>
+  <p class="muted">This course is included with the VIP 1:1 plan.</p>
+  <a href="/checkout?plan=vip" class="btn btn-primary btn-lg">Upgrade to VIP — <%= money(c.plans.vip.price) %>/mo</a>
+  <p class="mt-1"><a href="/app/courses">Back to courses</a></p>
+</div>
+<%- include('../partials/footer') %>

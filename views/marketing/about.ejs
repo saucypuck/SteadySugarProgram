@@ -1,0 +1,25 @@
+<%- include('../partials/header') %>
+
+<section class="section">
+  <div class="container grid-2 align-center">
+    <div class="wire wire-square">Coach photo</div>
+    <div>
+      <p class="eyebrow">Meet your coach</p>
+      <h1><%= c.brand.coach %></h1>
+      <p class="muted"><%= c.brand.coachTitle %></p>
+      <p>[Your story. Why blood sugar? A personal or family connection works well here. Who you've helped and the transformation they experienced.]</p>
+      <p>[Your philosophy: no extreme diets, small sustainable changes, working alongside the client's doctor.]</p>
+      <ul class="check-list">
+        <li>[Credential / certification]</li>
+        <li>[Years of experience / clients helped]</li>
+        <li>[Featured in / speaking]</li>
+      </ul>
+      <div class="cta-row">
+        <a href="/book-call" class="btn btn-primary">Book a free call with me</a>
+        <a href="/quiz" class="btn btn-secondary">Take the quiz</a>
+      </div>
+    </div>
+  </div>
+</section>
+
+<%- include('../partials/footer') %>

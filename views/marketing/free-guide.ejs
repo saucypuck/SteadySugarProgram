@@ -1,0 +1,26 @@
+<%- include('../partials/header') %>
+
+<section class="section">
+  <div class="container grid-2 align-center">
+    <div class="wire wire-tall">Guide cover mockup (PDF / eBook render)</div>
+    <div>
+      <p class="eyebrow">Free download</p>
+      <h1>The 7-Day Steady Sugar Meal Guide</h1>
+      <ul class="check-list">
+        <li>7 days of low-spike breakfasts, lunches & dinners</li>
+        <li>The Steady Plate formula for any meal</li>
+        <li>A printable grocery list</li>
+        <li>5 snacks that won’t spike your blood sugar</li>
+      </ul>
+      <% if (error) { %><div class="alert alert-error"><%= error %></div><% } %>
+      <form method="post" action="/free-guide" class="stack mt-2">
+        <div class="field"><label for="g-name">First name</label><input id="g-name" name="name" autocomplete="given-name"></div>
+        <div class="field"><label for="g-email">Email</label><input id="g-email" type="email" name="email" autocomplete="email" required></div>
+        <button class="btn btn-primary btn-lg btn-block">Send me the free guide</button>
+        <p class="micro">We’ll also send a few emails with tips. Unsubscribe anytime.</p>
+      </form>
+    </div>
+  </div>
+</section>
+
+<%- include('../partials/footer') %>

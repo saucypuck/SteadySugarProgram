@@ -1,0 +1,40 @@
+<%- include('../partials/header') %>
+
+<p class="crumbs"><a href="/app/courses">Courses</a> / <%= course.title %></p>
+
+<div class="lesson-layout">
+  <article>
+    <div class="wire video">▶ Lesson video (<%= lesson.minutes %> min)<br><small>Embed Vimeo / Mux / YouTube unlisted</small></div>
+    <h1 class="mt-2"><%= lesson.title %></h1>
+    <p class="muted">Lesson <%= idx + 1 %> of <%= course.lessons.length %> · <%= lesson.minutes %> min</p>
+    <div class="prose">
+      <p>[Lesson notes / transcript summary. Keep it skimmable: 3 key ideas, a simple visual, and one takeaway.]</p>
+    </div>
+    <div class="card action-card">
+      <p class="eyebrow">Your action step</p>
+      <p><strong><%= lesson.action %></strong></p>
+    </div>
+    <div class="wire mt-2" style="min-height:80px">📄 Downloadable worksheet (PDF)</div>
+    <div class="lesson-nav">
+      <% if (prev) { %><a href="/app/courses/<%= course.slug %>/<%= prev.slug %>" class="btn btn-ghost">← Previous</a><% } else { %><span></span><% } %>
+      <form method="post" action="/app/courses/<%= course.slug %>/<%= lesson.slug %>/complete">
+        <button class="btn btn-primary"><%= isDone(lesson) ? 'Completed ✓ — ' : 'Mark complete & ' %><%= next ? 'next →' : 'finish course' %></button>
+      </form>
+    </div>
+  </article>
+
+  <aside class="card lesson-list">
+    <h3><%= course.title %></h3>
+    <div class="progress"><span style="width:<%= progress.pct %>%"></span></div>
+    <small class="muted"><%= progress.done %>/<%= progress.total %> complete</small>
+    <ol>
+      <% course.lessons.forEach((l) => { %>
+        <li class="<%= l.slug === lesson.slug ? 'current' : '' %> <%= isDone(l) ? 'done' : '' %>">
+          <a href="/app/courses/<%= course.slug %>/<%= l.slug %>"><span class="tick"><%= isDone(l) ? '✓' : '' %></span><%= l.title %></a>
+        </li>
+      <% }) %>
+    </ol>
+  </aside>
+</div>
+
+<%- include('../partials/footer') %>

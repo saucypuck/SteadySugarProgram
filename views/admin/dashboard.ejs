@@ -1,0 +1,107 @@
+<%- include('../partials/header') %>
+
+<div class="page-head"><div><p class="eyebrow">Business</p><h1>Overview</h1></div></div>
+
+<div class="kpi-grid">
+  <div class="card kpi"><small>MRR</small><strong><%= money(kpis.mrr) %></strong></div>
+  <div class="card kpi"><small>Active members</small><strong><%= kpis.members %></strong></div>
+  <div class="card kpi"><small>Total revenue</small><strong><%= money(kpis.revenue) %></strong></div>
+  <div class="card kpi"><small>Leads</small><strong><%= kpis.leads %></strong></div>
+  <div class="card kpi hot"><small>🔥 Hot leads to call</small><strong><%= kpis.hotLeads %></strong></div>
+  <div class="card kpi"><small>Upcoming calls</small><strong><%= kpis.upcomingCalls %></strong></div>
+</div>
+
+<div class="grid-2 mt-2">
+  <div class="card">
+    <h3>Funnel</h3>
+    <div class="funnel">
+      <% funnel.forEach((f) => { %>
+        <div class="funnel-row">
+          <div class="row-between"><span><%= f.label %></span><span><strong><%= f.n %></strong><% if (f.step !== null) { %> <small class="muted">(<%= f.step %>%)</small><% } %></span></div>
+          <div class="bar"><span style="width:<%= f.pct %>%"></span></div>
+        </div>
+      <% }) %>
+    </div>
+  </div>
+  <div class="card">
+    <h3>Members by plan</h3>
+    <% byPlan.forEach((p) => { %>
+      <div class="funnel-row">
+        <div class="row-between"><span><%= p.name %> <small class="muted"><%= money(p.price) %>/mo</small></span><strong><%= p.count %></strong></div>
+        <div class="bar"><span style="width:<%= kpis.members ? Math.round(p.count / kpis.members * 100) : 0 %>%"></span></div>
+      </div>
+    <% }) %>
+    <p class="muted small mt-2">Churned: <%= kpis.churned %></p>
+  </div>
+</div>
+
+<div class="card mt-2">
+  <h3>Leads <small class="muted">— sort hot first, call within 24h</small></h3>
+  <div class="table-wrap">
+    <table class="table">
+      <thead><tr><th>Name</th><th>Email</th><th>Source</th><th>Temp</th><th>Recommended</th><th>Status</th><th>Date</th></tr></thead>
+      <tbody>
+        <% if (!leads.length) { %><tr><td colspan="7" class="muted">No leads yet.</td></tr><% } %>
+        <% leads.forEach((l) => { %>
+          <tr>
+            <td><%= l.name || '—' %></td>
+            <td><%= l.email %></td>
+            <td><%= l.source %><%= l.utm && l.utm.utm_source ? ' · ' + l.utm.utm_source : '' %></td>
+            <td><span class="temp temp-<%= l.temperature %>"><%= l.temperature %></span></td>
+            <td><%= l.recommendedPlan ? c.plans[l.recommendedPlan].name : '—' %></td>
+            <td><%= l.convertedUserId ? '✅ Customer' : l.bookedCall ? '📞 Call booked' : 'Open' %></td>
+            <td class="muted"><%= new Date(l.createdAt).toLocaleDateString() %></td>
+          </tr>
+        <% }) %>
+      </tbody>
+    </table>
+  </div>
+</div>
+
+<div class="grid-2 mt-2">
+  <div class="card">
+    <h3>Upcoming calls</h3>
+    <div class="table-wrap">
+      <table class="table">
+        <thead><tr><th>When</th><th>Who</th><th>Type</th></tr></thead>
+        <tbody>
+          <% if (!bookings.length) { %><tr><td colspan="3" class="muted">None.</td></tr><% } %>
+          <% bookings.forEach((b) => { %>
+            <tr><td><%= sched.formatDate(b.date) %> <%= sched.formatTime(b.time) %></td><td><%= b.name %><br><small class="muted"><%= b.email %></small></td><td><%= sched.CALL_TYPES[b.type].name %></td></tr>
+          <% }) %>
+        </tbody>
+      </table>
+    </div>
+  </div>
+  <div class="card">
+    <h3>Members</h3>
+    <div class="table-wrap">
+      <table class="table">
+        <thead><tr><th>Name</th><th>Plan</th><th>Status</th><th>Lessons</th></tr></thead>
+        <tbody>
+          <% if (!members.length) { %><tr><td colspan="4" class="muted">None yet.</td></tr><% } %>
+          <% members.forEach((m) => { %>
+            <tr><td><%= m.name %><br><small class="muted"><%= m.email %></small></td><td><%= c.plans[m.plan] ? c.plans[m.plan].name : m.plan %></td><td><%= m.status %></td><td><%= (m.completedLessons || []).length %></td></tr>
+          <% }) %>
+        </tbody>
+      </table>
+    </div>
+  </div>
+</div>
+
+<div class="card mt-2">
+  <h3>Recent orders</h3>
+  <div class="table-wrap">
+    <table class="table">
+      <thead><tr><th>Date</th><th>Email</th><th>Plan</th><th>Amount</th><th>Source</th></tr></thead>
+      <tbody>
+        <% if (!orders.length) { %><tr><td colspan="5" class="muted">No orders yet.</td></tr><% } %>
+        <% orders.forEach((o) => { %>
+          <tr><td><%= new Date(o.createdAt).toLocaleDateString() %></td><td><%= o.email %></td><td><%= c.plans[o.plan] ? c.plans[o.plan].name : o.plan %><%= o.bump ? ' + bump' : '' %></td><td><%= money(o.amount) %></td><td class="muted"><%= o.utm && o.utm.utm_source ? o.utm.utm_source : 'direct' %></td></tr>
+        <% }) %>
+      </tbody>
+    </table>
+  </div>
+</div>
+
+<%- include('../partials/footer') %>

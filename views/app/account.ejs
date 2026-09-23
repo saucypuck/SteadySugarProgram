@@ -1,0 +1,56 @@
+<%- include('../partials/header') %>
+
+<div class="page-head"><div><p class="eyebrow">Settings</p><h1>Account & billing</h1></div></div>
+
+<div class="grid-2">
+  <div class="card">
+    <h3>Profile</h3>
+    <dl class="kv">
+      <dt>Name</dt><dd><%= user.name %></dd>
+      <dt>Email</dt><dd><%= user.email %></dd>
+      <dt>Member since</dt><dd><%= new Date(user.createdAt).toLocaleDateString('en-US', { month: 'long', year: 'numeric' }) %></dd>
+      <% if (user.goals && user.goals.target) { %><dt>Goal</dt><dd><%= user.goals.target %></dd><% } %>
+    </dl>
+    <p class="muted small">Profile editing, password change & notification preferences go here.</p>
+  </div>
+
+  <div class="card">
+    <h3>Subscription</h3>
+    <% if (plan && user.status === 'active') { %>
+      <p><span class="badge"><%= plan.name %></span> <strong><%= money(plan.price) %>/<%= plan.interval %></strong></p>
+      <p class="muted small">Status: active · Next renewal: [date from Stripe]</p>
+      <div class="cta-row">
+        <% if (user.plan !== 'vip') { %><a href="/checkout?plan=<%= user.plan === 'starter' ? 'coaching' : 'vip' %>" class="btn btn-primary btn-sm">Upgrade</a><% } %>
+        <a href="#" class="btn btn-secondary btn-sm">Update payment method</a>
+      </div>
+      <form method="post" action="/app/account/cancel" class="mt-2" data-confirm="Cancel your subscription? You'll lose access to coaching and the member area.">
+        <button class="btn btn-ghost btn-sm danger">Cancel subscription</button>
+      </form>
+    <% } else { %>
+      <p class="muted">You don’t have an active plan.</p>
+      <a href="/pricing" class="btn btn-primary">Choose a plan</a>
+    <% } %>
+  </div>
+</div>
+
+<div class="card mt-2">
+  <h3>Billing history</h3>
+  <div class="table-wrap">
+    <table class="table">
+      <thead><tr><th>Date</th><th>Item</th><th>Amount</th><th>Status</th></tr></thead>
+      <tbody>
+        <% if (!orders.length) { %><tr><td colspan="4" class="muted">No payments yet.</td></tr><% } %>
+        <% orders.forEach((o) => { %>
+          <tr>
+            <td><%= new Date(o.createdAt).toLocaleDateString() %></td>
+            <td><%= c.plans[o.plan] ? c.plans[o.plan].name : o.plan %><%= o.bump ? ' + Recipe Vault' : '' %></td>
+            <td><%= money(o.amount) %></td>
+            <td><span class="badge <%= o.status === 'paid' ? 'badge-good' : '' %>"><%= o.status %><%= o.provider === 'demo' ? ' (demo)' : '' %></span></td>
+          </tr>
+        <% }) %>
+      </tbody>
+    </table>
+  </div>
+</div>
+
+<%- include('../partials/footer') %>

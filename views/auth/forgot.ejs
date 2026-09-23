@@ -1,0 +1,17 @@
+<%- include('../partials/header') %>
+<section class="auth-wrap">
+  <div class="auth-card card">
+    <h1>Reset your password</h1>
+    <% if (sent) { %>
+      <div class="alert alert-info">If that email has an account, a reset link is on its way.</div>
+      <a href="/login" class="btn btn-secondary btn-block">Back to log in</a>
+    <% } else { %>
+      <p class="muted">Enter your email and we’ll send you a reset link.</p>
+      <form method="post" action="/forgot" class="stack">
+        <div class="field"><label for="f-email">Email</label><input id="f-email" type="email" name="email" required></div>
+        <button class="btn btn-primary btn-block">Send reset link</button>
+      </form>
+    <% } %>
+  </div>
+</section>
+<%- include('../partials/footer') %>

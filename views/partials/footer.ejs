@@ -1,0 +1,35 @@
+<% if (variant === 'app' || variant === 'admin') { %>
+      <p class="fine app-fine">Steady Sugar provides lifestyle coaching, not medical care. Talk to your doctor before changing medication. · <a href="/legal/disclaimer">Disclaimer</a></p>
+    </main>
+  </div>
+<% } else { %>
+  </main>
+  <footer class="site-footer">
+    <div class="container footer-grid">
+      <div>
+        <strong><%= c.brand.name %></strong>
+        <p class="muted"><%= c.brand.tagline %></p>
+      </div>
+      <div class="footer-links">
+        <a href="/program">How it works</a>
+        <a href="/pricing">Pricing</a>
+        <a href="/quiz">Quiz</a>
+        <a href="/book-call">Free call</a>
+        <a href="/free-guide">Free guide</a>
+        <a href="/login">Member login</a>
+      </div>
+      <div class="footer-links">
+        <a href="/legal/terms">Terms</a>
+        <a href="/legal/privacy">Privacy</a>
+        <a href="/legal/disclaimer">Medical disclaimer</a>
+        <a href="mailto:<%= c.brand.supportEmail %>">Contact</a>
+      </div>
+    </div>
+    <div class="container">
+      <p class="fine">This program provides education and lifestyle coaching and is not a substitute for medical advice, diagnosis or treatment. Always consult your physician before changing diet, exercise or medication. Results vary. © <%= new Date().getFullYear() %> <%= c.brand.name %></p>
+    </div>
+  </footer>
+<% } %>
+<script src="/js/main.js"></script>
+</body>
+</html>

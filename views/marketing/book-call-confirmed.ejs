@@ -1,0 +1,28 @@
+<%- include('../partials/header') %>
+
+<section class="section">
+  <div class="container narrow center">
+    <p class="eyebrow">✅ You’re booked</p>
+    <h1><%= sched.formatDate(booking.date) %> at <%= sched.formatTime(booking.time) %> <%= c.brand.timezoneLabel %></h1>
+    <p class="lead">A confirmation and calendar invite are on their way to <strong><%= booking.email %></strong>.</p>
+    <p><a href="<%= booking.joinUrl %>" class="btn btn-secondary">Video call link (placeholder)</a></p>
+  </div>
+  <div class="container narrow mt-3">
+    <div class="card">
+      <h3>Before our call</h3>
+      <ol class="focus-list">
+        <li>Find your most recent A1C / lab results if you have them.</li>
+        <li>Jot down what a typical day of eating looks like.</li>
+        <li>Watch this 3-minute video so we can hit the ground running.</li>
+      </ol>
+      <div class="wire mt-2" style="min-height:160px">Pre-call video (increases show-up rate)</div>
+    </div>
+    <div class="card upsell mt-2">
+      <h3>Ready now? Skip the wait.</h3>
+      <p class="muted">You can start the program today — your discovery call becomes your kickoff call.</p>
+      <a href="/pricing" class="btn btn-primary">See plans</a>
+    </div>
+  </div>
+</section>
+
+<%- include('../partials/footer') %>

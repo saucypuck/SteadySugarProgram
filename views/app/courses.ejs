@@ -1,0 +1,25 @@
+<%- include('../partials/header') %>
+
+<div class="page-head"><div><p class="eyebrow">Learn</p><h1>Courses</h1></div></div>
+
+<div class="course-grid">
+  <% courses.forEach((course) => { %>
+    <a href="/app/courses/<%= course.slug %>" class="card course-card <%= course.locked ? 'locked' : '' %>">
+      <div class="wire course-thumb"><%= course.locked ? '🔒' : '▶' %></div>
+      <div class="row-between mt-1">
+        <span class="badge"><%= course.weeks === 'Bonus' ? 'VIP bonus' : 'Weeks ' + course.weeks %></span>
+        <small class="muted"><%= course.lessons.length %> lessons</small>
+      </div>
+      <h3><%= course.title %></h3>
+      <p class="muted small"><%= course.summary %></p>
+      <% if (course.locked) { %>
+        <span class="small upsell-text">Unlock with VIP →</span>
+      <% } else { %>
+        <div class="progress"><span style="width:<%= course.progress.pct %>%"></span></div>
+        <small class="muted"><%= course.progress.done %>/<%= course.progress.total %> complete</small>
+      <% } %>
+    </a>
+  <% }) %>
+</div>
+
+<%- include('../partials/footer') %>

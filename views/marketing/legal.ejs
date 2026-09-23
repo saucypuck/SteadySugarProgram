@@ -1,0 +1,15 @@
+<%- include('../partials/header') %>
+<section class="section">
+  <div class="container narrow prose">
+    <h1><%= title %></h1>
+    <p class="muted">Last updated: [date]</p>
+    <% if (page === 'disclaimer') { %>
+      <p>Steady Sugar provides health education and lifestyle coaching. It is not medical care and does not diagnose, treat or cure any condition. Coaches are not your physician.</p>
+      <p>Always consult your physician before changing your diet, exercise routine or medications — especially if you take insulin or medications that can cause low blood sugar. If you experience symptoms of hypoglycemia or hyperglycemia, seek medical care.</p>
+      <p>Individual results vary. Testimonials reflect individual experiences and are not guarantees.</p>
+    <% } else { %>
+      <p>[Placeholder — have an attorney draft your <%= title %>. Health programs typically need HIPAA-aware privacy language, subscription/auto-renew and refund terms, and state-specific disclosures.]</p>
+    <% } %>
+  </div>
+</section>
+<%- include('../partials/footer') %>

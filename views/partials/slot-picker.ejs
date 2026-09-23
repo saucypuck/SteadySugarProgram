@@ -1,0 +1,27 @@
+<%# Day + time picker. Works without JS (all days listed); JS shows one day at a time. %>
+<div class="slot-picker" data-slot-picker>
+  <div class="day-strip" role="tablist">
+    <% days.forEach((d, i) => { %>
+      <button type="button" class="day-btn <%= i === 0 ? 'active' : '' %>" data-day="<%= d.date %>" <%= d.slots.length ? '' : 'disabled' %>>
+        <span><%= d.label.split(',')[0] %></span>
+        <strong><%= d.label.split(' ').slice(-1)[0] %></strong>
+        <small><%= d.label.split(' ')[1] %></small>
+      </button>
+    <% }) %>
+  </div>
+  <% days.forEach((d, i) => { %>
+    <div class="day-slots" data-day-panel="<%= d.date %>" <%= i === 0 ? '' : 'data-hidden' %>>
+      <p class="day-label"><%= d.label %></p>
+      <% if (!d.slots.length) { %><p class="muted">Fully booked.</p><% } %>
+      <div class="slot-grid">
+        <% d.slots.forEach((t) => { %>
+          <label class="slot">
+            <input type="radio" name="slot" value="<%= d.date %>|<%= t %>" required>
+            <span><%= sched.formatTime(t) %></span>
+          </label>
+        <% }) %>
+      </div>
+    </div>
+  <% }) %>
+  <p class="muted small">Times shown in <%= c.brand.timezoneLabel %>.</p>
+</div>

@@ -1,0 +1,22 @@
+<%- include('../partials/header') %>
+<section class="auth-wrap">
+  <div class="auth-card card">
+    <h1>Welcome back</h1>
+    <p class="muted">Log in to your Steady Sugar account.</p>
+    <% if (error) { %><div class="alert alert-error"><%= error %></div><% } %>
+    <form method="post" action="/login" class="stack">
+      <div class="field"><label for="l-email">Email</label><input id="l-email" type="email" name="email" value="<%= email %>" autocomplete="email" required></div>
+      <div class="field"><label for="l-pass">Password</label><input id="l-pass" type="password" name="password" autocomplete="current-password" required></div>
+      <button class="btn btn-primary btn-block">Log in</button>
+    </form>
+    <p class="small center mt-2"><a href="/forgot">Forgot password?</a> · New here? <a href="/quiz">Start with the quiz</a></p>
+    <% if (demoMode) { %>
+      <div class="demo-creds">
+        <strong>Demo logins</strong>
+        <div>Member: <code>demo@steadysugar.test</code> / <code>demo1234</code></div>
+        <div>Admin: <code>admin@steadysugar.test</code> / <code>admin1234</code></div>
+      </div>
+    <% } %>
+  </div>
+</section>
+<%- include('../partials/footer') %>

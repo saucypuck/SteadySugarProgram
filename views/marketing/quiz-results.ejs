@@ -1,0 +1,51 @@
+<%- include('../partials/header') %>
+
+<section class="section results-hero">
+  <div class="container narrow center">
+    <p class="eyebrow"><%= lead.name ? lead.name + ', your' : 'Your' %> blood sugar profile</p>
+    <h1><%= result.profile.name %></h1>
+    <p class="lead"><%= result.profile.body %></p>
+  </div>
+</section>
+
+<section class="section pt-0">
+  <div class="container grid-2 results-grid">
+    <div class="card">
+      <h3>Your top 3 focus areas</h3>
+      <ol class="focus-list">
+        <% result.focus.forEach((f) => { %><li><%= f %></li><% }) %>
+      </ol>
+      <% if (result.medicalNote) { %>
+        <div class="alert alert-info mt-2">Keep your doctor in the loop. Our coaching works <em>alongside</em> your medical care — never change medication without talking to them.</div>
+      <% } %>
+      <div class="wire mt-2" style="min-height:140px">Short video: “What your profile means” (60–90 sec)</div>
+    </div>
+
+    <div class="price-card featured">
+      <span class="ribbon">Recommended for you</span>
+      <h3><%= recommended.name %></h3>
+      <p class="muted"><%= recommended.tagline %></p>
+      <div class="price"><span class="amt"><%= money(recommended.price) %></span><span class="per">/<%= recommended.interval %></span></div>
+      <ul class="check-list"><% recommended.features.forEach((f) => { %><li><%= f %></li><% }) %></ul>
+      <a href="/checkout?plan=<%= recommended.id %>" class="btn btn-primary btn-lg btn-block">Start <%= recommended.name %> →</a>
+      <p class="micro center"><%= c.guarantee.title %> · Cancel anytime</p>
+    </div>
+  </div>
+</section>
+
+<section class="section section-soft">
+  <div class="container narrow center">
+    <h2>Want to talk it through first?</h2>
+    <p class="lead">Book a free 20-minute discovery call. We’ll look at your answers together and map out your first 30 days — no pressure.</p>
+    <a href="/book-call" class="btn btn-secondary btn-lg">Book my free call</a>
+  </div>
+</section>
+
+<section class="section">
+  <div class="container">
+    <h2 class="center">Or compare all plans</h2>
+    <div class="mt-3"><%- include('../partials/pricing-cards', { highlight: recommended.id }) %></div>
+  </div>
+</section>
+
+<%- include('../partials/footer') %>

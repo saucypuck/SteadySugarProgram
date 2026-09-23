@@ -1,0 +1,104 @@
+<%- include('../partials/header') %>
+
+<div class="page-head">
+  <div>
+    <p class="eyebrow">Week <%= week %> of <%= c.brand.programWeeks %></p>
+    <h1>Hi <%= user.name %> 👋</h1>
+  </div>
+  <a href="/app/log" class="btn btn-primary">+ Log a reading</a>
+</div>
+
+<!-- Program progress -->
+<div class="card roadmap-mini">
+  <% c.roadmap.forEach((r, i) => { %>
+    <div class="rm-step <%= i < roadmapIndex ? 'done' : i === roadmapIndex ? 'current' : '' %>">
+      <span class="dot"></span><strong><%= r.title %></strong><small>Weeks <%= r.weeks %></small>
+    </div>
+  <% }) %>
+</div>
+
+<div class="dash-grid">
+  <!-- Next lesson: the #1 action -->
+  <div class="card span-2 next-lesson">
+    <p class="eyebrow">Up next</p>
+    <% if (next) { %>
+      <h2><%= next.lesson.title %></h2>
+      <p class="muted"><%= next.course.title %> · <%= next.lesson.minutes %> min</p>
+      <p><strong>This week’s action:</strong> <%= next.lesson.action %></p>
+      <a href="/app/courses/<%= next.course.slug %>/<%= next.lesson.slug %>" class="btn btn-primary">Continue lesson →</a>
+    <% } else { %>
+      <h2>You’ve finished every lesson! 🎉</h2>
+      <a href="/app/courses" class="btn btn-secondary">Review courses</a>
+    <% } %>
+    <div class="progress mt-2"><span style="width:<%= totals.total ? Math.round(totals.done / totals.total * 100) : 0 %>%"></span></div>
+    <small class="muted"><%= totals.done %> of <%= totals.total %> lessons complete</small>
+  </div>
+
+  <!-- Next call -->
+  <div class="card">
+    <p class="eyebrow">Next call</p>
+    <% if (upcoming.length) { const b = upcoming[0]; %>
+      <h3><%= sched.CALL_TYPES[b.type].name %></h3>
+      <p><%= sched.formatDate(b.date) %> · <%= sched.formatTime(b.time) %> <%= c.brand.timezoneLabel %></p>
+      <a href="<%= b.joinUrl || '#' %>" class="btn btn-secondary btn-sm">Join link</a>
+    <% } else if (quota.allowed) { %>
+      <p class="muted">No call booked. You have <%= quota.remaining %> call<%= quota.remaining === 1 ? '' : 's' %> left this month.</p>
+      <a href="/app/calendar" class="btn btn-secondary btn-sm">Book a call</a>
+    <% } else { %>
+      <p class="muted">Coaching calls aren’t included in Self-Guided.</p>
+      <a href="/checkout?plan=coaching" class="btn btn-primary btn-sm">Add coaching</a>
+    <% } %>
+  </div>
+
+  <!-- Glucose trend -->
+  <div class="card">
+    <p class="eyebrow">Fasting glucose</p>
+    <% if (latest && latest.fasting) { %>
+      <div class="big-num"><%= latest.fasting %><small> mg/dL</small></div>
+      <% if (fastingChange !== null) { %><p class="<%= fastingChange <= 0 ? 'good' : 'warn' %>"><%= fastingChange <= 0 ? '▼' : '▲' %> <%= Math.abs(fastingChange) %> since you started</p><% } %>
+      <% if (fastingSpark) { %><svg viewBox="0 0 280 60" class="spark"><polyline points="<%= fastingSpark %>" /></svg><% } %>
+    <% } else { %>
+      <p class="muted">Log your first reading to see your trend.</p>
+    <% } %>
+  </div>
+
+  <!-- Quick log -->
+  <form method="post" action="/app/log" class="card stack">
+    <p class="eyebrow">Quick log</p>
+    <input type="hidden" name="from" value="dashboard">
+    <input type="hidden" name="date" value="<%= sched.isoDate(new Date()) %>">
+    <div class="grid-2 tight">
+      <div class="field"><label>Fasting</label><input name="fasting" type="number" inputmode="numeric" placeholder="mg/dL"></div>
+      <div class="field"><label>Post-meal</label><input name="postMeal" type="number" inputmode="numeric" placeholder="mg/dL"></div>
+    </div>
+    <button class="btn btn-secondary btn-sm">Save</button>
+  </form>
+
+  <!-- Daily habits -->
+  <div class="card">
+    <p class="eyebrow">Today’s habits</p>
+    <ul class="habits" data-habits>
+      <li><label><input type="checkbox"> Protein at breakfast</label></li>
+      <li><label><input type="checkbox"> 10-min walk after a meal</label></li>
+      <li><label><input type="checkbox"> Veggies first at dinner</label></li>
+      <li><label><input type="checkbox"> Lights out on time</label></li>
+    </ul>
+  </div>
+
+  <% if (user.plan === 'starter') { %>
+    <div class="card span-2 upsell">
+      <h3>Want someone in your corner?</h3>
+      <p class="muted">Members with a coach are [2×] more likely to finish the program. Add 2 calls a month + weekly check-ins.</p>
+      <a href="/checkout?plan=coaching" class="btn btn-primary">Upgrade to Coached — <%= money(c.plans.coaching.price) %>/mo</a>
+    </div>
+  <% } %>
+
+  <div class="card span-2 quick-links">
+    <a href="/app/plans/nutrition">🥗 This week’s meal plan</a>
+    <a href="/app/plans/workout">🚶 This week’s workouts</a>
+    <a href="/app/courses">🎓 All courses</a>
+    <a href="mailto:<%= c.brand.supportEmail %>">💬 Message my coach</a>
+  </div>
+</div>
+
+<%- include('../partials/footer') %>

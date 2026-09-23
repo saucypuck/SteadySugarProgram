@@ -1,4 +1,6 @@
 const path = require('path');
+const fs = require('fs');
+const crypto = require('crypto');
 const express = require('express');
 const cookieSession = require('cookie-session');
 
@@ -16,6 +18,14 @@ const isProd = process.env.NODE_ENV === 'production';
 app.set('view engine', 'ejs');
 app.set('views', path.join(__dirname, 'views'));
 app.set('trust proxy', 1);
+
+// Fingerprint CSS/JS so browsers fetch fresh copies after every deploy
+// (links become /css/styles.css?v=<hash>; the hash changes when the files do).
+const assetVersion = crypto
+  .createHash('md5')
+  .update(['public/css/styles.css', 'public/js/main.js'].map((f) => fs.readFileSync(path.join(__dirname, f))).join(''))
+  .digest('hex')
+  .slice(0, 10);
 
 app.use(express.static(path.join(__dirname, 'public'), { maxAge: isProd ? '1h' : 0 }));
 app.use(express.urlencoded({ extended: true }));
@@ -38,6 +48,7 @@ app.use((req, res, next) => {
   res.locals.sched = sched;
   res.locals.path = req.path;
   res.locals.variant = 'marketing';
+  res.locals.assetVersion = assetVersion;
   res.locals.flash = req.session.flash || null;
   res.locals.demoMode = !process.env.STRIPE_SECRET_KEY;
   res.locals.money = (n) => `$${Number(n).toLocaleString('en-US')}`;

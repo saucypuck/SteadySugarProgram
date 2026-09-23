@@ -5,7 +5,7 @@ const sched = require('../scheduling');
 const meetings = require('../integrations/meetings');
 const payments = require('../integrations/payments');
 const email = require('../integrations/email');
-const { requirePlan, requireAuth } = require('../auth');
+const { requireAuth, planOf, tierAllows, canOpenLesson } = require('../auth');
 
 const router = express.Router();
 const h = (fn) => (req, res, next) => Promise.resolve(fn(req, res, next)).catch(next);
@@ -15,10 +15,11 @@ router.use((req, res, next) => {
   next();
 });
 
-// Account page stays reachable after cancelling so people can resubscribe.
-router.use((req, res, next) => (req.path === '/account' ? requireAuth(req, res, next) : requirePlan(req, res, next)));
+// Every account (free included) gets into the member area; content is gated per lesson/feature.
+router.use(requireAuth);
 
-const canAccess = (user, course) => course.access.includes(user.plan) || user.role === 'admin';
+// Courses a user can see in their library: everything up to Core, plus VIP courses for VIPs.
+const inLibrary = (user, course) => course.tier !== 'vip' || tierAllows(user, 'vip');
 const lessonKey = (course, lesson) => `${course.slug}/${lesson.slug}`;
 
 function programWeek(user) {
@@ -31,23 +32,24 @@ function courseProgress(user, course) {
   return { done, total: course.lessons.length, pct: Math.round((done / course.lessons.length) * 100) };
 }
 
+// First unfinished lesson in the library. `locked` = free user has hit the paywall.
 function nextLesson(user) {
   for (const course of content.courses) {
-    if (!canAccess(user, course)) continue;
+    if (!inLibrary(user, course)) continue;
     const lesson = course.lessons.find((l) => !(user.completedLessons || []).includes(lessonKey(course, l)));
-    if (lesson) return { course, lesson };
+    if (lesson) return { course, lesson, locked: !canOpenLesson(user, course, lesson) };
   }
   return null;
 }
 
 async function callQuota(user) {
-  const plan = content.plans[user.plan];
-  const allowed = plan ? plan.callsPerMonth : 0;
+  const plan = content.plans[planOf(user)];
+  const allowed = plan.callsPerMonth;
   const month = sched.isoDate(new Date()).slice(0, 7);
   const mine = await db.findBy('bookings', 'userId', user.id);
   const used = mine.filter((b) => b.type === 'coaching' && b.status === 'booked' && b.date.startsWith(month)).length;
   const hadKickoff = mine.some((b) => b.type === 'kickoff' && b.status !== 'canceled');
-  return { allowed, used, remaining: Math.max(0, allowed - used), hadKickoff, mine };
+  return { plan, allowed, used, remaining: Math.max(0, allowed - used), hadKickoff, mine };
 }
 
 // Sparkline points for an inline SVG.
@@ -66,7 +68,7 @@ router.get('/', h(async (req, res) => {
   const logs = (await db.findBy('logs', 'userId', user.id)).sort((a, b) => a.date.localeCompare(b.date));
   const quota = await callQuota(user);
   const upcoming = quota.mine.filter(sched.isUpcoming).sort((a, b) => (a.date + a.time).localeCompare(b.date + b.time));
-  const accessible = content.courses.filter((c) => canAccess(user, c));
+  const accessible = content.courses.filter((c) => inLibrary(user, c));
   const totals = accessible.reduce((acc, c) => { const p = courseProgress(user, c); acc.done += p.done; acc.total += p.total; return acc; }, { done: 0, total: 0 });
   const fasting = logs.filter((l) => l.fasting).map((l) => Number(l.fasting));
   res.render('app/dashboard', {
@@ -85,7 +87,12 @@ router.get('/', h(async (req, res) => {
 
 // ---- Courses ---------------------------------------------------------------
 router.get('/courses', (req, res) => {
-  const courses = content.courses.map((c) => ({ ...c, locked: !canAccess(req.user, c), progress: courseProgress(req.user, c) }));
+  const courses = content.courses.map((c) => ({
+    ...c,
+    unlocked: tierAllows(req.user, c.tier),
+    freeCount: c.lessons.filter((l) => l.free).length,
+    progress: courseProgress(req.user, c),
+  }));
   res.render('app/courses', { title: 'Courses', courses });
 });
 
@@ -99,15 +106,16 @@ function findLesson(req) {
 router.get('/courses/:course', (req, res, next) => {
   const { course } = findLesson(req);
   if (!course) return next();
-  if (!canAccess(req.user, course)) return res.render('app/locked', { title: course.title, course });
-  const resume = course.lessons.find((l) => !(req.user.completedLessons || []).includes(lessonKey(course, l))) || course.lessons[0];
+  const open = course.lessons.filter((l) => canOpenLesson(req.user, course, l));
+  if (!open.length) return res.render('app/locked', { title: course.title, course, lesson: null });
+  const resume = open.find((l) => !(req.user.completedLessons || []).includes(lessonKey(course, l))) || open[0];
   res.redirect(`/app/courses/${course.slug}/${resume.slug}`);
 });
 
 router.get('/courses/:course/:lesson', (req, res, next) => {
   const { course, lesson, idx } = findLesson(req);
   if (!course || !lesson) return next();
-  if (!canAccess(req.user, course)) return res.render('app/locked', { title: course.title, course });
+  if (!canOpenLesson(req.user, course, lesson)) return res.render('app/locked', { title: lesson.title, course, lesson });
   const done = (req.user.completedLessons || []);
   res.render('app/lesson', {
     title: lesson.title,
@@ -117,13 +125,14 @@ router.get('/courses/:course/:lesson', (req, res, next) => {
     prev: course.lessons[idx - 1],
     next: course.lessons[idx + 1],
     isDone: (l) => done.includes(lessonKey(course, l)),
+    canOpen: (l) => canOpenLesson(req.user, course, l),
     progress: courseProgress(req.user, course),
   });
 });
 
 router.post('/courses/:course/:lesson/complete', h(async (req, res, next) => {
   const { course, lesson, idx } = findLesson(req);
-  if (!course || !lesson || !canAccess(req.user, course)) return next();
+  if (!course || !lesson || !canOpenLesson(req.user, course, lesson)) return next();
   const key = lessonKey(course, lesson);
   const done = new Set(req.user.completedLessons || []);
   done.add(key);
@@ -136,14 +145,15 @@ router.post('/courses/:course/:lesson/complete', h(async (req, res, next) => {
 
 // ---- Plans -------------------------------------------------------------------
 router.get('/plans', (req, res) => res.redirect('/app/plans/nutrition'));
-router.get('/plans/nutrition', (req, res) => res.render('app/nutrition', { title: 'Nutrition plan', plan: content.nutritionPlan }));
-router.get('/plans/workout', (req, res) => res.render('app/workout', { title: 'Workout plan', plan: content.workoutPlan, week: programWeek(req.user) }));
+// Free tier sees a sample; the full plans unlock with Core.
+router.get('/plans/nutrition', (req, res) => res.render('app/nutrition', { title: 'Nutrition plan', plan: content.nutritionPlan, full: tierAllows(req.user, 'core') }));
+router.get('/plans/workout', (req, res) => res.render('app/workout', { title: 'Workout plan', plan: content.workoutPlan, week: programWeek(req.user), full: tierAllows(req.user, 'core') }));
 
 // ---- Calendar / call scheduling ------------------------------------------------
 router.get('/calendar', h(async (req, res) => {
   const quota = await callQuota(req.user);
-  // Coached/VIP members start with a kickoff call; after that, monthly coaching calls.
-  const type = quota.allowed > 0 && !quota.hadKickoff ? 'kickoff' : 'coaching';
+  // VIPs start with a kickoff call; after that (and for Core), monthly coaching calls.
+  const type = quota.plan.kickoff && !quota.hadKickoff ? 'kickoff' : 'coaching';
   const canBook = type === 'kickoff' || quota.remaining > 0;
   const days = sched.availability(await db.all('bookings'));
   const mine = quota.mine.sort((a, b) => (b.date + b.time).localeCompare(a.date + a.time));
@@ -163,7 +173,7 @@ router.post('/calendar', h(async (req, res) => {
   const [date, time] = String(req.body.slot || '').split('|');
   const type = req.body.type === 'kickoff' ? 'kickoff' : 'coaching';
   const quota = await callQuota(req.user);
-  if (type === 'kickoff' && (quota.hadKickoff || quota.allowed === 0)) {
+  if (type === 'kickoff' && (quota.hadKickoff || !quota.plan.kickoff)) {
     req.session.flash = { type: 'error', msg: 'You’ve already booked your kickoff call.' };
     return res.redirect('/app/calendar');
   }
@@ -225,14 +235,14 @@ router.post('/log', h(async (req, res) => {
 // ---- Account & billing -----------------------------------------------------------
 router.get('/account', h(async (req, res) => {
   const orders = await db.findBy('orders', 'userId', req.user.id);
-  res.render('app/account', { title: 'Account', orders, plan: content.plans[req.user.plan] || null });
+  res.render('app/account', { title: 'Account', orders, plan: content.plans[planOf(req.user)] });
 }));
 
 router.post('/account/cancel', h(async (req, res) => {
   // TODO(retention): route through a save flow (pause / downgrade offer) before cancelling.
   await payments.cancelSubscription(req.user);
   await db.update('users', req.user.id, { status: 'canceled' });
-  req.session.flash = { type: 'info', msg: 'Your subscription is canceled. You can rejoin anytime.' };
+  req.session.flash = { type: 'info', msg: 'Your subscription is canceled — you’re now on the Free plan. Rejoin anytime.' };
   res.redirect('/app/account');
 }));
 

@@ -29,8 +29,8 @@
     <small class="muted"><%= progress.done %>/<%= progress.total %> complete</small>
     <ol>
       <% course.lessons.forEach((l) => { %>
-        <li class="<%= l.slug === lesson.slug ? 'current' : '' %> <%= isDone(l) ? 'done' : '' %>">
-          <a href="/app/courses/<%= course.slug %>/<%= l.slug %>"><span class="tick"><%= isDone(l) ? '✓' : '' %></span><%= l.title %></a>
+        <li class="<%= l.slug === lesson.slug ? 'current' : '' %> <%= isDone(l) ? 'done' : '' %> <%= canOpen(l) ? '' : 'locked' %>">
+          <a href="/app/courses/<%= course.slug %>/<%= l.slug %>"><span class="tick"><%= isDone(l) ? '✓' : (canOpen(l) ? '' : '🔒') %></span><%= l.title %><% if (l.free && tier === 'free') { %> <span class="badge free-badge">Free</span><% } %></a>
         </li>
       <% }) %>
     </ol>

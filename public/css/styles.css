@@ -274,7 +274,7 @@ input:focus, textarea:focus, select:focus { outline: none; border-color: var(--b
 .checkout-grid { display: grid; gap: 24px; max-width: 1040px; }
 .checkout-form > * + * { margin-top: 16px; }
 @media (min-width: 900px) { .checkout-grid { grid-template-columns: 1.4fr 1fr; align-items: start; } .order-summary { position: sticky; top: 24px; } }
-.plan-switch { display: grid; grid-template-columns: repeat(3, 1fr); background: #fff; border: 1px solid var(--line); border-radius: 12px; padding: 4px; gap: 4px; }
+.plan-switch { display: grid; grid-template-columns: repeat(2, 1fr); background: #fff; border: 1px solid var(--line); border-radius: 12px; padding: 4px; gap: 4px; }
 .plan-switch a { text-align: center; padding: 8px 4px; border-radius: 8px; text-decoration: none; color: var(--body); font-weight: 700; font-size: .9rem; line-height: 1.2; }
 .plan-switch small { display: block; font-weight: 500; color: var(--muted); font-size: .75rem; }
 .plan-switch a.active { background: var(--brand); color: #fff; } .plan-switch a.active small { color: var(--brand-100); }
@@ -427,7 +427,7 @@ input:focus, textarea:focus, select:focus { outline: none; border-color: var(--b
 /* Admin */
 .kpi-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 12px; }
 @media (min-width: 900px) { .kpi-grid { grid-template-columns: repeat(3, 1fr); } }
-@media (min-width: 1300px) { .kpi-grid { grid-template-columns: repeat(6, 1fr); } }
+@media (min-width: 1300px) { .kpi-grid { grid-template-columns: repeat(4, 1fr); } }
 .kpi small { color: var(--muted); display: block; font-size: .8rem; }
 .kpi strong { font-size: 1.7rem; color: var(--ink); }
 .kpi.hot { border-color: #fed7aa; background: #fff7ed; }
@@ -446,3 +446,20 @@ input:focus, textarea:focus, select:focus { outline: none; border-color: var(--b
 
 /* Let grid children shrink so horizontal scrollers (day strip, tables) scroll inside instead of widening the page. */
 .booking-grid > *, .dash-grid > *, .log-grid > *, .lesson-layout > *, .checkout-grid > *, .grid-2 > *, .grid-3 > * { min-width: 0; }
+
+/* Tiers */
+.side-upgrade { display: none !important; }
+@media (min-width: 900px) { .side-upgrade { display: flex !important; color: var(--cta) !important; } }
+.card-cta { margin-top: auto; display: flex; flex-direction: column; gap: 8px; }
+.price-card .card-cta .btn { margin-top: 0; }
+.center-link { text-align: center; }
+.lock { font-size: .75rem; }
+.lesson-list li.locked a { color: var(--muted); }
+.locked-rows { position: relative; }
+.locked-rows .blur { filter: blur(5px); pointer-events: none; user-select: none; }
+.locked-overlay { position: absolute; inset: 0; display: grid; place-items: center; padding: 16px; }
+.locked-overlay .card { max-width: 420px; text-align: center; }
+.free-badge { background: #dcfce7; color: var(--good); }
+.mb-2 { margin-bottom: 1rem; }
+.row-between.wrap { flex-wrap: wrap; }
+.check-list.left { text-align: left; display: inline-block; margin-top: 8px; }

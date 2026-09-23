@@ -22,7 +22,8 @@ const FOCUS = {
 };
 
 function scoreQuiz(a) {
-  const plan = a.support === 'handson' ? 'vip' : a.support === 'accountability' ? 'coaching' : 'starter';
+  // Hands-on → VIP. Self-starters who are just exploring → Free (nurture). Everyone else → Core.
+  const plan = a.support === 'handson' ? 'vip' : a.support === 'self' && a.timing === 'exploring' ? 'free' : 'core';
 
   let temperature = a.timing === 'now' ? 'hot' : a.timing === 'month' ? 'warm' : 'cold';
   if (temperature === 'warm' && (a.a1c === 'high' || a.support === 'handson')) temperature = 'hot';

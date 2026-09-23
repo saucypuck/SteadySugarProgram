@@ -2,21 +2,32 @@
 
 <div class="page-head"><div><p class="eyebrow">Learn</p><h1>Courses</h1></div></div>
 
+<% if (tier === 'free' && !isAdmin) { %>
+  <div class="card upsell mb-2">
+    <div class="row-between wrap">
+      <div><strong>You’re on the Free plan.</strong> <span class="muted">Try 3 lessons free, then unlock all <%= courses.filter((x) => x.tier === 'core').reduce((n, x) => n + x.lessons.length, 0) %> lessons with Core.</span></div>
+      <a href="/checkout?plan=core" class="btn btn-primary btn-sm">Unlock everything — <%= money(c.plans.core.price) %>/mo</a>
+    </div>
+  </div>
+<% } %>
+
 <div class="course-grid">
-  <% courses.forEach((course) => { %>
-    <a href="/app/courses/<%= course.slug %>" class="card course-card <%= course.locked ? 'locked' : '' %>">
-      <div class="wire course-thumb"><%= course.locked ? '🔒' : '▶' %></div>
+  <% courses.forEach((course) => { const preview = !course.unlocked && course.freeCount > 0; %>
+    <a href="/app/courses/<%= course.slug %>" class="card course-card <%= course.unlocked || preview ? '' : 'locked' %>">
+      <div class="wire course-thumb"><%= course.unlocked || preview ? '▶' : '🔒' %></div>
       <div class="row-between mt-1">
         <span class="badge"><%= course.weeks === 'Bonus' ? 'VIP bonus' : 'Weeks ' + course.weeks %></span>
         <small class="muted"><%= course.lessons.length %> lessons</small>
       </div>
       <h3><%= course.title %></h3>
       <p class="muted small"><%= course.summary %></p>
-      <% if (course.locked) { %>
-        <span class="small upsell-text">Unlock with VIP →</span>
-      <% } else { %>
+      <% if (course.unlocked) { %>
         <div class="progress"><span style="width:<%= course.progress.pct %>%"></span></div>
         <small class="muted"><%= course.progress.done %>/<%= course.progress.total %> complete</small>
+      <% } else if (preview) { %>
+        <span class="badge free-badge"><%= course.freeCount %> free preview lessons</span>
+      <% } else { %>
+        <span class="small upsell-text">Unlock with <%= c.plans[course.tier].name %> →</span>
       <% } %>
     </a>
   <% }) %>

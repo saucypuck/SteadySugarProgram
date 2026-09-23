@@ -1,20 +1,39 @@
 const bcrypt = require('bcryptjs');
 const db = require('./db');
+const content = require('./content');
 
 const adminEmails = () =>
   (process.env.ADMIN_EMAILS || '').split(',').map((e) => e.trim().toLowerCase()).filter(Boolean);
 
 const normalizeEmail = (e) => String(e || '').trim().toLowerCase();
 const isAdmin = (user) => !!user && (user.role === 'admin' || adminEmails().includes(user.email));
-const hasPlan = (user) => !!user && !!user.plan && user.status === 'active';
+
+// The tier a user currently has. Everyone with an account is at least 'free';
+// canceled or unknown paid plans fall back to 'free'.
+function planOf(user) {
+  if (!user) return null;
+  const id = content.legacyPlans[user.plan] || user.plan;
+  return content.plans[id] && user.status === 'active' ? id : 'free';
+}
+
+const isPaid = (user) => !!user && planOf(user) !== 'free';
+
+// Does the user's tier meet the required tier? Admins see everything.
+function tierAllows(user, tier) {
+  if (isAdmin(user)) return true;
+  const have = content.plans[planOf(user)];
+  return !!have && have.rank >= content.plans[tier].rank;
+}
+
+const canOpenLesson = (user, course, lesson) => tierAllows(user, course.tier) || (!!lesson.free && !!user);
 
 async function createUser({ name, email, password, extra = {} }) {
   return db.insert('users', {
     name: String(name || '').trim(),
     email: normalizeEmail(email),
     passwordHash: await bcrypt.hash(password, 10),
-    plan: null,
-    status: 'free',
+    plan: 'free',
+    status: 'active',
     completedLessons: [],
     ...extra,
   });
@@ -37,7 +56,9 @@ async function loadUser(req, res, next) {
     req.user = user;
     res.locals.user = user;
     res.locals.isAdmin = isAdmin(user);
-    res.locals.hasPlan = hasPlan(user);
+    res.locals.tier = planOf(user);
+    res.locals.isPaid = isPaid(user);
+    res.locals.tierAllows = (tier) => tierAllows(user, tier);
     next();
   } catch (err) {
     next(err);
@@ -47,15 +68,7 @@ async function loadUser(req, res, next) {
 function requireAuth(req, res, next) {
   if (req.user) return next();
   req.session.returnTo = req.originalUrl;
-  res.redirect('/login');
-}
-
-// Logged in but not paying -> send to pricing with a nudge.
-function requirePlan(req, res, next) {
-  if (!req.user) return requireAuth(req, res, next);
-  if (hasPlan(req.user) || isAdmin(req.user)) return next();
-  req.session.flash = { type: 'info', msg: 'Choose a plan to unlock the member area.' };
-  res.redirect('/pricing');
+  res.redirect('/signup');
 }
 
 function requireAdmin(req, res, next) {
@@ -64,4 +77,4 @@ function requireAdmin(req, res, next) {
   res.status(403).render('marketing/error', { title: 'Not allowed', message: 'Admins only.' });
 }
 
-module.exports = { createUser, verify, login, loadUser, requireAuth, requirePlan, requireAdmin, isAdmin, hasPlan, normalizeEmail };
+module.exports = { createUser, verify, login, loadUser, requireAuth, requireAdmin, isAdmin, planOf, isPaid, tierAllows, canOpenLesson, normalizeEmail };

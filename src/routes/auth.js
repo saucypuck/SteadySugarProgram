@@ -1,12 +1,13 @@
 const express = require('express');
 const db = require('../db');
 const email = require('../integrations/email');
-const { createUser, verify, login, normalizeEmail, hasPlan, isAdmin } = require('../auth');
+const { track } = require('../track');
+const { createUser, verify, login, normalizeEmail, isAdmin } = require('../auth');
 
 const router = express.Router();
 const h = (fn) => (req, res, next) => Promise.resolve(fn(req, res, next)).catch(next);
 
-const landingFor = (user) => (isAdmin(user) && !hasPlan(user) ? '/admin' : hasPlan(user) ? '/app' : '/pricing');
+const landingFor = (user) => (isAdmin(user) ? '/admin' : '/app');
 
 router.get('/login', (req, res) => {
   if (req.user) return res.redirect(landingFor(req.user));
@@ -22,22 +23,27 @@ router.post('/login', h(async (req, res) => {
   res.redirect(dest);
 }));
 
-router.get('/signup', (req, res) => {
+router.get('/signup', h(async (req, res) => {
   if (req.user) return res.redirect(landingFor(req.user));
-  res.render('auth/signup', { title: 'Create your account', variant: 'minimal', error: null, form: {} });
-});
+  const lead = await db.get('leads', req.session.leadId); // prefill from quiz
+  res.render('auth/signup', { title: 'Create your free account', variant: 'minimal', error: null, form: lead ? { name: lead.name, email: lead.email } : {} });
+}));
 
-// Free account (no plan). Most buyers create their account inside checkout instead.
+// Free tier account. Paid buyers can also create their account inside checkout.
 router.post('/signup', h(async (req, res) => {
   const { name, password } = req.body;
   const addr = normalizeEmail(req.body.email);
-  const fail = (error) => res.status(400).render('auth/signup', { title: 'Create your account', variant: 'minimal', error, form: req.body });
+  const fail = (error) => res.status(400).render('auth/signup', { title: 'Create your free account', variant: 'minimal', error, form: req.body });
   if (!name || !addr || !password) return fail('All fields are required.');
   if (password.length < 8) return fail('Password must be at least 8 characters.');
   if (await db.findOneBy('users', 'email', addr)) return fail('An account with that email already exists. Try logging in.');
   const user = await createUser({ name, email: addr, password, extra: { leadId: req.session.leadId || null, utm: req.session.utm || null } });
   login(req, user);
-  res.redirect('/pricing');
+  await track(req, 'signup_free');
+  req.session.flash = { type: 'success', msg: `Welcome, ${user.name}! Your free account is ready — start with the first lesson below.` };
+  const dest = req.session.returnTo || '/app';
+  delete req.session.returnTo;
+  res.redirect(dest);
 }));
 
 router.post('/logout', (req, res) => {

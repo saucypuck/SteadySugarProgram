@@ -21,7 +21,12 @@
   <!-- Next lesson: the #1 action -->
   <div class="card span-2 next-lesson">
     <p class="eyebrow">Up next</p>
-    <% if (next) { %>
+    <% if (next && next.locked) { %>
+      <h2>🔒 <%= next.lesson.title %></h2>
+      <p class="muted"><%= next.course.title %> · <%= next.lesson.minutes %> min</p>
+      <p>You’ve finished your free lessons — nice work! Unlock the rest of the program to keep your momentum.</p>
+      <a href="/checkout?plan=core" class="btn btn-primary">Unlock all lessons — <%= money(c.plans.core.price) %>/mo</a>
+    <% } else if (next) { %>
       <h2><%= next.lesson.title %></h2>
       <p class="muted"><%= next.course.title %> · <%= next.lesson.minutes %> min</p>
       <p><strong>This week’s action:</strong> <%= next.lesson.action %></p>
@@ -45,8 +50,9 @@
       <p class="muted">No call booked. You have <%= quota.remaining %> call<%= quota.remaining === 1 ? '' : 's' %> left this month.</p>
       <a href="/app/calendar" class="btn btn-secondary btn-sm">Book a call</a>
     <% } else { %>
-      <p class="muted">Coaching calls aren’t included in Self-Guided.</p>
-      <a href="/checkout?plan=coaching" class="btn btn-primary btn-sm">Add coaching</a>
+      <p class="muted">Get 2 coaching calls a month with Core — or talk to us free first.</p>
+      <a href="/checkout?plan=core" class="btn btn-primary btn-sm">Upgrade to Core</a>
+      <a href="/book-call" class="btn btn-ghost btn-sm">Free discovery call</a>
     <% } %>
   </div>
 
@@ -85,11 +91,17 @@
     </ul>
   </div>
 
-  <% if (user.plan === 'starter') { %>
+  <% if (tier === 'free' && !isAdmin) { %>
     <div class="card span-2 upsell">
-      <h3>Want someone in your corner?</h3>
-      <p class="muted">Members with a coach are [2×] more likely to finish the program. Add 2 calls a month + weekly check-ins.</p>
-      <a href="/checkout?plan=coaching" class="btn btn-primary">Upgrade to Coached — <%= money(c.plans.coaching.price) %>/mo</a>
+      <h3>Unlock the full Steady Sugar program</h3>
+      <p class="muted">All <%= totals.total %> lessons, full meal &amp; workout plans, plus 2 coaching calls every month.</p>
+      <a href="/checkout?plan=core" class="btn btn-primary">Upgrade to Core — <%= money(c.plans.core.price) %>/mo</a>
+    </div>
+  <% } else if (tier === 'core') { %>
+    <div class="card span-2">
+      <h3>Want fully hands-on support?</h3>
+      <p class="muted">VIP 1:1 adds weekly 1:1 calls, a custom plan built with you, and weekly glucose data reviews.</p>
+      <a href="/book-call?plan=vip" class="btn btn-secondary">Apply for VIP 1:1</a>
     </div>
   <% } %>
 

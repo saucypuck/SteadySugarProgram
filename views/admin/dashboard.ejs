@@ -4,7 +4,9 @@
 
 <div class="kpi-grid">
   <div class="card kpi"><small>MRR</small><strong><%= money(kpis.mrr) %></strong></div>
-  <div class="card kpi"><small>Active members</small><strong><%= kpis.members %></strong></div>
+  <div class="card kpi"><small>Paying members</small><strong><%= kpis.members %></strong></div>
+  <div class="card kpi"><small>Free accounts</small><strong><%= kpis.freeAccounts %></strong></div>
+  <div class="card kpi"><small>Free → paid</small><strong><%= kpis.freeToPaid %>%</strong></div>
   <div class="card kpi"><small>Total revenue</small><strong><%= money(kpis.revenue) %></strong></div>
   <div class="card kpi"><small>Leads</small><strong><%= kpis.leads %></strong></div>
   <div class="card kpi hot"><small>🔥 Hot leads to call</small><strong><%= kpis.hotLeads %></strong></div>
@@ -24,11 +26,11 @@
     </div>
   </div>
   <div class="card">
-    <h3>Members by plan</h3>
+    <h3>Accounts by plan</h3>
     <% byPlan.forEach((p) => { %>
       <div class="funnel-row">
         <div class="row-between"><span><%= p.name %> <small class="muted"><%= money(p.price) %>/mo</small></span><strong><%= p.count %></strong></div>
-        <div class="bar"><span style="width:<%= kpis.members ? Math.round(p.count / kpis.members * 100) : 0 %>%"></span></div>
+        <div class="bar"><span style="width:<%= accountCount ? Math.round(p.count / accountCount * 100) : 0 %>%"></span></div>
       </div>
     <% }) %>
     <p class="muted small mt-2">Churned: <%= kpis.churned %></p>
@@ -67,21 +69,21 @@
         <tbody>
           <% if (!bookings.length) { %><tr><td colspan="3" class="muted">None.</td></tr><% } %>
           <% bookings.forEach((b) => { %>
-            <tr><td><%= sched.formatDate(b.date) %> <%= sched.formatTime(b.time) %></td><td><%= b.name %><br><small class="muted"><%= b.email %></small></td><td><%= sched.CALL_TYPES[b.type].name %></td></tr>
+            <tr><td><%= sched.formatDate(b.date) %> <%= sched.formatTime(b.time) %></td><td><%= b.name %><br><small class="muted"><%= b.email %></small></td><td><%= sched.CALL_TYPES[b.type].name %><%= b.interest === 'vip' ? ' · VIP applicant' : '' %></td></tr>
           <% }) %>
         </tbody>
       </table>
     </div>
   </div>
   <div class="card">
-    <h3>Members</h3>
+    <h3>Accounts</h3>
     <div class="table-wrap">
       <table class="table">
         <thead><tr><th>Name</th><th>Plan</th><th>Status</th><th>Lessons</th></tr></thead>
         <tbody>
           <% if (!members.length) { %><tr><td colspan="4" class="muted">None yet.</td></tr><% } %>
           <% members.forEach((m) => { %>
-            <tr><td><%= m.name %><br><small class="muted"><%= m.email %></small></td><td><%= c.plans[m.plan] ? c.plans[m.plan].name : m.plan %></td><td><%= m.status %></td><td><%= (m.completedLessons || []).length %></td></tr>
+            <tr><td><%= m.name %><br><small class="muted"><%= m.email %></small></td><td><%= c.plans[m.tier].name %></td><td><%= m.status %></td><td><%= (m.completedLessons || []).length %></td></tr>
           <% }) %>
         </tbody>
       </table>

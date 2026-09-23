@@ -11,10 +11,21 @@ npm run dev   # http://localhost:3000
 
 With no `DATABASE_URL` it uses an in-memory store and seeds demo data:
 
-| Role   | Email                    | Password   |
-|--------|--------------------------|------------|
-| Member | `demo@steadysugar.test`  | `demo1234` |
-| Admin  | `admin@steadysugar.test` | `admin1234`|
+| Role        | Email                    | Password   |
+|-------------|--------------------------|------------|
+| Free member | `free@steadysugar.test`  | `free1234` |
+| Core member | `demo@steadysugar.test`  | `demo1234` |
+| Admin       | `admin@steadysugar.test` | `admin1234`|
+
+## Plans
+
+| Tier | Price | Access |
+|------|-------|--------|
+| **Free** | $0 | Anyone can sign up. Quiz, tracker, browse everything, 3 preview lessons, sample meal-plan day, workout overview. Locked content shows an upgrade preview. |
+| **Core Program** (most popular) | $49/mo | All courses and lessons, full meal and workout plans, 2 × 30-min coaching calls a month. |
+| **VIP 1:1** | $999/mo | Everything in Core, plus a kickoff call, weekly 1:1 calls, a custom plan, CGM review, direct messaging and the bonus CGM course. Leads with "Apply — book a free call"; direct checkout is a secondary link. |
+
+Tiers are defined in `src/content.js` (`plans`, each with a `rank`). A course sets the minimum `tier` it needs, and a lesson marked `free: true` is open to everyone. Gating is handled by `tierAllows` / `canOpenLesson` in `src/auth.js`.
 
 ## The funnel (business flow)
 
@@ -27,11 +38,12 @@ Landing page  /  ──► Free guide /free-guide ──► thank-you page → q
       ▼
 Quiz /quiz (7 questions + email) ──► lead saved (hot / warm / cold)
       ▼
-Results /quiz/results  → persona + recommended plan
-      ├──► Checkout /checkout?plan=…  (account + payment + order bump)
+Results /quiz/results  → persona + recommended plan (Free / Core / VIP)
+      ├──► Free account /signup → member area with previews + upgrade prompts
+      ├──► Checkout /checkout?plan=core|vip  (account + payment + order bump)
       │         ▼
       │    Welcome /welcome (goals) → book a kickoff call → Dashboard /app
-      └──► Free discovery call /book-call (sales call for people who aren't ready to buy)
+      └──► Free discovery call /book-call (VIP applications: /book-call?plan=vip)
 ```
 
 **Member area** `/app`: dashboard (next lesson, next call, glucose trend, quick log, daily habits, upgrade prompts) · courses and lessons with progress tracking · nutrition and workout plans · tracker · calls (monthly allowance per plan) · account and billing.

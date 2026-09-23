@@ -27,8 +27,16 @@
       <p class="muted"><%= recommended.tagline %></p>
       <div class="price"><span class="amt"><%= money(recommended.price) %></span><span class="per">/<%= recommended.interval %></span></div>
       <ul class="check-list"><% recommended.features.forEach((f) => { %><li><%= f %></li><% }) %></ul>
-      <a href="/checkout?plan=<%= recommended.id %>" class="btn btn-primary btn-lg btn-block">Start <%= recommended.name %> →</a>
-      <p class="micro center"><%= c.guarantee.title %> · Cancel anytime</p>
+      <% if (!recommended.price) { %>
+        <a href="/signup" class="btn btn-primary btn-lg btn-block">Create my free account →</a>
+        <p class="micro center">No credit card. Upgrade anytime.</p>
+      <% } else if (recommended.applyFirst) { %>
+        <a href="/book-call?plan=<%= recommended.id %>" class="btn btn-primary btn-lg btn-block">Apply — book my free call →</a>
+        <p class="micro center"><a href="/checkout?plan=<%= recommended.id %>">or enroll now</a> · <%= c.guarantee.title %></p>
+      <% } else { %>
+        <a href="/checkout?plan=<%= recommended.id %>" class="btn btn-primary btn-lg btn-block">Start <%= recommended.name %> →</a>
+        <p class="micro center"><%= c.guarantee.title %> · Cancel anytime · <a href="/signup">or start free</a></p>
+      <% } %>
     </div>
   </div>
 </section>

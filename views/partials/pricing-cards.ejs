@@ -1,18 +1,32 @@
-<%# Usage: include('partials/pricing-cards', { highlight: 'coaching', ctaPrefix: 'Start' }) %>
+<%# Usage: include('partials/pricing-cards', { highlight: 'core' }) — highlight defaults to the popular plan. %>
 <div class="pricing-grid">
-  <% Object.values(c.plans).forEach((p) => { const hl = (locals.highlight || 'coaching') === p.id; %>
+  <% Object.values(c.plans).forEach((p) => {
+       const hl = (locals.highlight || 'core') === p.id;
+       const current = user && tier === p.id; %>
     <div class="price-card <%= hl ? 'featured' : '' %>">
-      <% if (hl) { %><span class="ribbon"><%= locals.highlight && locals.highlight !== 'coaching' ? 'Recommended for you' : 'Most popular' %></span><% } %>
+      <% if (hl) { %><span class="ribbon"><%= p.popular && !locals.highlight ? 'Most popular' : (p.popular ? 'Most popular · Recommended' : 'Recommended for you') %></span><% } %>
       <h3><%= p.name %></h3>
       <p class="muted"><%= p.tagline %></p>
-      <div class="price"><span class="amt"><%= money(p.price) %></span><span class="per">/<%= p.interval %></span></div>
+      <div class="price">
+        <% if (p.price) { %><span class="amt"><%= money(p.price) %></span><span class="per">/<%= p.interval %></span>
+        <% } else { %><span class="amt">$0</span><span class="per"> forever</span><% } %>
+      </div>
       <ul class="check-list">
         <% p.features.forEach((f) => { %><li><%= f %></li><% }) %>
       </ul>
-      <a href="/checkout?plan=<%= p.id %>" class="btn <%= hl ? 'btn-primary' : 'btn-secondary' %> btn-block">
-        <%= (user && user.plan === p.id && user.status === 'active') ? 'Current plan' : `Choose ${p.name}` %>
-      </a>
+      <div class="card-cta">
+        <% if (current) { %>
+          <a href="/app" class="btn btn-secondary btn-block">Your current plan</a>
+        <% } else if (!p.price) { %>
+          <a href="<%= user ? '/app' : '/signup' %>" class="btn <%= hl ? 'btn-primary' : 'btn-secondary' %> btn-block"><%= user ? 'Go to dashboard' : 'Create free account' %></a>
+        <% } else if (p.applyFirst) { %>
+          <a href="/book-call?plan=<%= p.id %>" class="btn <%= hl ? 'btn-primary' : 'btn-secondary' %> btn-block">Apply — book a free call</a>
+          <a href="/checkout?plan=<%= p.id %>" class="small center-link">or enroll now</a>
+        <% } else { %>
+          <a href="/checkout?plan=<%= p.id %>" class="btn <%= hl ? 'btn-primary' : 'btn-secondary' %> btn-block"><%= user && tier !== 'free' ? `Switch to ${p.name}` : `Start ${p.name}` %></a>
+        <% } %>
+      </div>
     </div>
   <% }) %>
 </div>
-<p class="center muted small mt-2">Cancel anytime · <%= c.guarantee.title %> · Not sure? <a href="/quiz">Take the 2-minute quiz</a> or <a href="/book-call">book a free call</a>.</p>
+<p class="center muted small mt-2">Paid plans: cancel anytime · <%= c.guarantee.title %> · Not sure? <a href="/quiz">Take the 2-minute quiz</a>.</p>

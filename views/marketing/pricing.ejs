@@ -5,7 +5,7 @@
     <div class="center narrow">
       <p class="eyebrow">Pricing</p>
       <h1>Pick your level of support</h1>
-      <p class="lead">Every plan includes the full 12-week course, meal plans, workout plans and tracker. Coaching is what changes.</p>
+      <p class="lead">Start free and explore. Upgrade to unlock the full program and coaching calls — or go all-in with hands-on 1:1 coaching.</p>
     </div>
     <div class="mt-3"><%- include('../partials/pricing-cards') %></div>
   </div>
@@ -18,14 +18,17 @@
       <table class="table compare">
         <thead><tr><th></th><% Object.values(c.plans).forEach((p) => { %><th><%= p.name %></th><% }) %></tr></thead>
         <tbody>
-          <tr><td>12-week course</td><td>✓</td><td>✓</td><td>✓</td></tr>
-          <tr><td>Meal & workout plans</td><td>✓</td><td>✓</td><td>✓</td></tr>
+          <tr><td>Blood Sugar Profile quiz</td><td>✓</td><td>✓</td><td>✓</td></tr>
           <tr><td>Glucose & habit tracker</td><td>✓</td><td>✓</td><td>✓</td></tr>
-          <tr><td>Kickoff call</td><td>—</td><td>✓</td><td>✓</td></tr>
-          <tr><td>Coaching calls / month</td><% Object.values(c.plans).forEach((p) => { %><td><%= p.callsPerMonth || '—' %></td><% }) %></tr>
-          <tr><td>CGM data review</td><td>—</td><td>—</td><td>✓</td></tr>
+          <tr><td>12-week course</td><td>3 preview lessons</td><td>✓ All</td><td>✓ All</td></tr>
+          <tr><td>Meal plans + grocery lists</td><td>Sample day</td><td>✓</td><td>✓ Custom-built</td></tr>
+          <tr><td>Workout plans</td><td>Overview</td><td>✓</td><td>✓ Custom-built</td></tr>
+          <tr><td>Coaching calls / month</td><td>—</td><td>2 × 30 min</td><td>Weekly 1:1</td></tr>
+          <tr><td>Kickoff & personalized plan</td><td>—</td><td>—</td><td>✓</td></tr>
+          <tr><td>CGM data review</td><td>—</td><td>—</td><td>✓ Weekly</td></tr>
+          <tr><td>Direct coach messaging</td><td>—</td><td>—</td><td>✓</td></tr>
           <tr><td>CGM Deep Dive course</td><td>—</td><td>—</td><td>✓</td></tr>
-          <tr><td>Price</td><% Object.values(c.plans).forEach((p) => { %><td><strong><%= money(p.price) %></strong>/mo</td><% }) %></tr>
+          <tr><td>Price</td><% Object.values(c.plans).forEach((p) => { %><td><strong><%= p.price ? money(p.price) + '/mo' : 'Free' %></strong></td><% }) %></tr>
         </tbody>
       </table>
     </div>

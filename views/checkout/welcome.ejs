@@ -6,7 +6,7 @@
       <li class="done">Account</li>
       <li class="done">Payment</li>
       <li class="current">Your goals</li>
-      <li><%= plan && plan.callsPerMonth ? 'Book kickoff' : 'Start Week 1' %></li>
+      <li><%= plan.kickoff ? 'Book kickoff' : plan.callsPerMonth ? 'Book first call' : 'Start Week 1' %></li>
     </ol>
 
     <div class="center mt-3">
@@ -32,7 +32,7 @@
         <input id="w-a1c" name="baselineA1c" inputmode="decimal" placeholder="e.g. 6.1">
       </div>
       <label class="check"><input type="checkbox" name="doctorAware"> My doctor knows I’m making lifestyle changes</label>
-      <button class="btn btn-primary btn-lg btn-block"><%= plan && plan.callsPerMonth ? 'Next: book my kickoff call →' : 'Go to my dashboard →' %></button>
+      <button class="btn btn-primary btn-lg btn-block"><%= plan.kickoff ? 'Next: book my kickoff call →' : plan.callsPerMonth ? 'Next: book my first coaching call →' : 'Go to my dashboard →' %></button>
     </form>
   </div>
 </section>

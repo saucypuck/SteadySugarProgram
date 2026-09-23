@@ -3,7 +3,7 @@
 
 const CALL_TYPES = {
   discovery: { id: 'discovery', name: 'Free Discovery Call', minutes: 20, desc: 'See if the program is a fit. No pressure.' },
-  kickoff: { id: 'kickoff', name: 'Kickoff Call', minutes: 45, desc: 'Review your quiz, numbers and goals; build your personal plan.' },
+  kickoff: { id: 'kickoff', name: 'VIP Kickoff Call', minutes: 60, desc: 'Review your quiz, numbers and goals; build your personal plan.' },
   coaching: { id: 'coaching', name: 'Coaching Call', minutes: 30, desc: 'Review your readings, troubleshoot, set next week’s focus.' },
 };
 

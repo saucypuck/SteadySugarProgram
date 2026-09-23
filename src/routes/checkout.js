@@ -3,19 +3,21 @@ const db = require('../db');
 const content = require('../content');
 const payments = require('../integrations/payments');
 const email = require('../integrations/email');
-const { createUser, verify, login, requireAuth, normalizeEmail } = require('../auth');
+const { createUser, verify, login, requireAuth, normalizeEmail, planOf } = require('../auth');
 const { track } = require('../track');
 
 const router = express.Router();
 const h = (fn) => (req, res, next) => Promise.resolve(fn(req, res, next)).catch(next);
 
-const pickPlan = (id) => content.plans[id] || content.plans.coaching;
+// Only paid tiers go through checkout; anything else defaults to the popular plan.
+const pickPlan = (id) => (content.plans[id] && content.plans[id].price > 0 ? content.plans[id] : content.plans.core);
 
 function renderCheckout(res, plan, extra = {}) {
   res.render('checkout/checkout', { title: `Checkout — ${plan.name}`, variant: 'minimal', plan, error: null, form: {}, ...extra });
 }
 
 router.get('/checkout', h(async (req, res) => {
+  if (req.query.plan === 'free') return res.redirect(req.user ? '/app' : '/signup');
   const plan = pickPlan(req.query.plan);
   await track(req, 'checkout_view', { plan: plan.id });
   const lead = await db.get('leads', req.session.leadId);
@@ -57,7 +59,7 @@ router.post('/checkout', h(async (req, res) => {
     reference: payment.reference,
     utm: req.session.utm || null,
   });
-  const isNew = !user.plan;
+  const isNew = planOf(user) === 'free';
   await db.update('users', user.id, {
     plan: plan.id,
     status: 'active',
@@ -78,7 +80,7 @@ router.post('/checkout', h(async (req, res) => {
 // ---- Post-purchase onboarding ----------------------------------------------
 router.get('/welcome', requireAuth, h(async (req, res) => {
   const lead = await db.get('leads', req.user.leadId || req.session.leadId);
-  res.render('checkout/welcome', { title: 'Welcome', variant: 'minimal', lead, plan: content.plans[req.user.plan] });
+  res.render('checkout/welcome', { title: 'Welcome', variant: 'minimal', lead, plan: content.plans[planOf(req.user)] });
 }));
 
 router.post('/welcome', requireAuth, h(async (req, res) => {
@@ -90,9 +92,10 @@ router.post('/welcome', requireAuth, h(async (req, res) => {
       doctorAware: req.body.doctorAware === 'on',
     },
   });
-  const includesCalls = (content.plans[req.user.plan] || {}).callsPerMonth > 0;
-  if (!includesCalls) req.session.flash = { type: 'success', msg: 'You\u2019re all set — start with your first lesson below.' };
-  res.redirect(includesCalls ? '/app/calendar?onboarding=1' : '/app?welcome=1');
+  const plan = content.plans[planOf(req.user)];
+  if (plan.callsPerMonth > 0) return res.redirect('/app/calendar?onboarding=1');
+  req.session.flash = { type: 'success', msg: 'You\u2019re all set — start with your first lesson below.' };
+  res.redirect('/app');
 }));
 
 module.exports = router;

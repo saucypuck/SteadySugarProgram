@@ -16,19 +16,23 @@
 
   <div class="card">
     <h3>Subscription</h3>
-    <% if (plan && user.status === 'active') { %>
+    <% if (plan.price) { %>
       <p><span class="badge"><%= plan.name %></span> <strong><%= money(plan.price) %>/<%= plan.interval %></strong></p>
       <p class="muted small">Status: active · Next renewal: [date from Stripe]</p>
       <div class="cta-row">
-        <% if (user.plan !== 'vip') { %><a href="/checkout?plan=<%= user.plan === 'starter' ? 'coaching' : 'vip' %>" class="btn btn-primary btn-sm">Upgrade</a><% } %>
+        <% if (tier === 'core') { %><a href="/book-call?plan=vip" class="btn btn-primary btn-sm">Apply for VIP 1:1</a><% } %>
         <a href="#" class="btn btn-secondary btn-sm">Update payment method</a>
       </div>
-      <form method="post" action="/app/account/cancel" class="mt-2" data-confirm="Cancel your subscription? You'll lose access to coaching and the member area.">
+      <form method="post" action="/app/account/cancel" class="mt-2" data-confirm="Cancel your subscription? You'll move to the Free plan and lose coaching calls and full content.">
         <button class="btn btn-ghost btn-sm danger">Cancel subscription</button>
       </form>
     <% } else { %>
-      <p class="muted">You don’t have an active plan.</p>
-      <a href="/pricing" class="btn btn-primary">Choose a plan</a>
+      <p><span class="badge free-badge">Free</span> <strong>$0</strong></p>
+      <p class="muted small"><%= user.status === 'canceled' ? 'Your paid plan was canceled — you still have free access.' : 'Upgrade anytime to unlock every lesson, the full plans and coaching calls.' %></p>
+      <div class="cta-row">
+        <a href="/checkout?plan=core" class="btn btn-primary btn-sm">Upgrade to Core — <%= money(c.plans.core.price) %>/mo</a>
+        <a href="/pricing" class="btn btn-secondary btn-sm">Compare plans</a>
+      </div>
     <% } %>
   </div>
 </div>

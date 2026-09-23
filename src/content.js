@@ -11,54 +11,65 @@ const brand = {
   timezoneLabel: 'ET',
 };
 
+// Tiers, lowest to highest. `rank` drives content gating (see tierAllows).
 const plans = {
-  starter: {
-    id: 'starter',
-    name: 'Self-Guided',
-    price: 49,
+  free: {
+    id: 'free',
+    rank: 0,
+    name: 'Free',
+    price: 0,
     interval: 'mo',
-    tagline: 'The full roadmap, at your own pace.',
+    tagline: 'Explore the program and start building habits.',
     callsPerMonth: 0,
     features: [
-      '12-week Steady Sugar course',
-      'Weekly meal plans + grocery lists',
-      'Walk & strength workout plans',
+      'Blood Sugar Profile quiz + results',
+      'Foundations course preview (3 lessons)',
+      'Sample day from the meal plan',
       'Glucose & habit tracker',
-      'Private community (coming soon)',
+      'Browse the full program',
     ],
   },
-  coaching: {
-    id: 'coaching',
-    name: 'Coached',
-    price: 149,
+  core: {
+    id: 'core',
+    rank: 1,
+    name: 'Core Program',
+    price: 49,
     interval: 'mo',
     popular: true,
-    tagline: 'The roadmap plus a coach in your corner.',
+    tagline: 'The complete self-guided program, plus coaching calls.',
     callsPerMonth: 2,
     features: [
-      'Everything in Self-Guided',
-      '45-min kickoff call + personalized plan',
+      'Everything in Free',
+      'All courses & lessons unlocked',
+      'Full weekly meal plans + grocery lists',
+      'Full walk & strength workout plans',
       '2 × 30-min coaching calls / month',
-      'Weekly check-in review',
-      'Messaging support (48h reply)',
     ],
   },
   vip: {
     id: 'vip',
+    rank: 2,
     name: 'VIP 1:1',
-    price: 399,
+    price: 999,
     interval: 'mo',
-    tagline: 'Hands-on, fully personalized coaching.',
+    tagline: 'Hands-on, fully personalized 1:1 coaching.',
     callsPerMonth: 4,
+    kickoff: true,
+    // High-ticket: lead with a sales/discovery call, keep direct checkout as a secondary option.
+    applyFirst: true,
     features: [
-      'Everything in Coached',
-      'Weekly 30-min 1:1 calls',
-      'CGM data review each week',
-      'Custom meal plan built with you',
+      'Everything in Core Program',
+      '60-min kickoff + weekly 1:1 calls',
+      'Custom nutrition & training plan built with you',
+      'Weekly CGM / glucose data review',
+      'Direct messaging access to your coach',
       'Bonus: CGM Deep Dive course',
     ],
   },
 };
+
+// Plan ids from earlier versions, mapped to current tiers.
+const legacyPlans = { starter: 'core', coaching: 'core' };
 
 const orderBump = {
   id: 'recipe-vault',
@@ -84,6 +95,7 @@ const faqs = [
   { q: 'Who is this for?', a: 'Adults with prediabetes, type 2 diabetes, or a family history who want practical food, movement and habit changes. It is not designed for type 1 diabetes or pregnancy.' },
   { q: 'Do I need a continuous glucose monitor (CGM)?', a: 'No. A basic finger-stick meter works great. If you have a CGM, VIP members get weekly data reviews.' },
   { q: 'How much time does it take?', a: 'About 20 minutes of lessons per week plus small daily habits. Coaching calls are 30 minutes.' },
+  { q: 'Is there really a free plan?', a: 'Yes. Create a free account to take the quiz, use the tracker, try the first 3 lessons and a sample meal plan day. No credit card needed.' },
   { q: 'Can I switch or cancel my plan?', a: 'Yes — upgrade, downgrade or cancel anytime from your account page.' },
 ];
 
@@ -100,11 +112,11 @@ const courses = [
     title: 'Steady Sugar Foundations',
     summary: 'How blood sugar works and the three habits that move it most.',
     weeks: '1–2',
-    access: ['starter', 'coaching', 'vip'],
+    tier: 'core',
     lessons: [
-      { slug: 'how-blood-sugar-works', title: 'How blood sugar really works', minutes: 8, action: 'Write down three meals from this week that left you tired or hungry within two hours.' },
-      { slug: 'know-your-numbers', title: 'Know your numbers: A1C, fasting & post-meal', minutes: 10, action: 'Log a fasting reading on 3 mornings this week.' },
-      { slug: 'the-steady-plate', title: 'The Steady Plate', minutes: 9, action: 'Build one Steady Plate for dinner tonight and snap a photo.' },
+      { slug: 'how-blood-sugar-works', title: 'How blood sugar really works', minutes: 8, free: true, action: 'Write down three meals from this week that left you tired or hungry within two hours.' },
+      { slug: 'know-your-numbers', title: 'Know your numbers: A1C, fasting & post-meal', minutes: 10, free: true, action: 'Log a fasting reading on 3 mornings this week.' },
+      { slug: 'the-steady-plate', title: 'The Steady Plate', minutes: 9, free: true, action: 'Build one Steady Plate for dinner tonight and snap a photo.' },
       { slug: 'food-order', title: 'Food order: veggies & protein first', minutes: 6, action: 'Eat your vegetables and protein before your carbs at two meals.' },
       { slug: 'ten-minute-walk', title: 'The 10-minute post-meal walk', minutes: 7, action: 'Walk for 10 minutes after your largest meal on 4 days.' },
       { slug: 'sleep-and-stress', title: 'Sleep, stress & morning highs', minutes: 11, action: 'Pick a consistent lights-out time and hold it for 5 nights.' },
@@ -115,7 +127,7 @@ const courses = [
     title: 'Eat to Stabilize',
     summary: 'Practical nutrition without cutting out every food you love.',
     weeks: '3–6',
-    access: ['starter', 'coaching', 'vip'],
+    tier: 'core',
     lessons: [
       { slug: 'smart-carbs', title: 'Smart carbs: swap, pair, portion', minutes: 12, action: 'Make 2 carb swaps from the swap list.' },
       { slug: 'protein-breakfast', title: 'The protein-forward breakfast', minutes: 8, action: 'Hit 25g+ protein at breakfast 5 days this week.' },
@@ -129,7 +141,7 @@ const courses = [
     title: 'Move & Build',
     summary: 'Movement that improves insulin sensitivity — no gym required.',
     weeks: '7–10',
-    access: ['starter', 'coaching', 'vip'],
+    tier: 'core',
     lessons: [
       { slug: 'why-muscle-matters', title: 'Why muscle is your glucose sponge', minutes: 7, action: 'Complete Strength A this week.' },
       { slug: 'progressing-safely', title: 'Progressing safely', minutes: 8, action: 'Add one rep or one set to each exercise.' },
@@ -142,7 +154,7 @@ const courses = [
     title: 'Habits That Stick',
     summary: 'Make the changes automatic and build your maintenance plan.',
     weeks: '11–12',
-    access: ['starter', 'coaching', 'vip'],
+    tier: 'core',
     lessons: [
       { slug: 'tiny-habits', title: 'Tiny habits, big results', minutes: 8, action: 'Stack one new habit onto an existing routine.' },
       { slug: 'tracking-without-obsessing', title: 'Tracking without obsessing', minutes: 7, action: 'Choose your long-term tracking cadence.' },
@@ -155,7 +167,7 @@ const courses = [
     title: 'CGM Deep Dive',
     summary: 'Read your CGM like a pro and run personal food experiments.',
     weeks: 'Bonus',
-    access: ['vip'],
+    tier: 'vip',
     lessons: [
       { slug: 'reading-your-cgm', title: 'Reading your CGM graph', minutes: 10, action: 'Screenshot your 24h graph and label the spikes.' },
       { slug: 'food-experiments', title: 'Running a food experiment', minutes: 9, action: 'Test one favorite food two different ways.' },
@@ -293,4 +305,4 @@ const quiz = [
   },
 ];
 
-module.exports = { brand, plans, orderBump, guarantee, testimonials, faqs, roadmap, courses, nutritionPlan, workoutPlan, quiz };
+module.exports = { brand, plans, legacyPlans, orderBump, guarantee, testimonials, faqs, roadmap, courses, nutritionPlan, workoutPlan, quiz };

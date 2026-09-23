@@ -35,10 +35,11 @@
         <% nav.forEach(([href, label, icon]) => { %>
           <a href="<%= href %>" class="<%= active(href) ? 'active' : '' %>"><span class="ico"><%= icon %></span><span><%= label %></span></a>
         <% }) %>
+        <% if (variant === 'app' && tier === 'free' && !isAdmin) { %><a href="/pricing" class="side-upgrade"><span class="ico">⭐</span><span>Upgrade</span></a><% } %>
         <% if (isAdmin && variant === 'app') { %><a href="/admin"><span class="ico">📊</span><span>Admin</span></a><% } %>
       </nav>
       <div class="side-foot">
-        <div class="who"><strong><%= user.name %></strong><small><%= user.plan ? c.plans[user.plan].name + ' plan' : (isAdmin ? 'Admin' : 'No plan') %></small></div>
+        <div class="who"><strong><%= user.name %></strong><small><%= isAdmin ? 'Admin' : c.plans[tier].name + (tier === 'free' ? ' account' : ' plan') %></small></div>
         <form method="post" action="/logout"><button class="btn btn-ghost btn-sm">Log out</button></form>
       </div>
     </aside>
@@ -59,15 +60,16 @@
           <a href="/about">Coach</a>
           <a href="/free-guide">Free guide</a>
           <% if (user) { %>
-            <a href="<%= hasPlan ? '/app' : (isAdmin ? '/admin' : '/pricing') %>" class="btn btn-secondary btn-sm">My account</a>
+            <a href="<%= isAdmin ? '/admin' : '/app' %>" class="btn btn-secondary btn-sm">My dashboard</a>
           <% } else { %>
             <a href="/login">Log in</a>
+            <a href="/signup">Start free</a>
             <a href="/quiz" class="btn btn-primary btn-sm">Take the quiz</a>
           <% } %>
         </nav>
       <% } else { %>
         <nav class="site-nav-min">
-          <% if (user) { %><a href="<%= hasPlan ? '/app' : '/' %>"><%= hasPlan ? 'Dashboard' : 'Home' %></a><% } else { %><a href="/login">Log in</a><% } %>
+          <% if (user) { %><a href="/app">Dashboard</a><% } else { %><a href="/login">Log in</a><% } %>
         </nav>
       <% } %>
     </div>

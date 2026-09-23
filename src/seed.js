@@ -6,11 +6,15 @@ const sched = require('./scheduling');
 
 const DEMO_MEMBER = { email: 'demo@steadysugar.test', password: 'demo1234' };
 const DEMO_ADMIN = { email: 'admin@steadysugar.test', password: 'admin1234' };
+const DEMO_FREE = { email: 'free@steadysugar.test', password: 'free1234' };
 
 async function seedDemo() {
   // Each account is ensured independently so a partial seed can't lock anyone out.
   if (!(await db.findOneBy('users', 'email', DEMO_ADMIN.email))) {
     await createUser({ name: 'Admin', ...DEMO_ADMIN, extra: { role: 'admin' } });
+  }
+  if (!(await db.findOneBy('users', 'email', DEMO_FREE.email))) {
+    await createUser({ name: 'Frankie Free', ...DEMO_FREE, extra: { completedLessons: ['foundations/how-blood-sugar-works'] } });
   }
   if (await db.findOneBy('users', 'email', DEMO_MEMBER.email)) {
     console.log('[seed] Demo accounts present.');
@@ -22,7 +26,7 @@ async function seedDemo() {
     name: 'Dana Demo',
     ...DEMO_MEMBER,
     extra: {
-      plan: 'coaching',
+      plan: 'core',
       status: 'active',
       planStartedAt: started,
       completedLessons: ['foundations/how-blood-sugar-works', 'foundations/know-your-numbers', 'foundations/the-steady-plate', 'foundations/food-order'],
@@ -30,7 +34,7 @@ async function seedDemo() {
     },
   });
 
-  await db.insert('orders', { userId: member.id, email: member.email, plan: 'coaching', amount: 149, status: 'paid', provider: 'demo' });
+  await db.insert('orders', { userId: member.id, email: member.email, plan: 'core', amount: 49, status: 'paid', provider: 'demo' });
 
   const readings = [118, 121, 115, 112, 116, 109, 111, 107, 104, 108, 103, 101];
   for (let i = 0; i < readings.length; i++) {
@@ -44,18 +48,18 @@ async function seedDemo() {
   await db.insert('bookings', { userId: member.id, name: member.name, email: member.email, type: 'coaching', date: soon.date, time: '10:00', status: 'booked', joinUrl: 'https://example.com/meet/demo' });
 
   const leads = [
-    ['Pat Prospect', 'pat@example.com', 'quiz', 'coaching', 'hot'],
+    ['Pat Prospect', 'pat@example.com', 'quiz', 'core', 'hot'],
     ['Sam Sample', 'sam@example.com', 'quiz', 'vip', 'hot'],
     ['Lee Lead', 'lee@example.com', 'guide', null, 'cold'],
-    ['Jo Jones', 'jo@example.com', 'quiz', 'starter', 'warm'],
+    ['Jo Jones', 'jo@example.com', 'quiz', 'free', 'cold'],
   ];
   for (const [name, email, source, plan, temperature] of leads) {
     await db.insert('leads', { name, email, source, recommendedPlan: plan, temperature, utm: { utm_source: 'instagram' } });
   }
-  for (const [name, n] of [['quiz_start', 42], ['quiz_complete', 27], ['checkout_view', 11], ['purchase', 4]]) {
+  for (const [name, n] of [['quiz_start', 42], ['quiz_complete', 27], ['signup_free', 18], ['checkout_view', 11], ['purchase', 4]]) {
     for (let i = 0; i < n; i++) await db.insert('events', { name, seeded: true });
   }
-  console.log(`[seed] Demo member ${DEMO_MEMBER.email} / ${DEMO_MEMBER.password} · admin ${DEMO_ADMIN.email} / ${DEMO_ADMIN.password}`);
+  console.log(`[seed] Demo member ${DEMO_MEMBER.email} / ${DEMO_MEMBER.password} · free ${DEMO_FREE.email} / ${DEMO_FREE.password} · admin ${DEMO_ADMIN.email} / ${DEMO_ADMIN.password}`);
 }
 
-module.exports = { seedDemo, DEMO_MEMBER, DEMO_ADMIN };
+module.exports = { seedDemo, DEMO_MEMBER, DEMO_ADMIN, DEMO_FREE };

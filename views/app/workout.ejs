@@ -13,6 +13,7 @@
   <% }) %>
 </div>
 
+<% if (full) { %>
 <h2 class="mt-3">Weekly schedule</h2>
 <div class="week-strip">
   <% plan.week.forEach((d) => { %>
@@ -35,6 +36,13 @@
     </div>
   <% }) %>
 </div>
+<% } else { %>
+  <div class="card upsell mt-3 center">
+    <h3>🔒 Unlock your weekly workouts</h3>
+    <p class="muted">Day-by-day schedule, Strength A &amp; B routines with demo videos, and progressions for all 12 weeks.</p>
+    <a href="/checkout?plan=core" class="btn btn-primary">Unlock with Core — <%= money(c.plans.core.price) %>/mo</a>
+  </div>
+<% } %>
 <p class="fine">Check with your doctor before starting a new exercise program. If you take insulin or sulfonylureas, check your blood sugar before and after exercise.</p>
 
 <%- include('../partials/footer') %>

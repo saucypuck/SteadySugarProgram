@@ -2,12 +2,12 @@
 
 <% if (onboarding) { %>
   <ol class="stepper">
-    <li class="done">Account</li><li class="done">Payment</li><li class="done">Your goals</li><li class="current">Book kickoff</li>
+    <li class="done">Account</li><li class="done">Payment</li><li class="done">Your goals</li><li class="current"><%= type.id === 'kickoff' ? 'Book kickoff' : 'Book first call' %></li>
   </ol>
 <% } %>
 
 <div class="page-head">
-  <div><p class="eyebrow">Coaching calls</p><h1><%= onboarding ? 'Book your kickoff call' : 'Calls' %></h1></div>
+  <div><p class="eyebrow">Coaching calls</p><h1><%= onboarding ? 'Book your ' + (type.id === 'kickoff' ? 'kickoff' : 'first coaching') + ' call' : 'Calls' %></h1></div>
   <% if (quota.allowed) { %><span class="pill"><%= quota.remaining %> of <%= quota.allowed %> coaching calls left this month</span><% } %>
 </div>
 
@@ -27,14 +27,15 @@
     <% } else if (quota.allowed === 0) { %>
       <div class="card upsell">
         <h3>Get a coach in your corner</h3>
-        <p class="muted">Self-Guided doesn’t include calls. Upgrade to Coached for a kickoff call plus 2 coaching calls every month.</p>
-        <a href="/checkout?plan=coaching" class="btn btn-primary">Upgrade — <%= money(c.plans.coaching.price) %>/mo</a>
+        <p class="muted">Coaching calls start with the Core Program: 2 × 30-min calls every month, plus every course and plan unlocked.</p>
+        <a href="/checkout?plan=core" class="btn btn-primary">Upgrade to Core — <%= money(c.plans.core.price) %>/mo</a>
+        <p class="small mt-1">Not sure yet? <a href="/book-call">Book a free discovery call</a>.</p>
       </div>
     <% } else { %>
       <div class="card upsell">
         <h3>You’ve used this month’s calls</h3>
-        <p class="muted">Your calls reset on the 1st. Need more support? VIP includes a call every week.</p>
-        <% if (user.plan !== 'vip') { %><a href="/checkout?plan=vip" class="btn btn-primary">Upgrade to VIP</a><% } %>
+        <p class="muted">Your calls reset on the 1st.<% if (tier !== 'vip') { %> Need more support? VIP 1:1 includes a call every week.<% } %></p>
+        <% if (tier !== 'vip') { %><a href="/book-call?plan=vip" class="btn btn-primary">Apply for VIP 1:1</a><% } %>
       </div>
     <% } %>
   </div>

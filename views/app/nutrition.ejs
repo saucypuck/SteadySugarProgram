@@ -19,17 +19,24 @@
   </div>
 </div>
 
+<% if (!full) { %><p class="mt-2"><span class="badge free-badge">Free sample</span> <span class="muted small">Here’s Monday. Unlock all 7 days, the grocery list and new plans every week with Core.</span></p><% } %>
+<div class="<%= full ? '' : 'locked-rows' %>">
 <div class="table-wrap mt-2">
   <table class="table meal-table">
     <thead><tr><th>Day</th><th>Breakfast</th><th>Lunch</th><th>Dinner</th><th>Snack</th></tr></thead>
     <tbody>
-      <% plan.week.forEach((d) => { %>
-        <tr><th data-label="Day"><%= d.day %></th><td data-label="Breakfast"><%= d.breakfast %></td><td data-label="Lunch"><%= d.lunch %></td><td data-label="Dinner"><%= d.dinner %></td><td data-label="Snack"><%= d.snack %></td></tr>
+      <% plan.week.forEach((d, i) => { %>
+        <tr class="<%= !full && i > 0 ? 'blur' : '' %>"><th data-label="Day"><%= d.day %></th><td data-label="Breakfast"><%= d.breakfast %></td><td data-label="Lunch"><%= d.lunch %></td><td data-label="Dinner"><%= d.dinner %></td><td data-label="Snack"><%= d.snack %></td></tr>
       <% }) %>
     </tbody>
   </table>
 </div>
+<% if (!full) { %>
+  <div class="locked-overlay"><div class="card"><h3>🔒 See the full week</h3><p class="muted">All 7 days, weekly grocery lists and new plans every week.</p><a href="/checkout?plan=core" class="btn btn-primary">Unlock with Core — <%= money(c.plans.core.price) %>/mo</a></div></div>
+<% } %>
+</div>
 
+<% if (full) { %>
 <div class="card mt-2">
   <h3>Grocery list</h3>
   <div class="grid-3">
@@ -38,8 +45,9 @@
     <% }) %>
   </div>
 </div>
+<% } %>
 
-<% if (!user.recipeVault) { %>
+<% if (full && !user.recipeVault) { %>
   <div class="card upsell mt-2">
     <h3>Want more variety?</h3>
     <p class="muted"><%= c.orderBump.description %></p>

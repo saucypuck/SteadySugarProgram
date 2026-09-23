@@ -4,8 +4,13 @@
   <div class="container booking-grid">
     <div>
       <p class="eyebrow">Free · 20 minutes · Video call</p>
-      <h1>Book your free discovery call</h1>
-      <p class="lead">We’ll review your numbers and goals, and map out what your first 30 days could look like. If it’s not a fit, you’ll still leave with a plan.</p>
+      <% if (interest === 'vip') { %>
+        <h1>Apply for VIP 1:1 coaching</h1>
+        <p class="lead">VIP is hands-on and fully personalized, so we start with a free call to make sure it’s the right fit — and to map out your plan.</p>
+      <% } else { %>
+        <h1>Book your free discovery call</h1>
+        <p class="lead">We’ll review your numbers and goals, and map out what your first 30 days could look like. If it’s not a fit, you’ll still leave with a plan.</p>
+      <% } %>
       <ul class="check-list">
         <li>Understand what’s driving your readings</li>
         <li>Get 2–3 changes to start this week</li>
@@ -15,6 +20,7 @@
     </div>
 
     <form method="post" action="/book-call" class="card stack">
+      <input type="hidden" name="interest" value="<%= interest || '' %>">
       <% if (error) { %><div class="alert alert-error"><%= error %></div><% } %>
       <h3>1. Pick a time</h3>
       <%- include('../partials/slot-picker', { days }) %>

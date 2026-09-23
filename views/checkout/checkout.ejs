@@ -5,7 +5,7 @@
     <form method="post" action="/checkout" class="checkout-form" data-checkout>
       <input type="hidden" name="plan" value="<%= plan.id %>">
       <div class="plan-switch" role="tablist" aria-label="Plan">
-        <% Object.values(c.plans).forEach((p) => { %>
+        <% Object.values(c.plans).filter((p) => p.price).forEach((p) => { %>
           <a href="/checkout?plan=<%= p.id %>" class="<%= p.id === plan.id ? 'active' : '' %>"><%= p.name %><small><%= money(p.price) %>/mo</small></a>
         <% }) %>
       </div>

@@ -1,14 +1,17 @@
 <%- include('../partials/header') %>
 <section class="auth-wrap">
   <div class="auth-card card">
-    <h1>Create your account</h1>
-    <p class="muted">Free account. Choose a plan next.</p>
+    <h1>Create your free account</h1>
+    <p class="muted">Free forever · No credit card</p>
+    <ul class="check-list small">
+      <% c.plans.free.features.forEach((f) => { %><li><%= f %></li><% }) %>
+    </ul>
     <% if (error) { %><div class="alert alert-error"><%= error %></div><% } %>
     <form method="post" action="/signup" class="stack">
       <div class="field"><label for="s-name">First name</label><input id="s-name" name="name" value="<%= form.name || '' %>" autocomplete="given-name" required></div>
       <div class="field"><label for="s-email">Email</label><input id="s-email" type="email" name="email" value="<%= form.email || '' %>" autocomplete="email" required></div>
       <div class="field"><label for="s-pass">Password <small class="muted">(8+ characters)</small></label><input id="s-pass" type="password" name="password" minlength="8" autocomplete="new-password" required></div>
-      <button class="btn btn-primary btn-block">Create account</button>
+      <button class="btn btn-primary btn-block">Create my free account</button>
     </form>
     <p class="small center mt-2">Already have an account? <a href="/login">Log in</a></p>
   </div>

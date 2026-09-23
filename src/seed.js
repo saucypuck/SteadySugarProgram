@@ -1,5 +1,5 @@
 // Demo accounts + sample data so every screen has something to show.
-// Enabled when SEED_DEMO=true (or outside production). Turn OFF before launch.
+// Enabled unless SEED_DEMO=false. Turn OFF before launch.
 const db = require('./db');
 const { createUser } = require('./auth');
 const sched = require('./scheduling');
@@ -8,7 +8,14 @@ const DEMO_MEMBER = { email: 'demo@steadysugar.test', password: 'demo1234' };
 const DEMO_ADMIN = { email: 'admin@steadysugar.test', password: 'admin1234' };
 
 async function seedDemo() {
-  if (await db.findOneBy('users', 'email', DEMO_MEMBER.email)) return;
+  // Each account is ensured independently so a partial seed can't lock anyone out.
+  if (!(await db.findOneBy('users', 'email', DEMO_ADMIN.email))) {
+    await createUser({ name: 'Admin', ...DEMO_ADMIN, extra: { role: 'admin' } });
+  }
+  if (await db.findOneBy('users', 'email', DEMO_MEMBER.email)) {
+    console.log('[seed] Demo accounts present.');
+    return;
+  }
 
   const started = new Date(Date.now() - 23 * 864e5).toISOString();
   const member = await createUser({
@@ -22,7 +29,6 @@ async function seedDemo() {
       goals: { target: 'A1C under 5.7 by spring', why: 'Keep up with my grandkids', doctorAware: true },
     },
   });
-  await createUser({ name: 'Admin', ...DEMO_ADMIN, extra: { role: 'admin' } });
 
   await db.insert('orders', { userId: member.id, email: member.email, plan: 'coaching', amount: 149, status: 'paid', provider: 'demo' });
 

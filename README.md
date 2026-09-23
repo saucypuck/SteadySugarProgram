@@ -60,7 +60,7 @@ Results /quiz/results  → persona + recommended plan
 Environment variables:
 - `SESSION_SECRET`: generated automatically
 - `DATABASE_URL`: wired to the database automatically. If it's missing or can't be reached, the app falls back to in-memory storage.
-- `SEED_DEMO=true`: creates the demo accounts. **Set this to `false` before launch.**
+- `SEED_DEMO`: demo accounts are created unless this is `false`. **Set it to `false` before launch.**
 - `ADMIN_EMAILS`: comma-separated list of emails that get admin access
 
 ## Before launch checklist

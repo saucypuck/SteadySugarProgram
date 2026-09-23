@@ -60,5 +60,6 @@ app.use((err, req, res, next) => {
 });
 
 db.init()
-  .then(() => (process.env.SEED_DEMO === 'true' || !isProd ? seedDemo() : null))
+  // Demo accounts are on unless explicitly disabled (SEED_DEMO=false) — turn off before launch.
+  .then(() => (process.env.SEED_DEMO !== 'false' ? seedDemo().catch((err) => console.error('[seed] failed:', err)) : null))
   .then(() => app.listen(PORT, () => console.log(`Steady Sugar running on http://localhost:${PORT}`)));

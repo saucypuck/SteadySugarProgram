@@ -50,7 +50,7 @@
             <td><%= l.email %></td>
             <td><%= l.source %><%= l.utm && l.utm.utm_source ? ' · ' + l.utm.utm_source : '' %></td>
             <td><span class="temp temp-<%= l.temperature %>"><%= l.temperature %></span></td>
-            <td><%= l.recommendedPlan ? c.plans[l.recommendedPlan].name : '—' %></td>
+            <% const rec = c.plans[c.legacyPlans[l.recommendedPlan] || l.recommendedPlan]; %><td><%= rec ? rec.name : '—' %></td>
             <td><%= l.convertedUserId ? '✅ Customer' : l.bookedCall ? '📞 Call booked' : 'Open' %></td>
             <td class="muted"><%= new Date(l.createdAt).toLocaleDateString() %></td>
           </tr>
@@ -99,7 +99,7 @@
       <tbody>
         <% if (!orders.length) { %><tr><td colspan="5" class="muted">No orders yet.</td></tr><% } %>
         <% orders.forEach((o) => { %>
-          <tr><td><%= new Date(o.createdAt).toLocaleDateString() %></td><td><%= o.email %></td><td><%= c.plans[o.plan] ? c.plans[o.plan].name : o.plan %><%= o.bump ? ' + bump' : '' %></td><td><%= money(o.amount) %></td><td class="muted"><%= o.utm && o.utm.utm_source ? o.utm.utm_source : 'direct' %></td></tr>
+          <tr><td><%= new Date(o.createdAt).toLocaleDateString() %></td><td><%= o.email %></td><td><%= (c.plans[c.legacyPlans[o.plan] || o.plan] || { name: o.plan }).name %><%= o.bump ? ' + bump' : '' %></td><td><%= money(o.amount) %></td><td class="muted"><%= o.utm && o.utm.utm_source ? o.utm.utm_source : 'direct' %></td></tr>
         <% }) %>
       </tbody>
     </table>

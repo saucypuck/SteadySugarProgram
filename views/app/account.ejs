@@ -47,7 +47,7 @@
         <% orders.forEach((o) => { %>
           <tr>
             <td><%= new Date(o.createdAt).toLocaleDateString() %></td>
-            <td><%= c.plans[o.plan] ? c.plans[o.plan].name : o.plan %><%= o.bump ? ' + Recipe Vault' : '' %></td>
+            <td><%= (c.plans[c.legacyPlans[o.plan] || o.plan] || { name: o.plan }).name %><%= o.bump ? ' + Recipe Vault' : '' %></td>
             <td><%= money(o.amount) %></td>
             <td><span class="badge <%= o.status === 'paid' ? 'badge-good' : '' %>"><%= o.status %><%= o.provider === 'demo' ? ' (demo)' : '' %></span></td>
           </tr>

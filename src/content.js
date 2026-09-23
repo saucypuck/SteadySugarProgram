@@ -55,8 +55,6 @@ const plans = {
     tagline: 'Hands-on, fully personalized 1:1 coaching.',
     callsPerMonth: 4,
     kickoff: true,
-    // High-ticket: lead with a sales/discovery call, keep direct checkout as a secondary option.
-    applyFirst: true,
     features: [
       'Everything in Core Program',
       '60-min kickoff + weekly 1:1 calls',
@@ -70,13 +68,6 @@ const plans = {
 
 // Plan ids from earlier versions, mapped to current tiers.
 const legacyPlans = { starter: 'core', coaching: 'core' };
-
-const orderBump = {
-  id: 'recipe-vault',
-  name: 'Steady Sugar Recipe Vault',
-  price: 27,
-  description: '120+ low-spike recipes with macros, sorted by meal & prep time. One-time purchase.',
-};
 
 const guarantee = {
   title: '30-Day Steady Start Guarantee',
@@ -305,4 +296,4 @@ const quiz = [
   },
 ];
 
-module.exports = { brand, plans, legacyPlans, orderBump, guarantee, testimonials, faqs, roadmap, courses, nutritionPlan, workoutPlan, quiz };
+module.exports = { brand, plans, legacyPlans, guarantee, testimonials, faqs, roadmap, courses, nutritionPlan, workoutPlan, quiz };

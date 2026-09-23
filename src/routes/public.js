@@ -5,7 +5,7 @@ const email = require('../integrations/email');
 const meetings = require('../integrations/meetings');
 const sched = require('../scheduling');
 const { scoreQuiz } = require('../quiz');
-const { track } = require('../track');
+const { track, attribution } = require('../track');
 const { normalizeEmail } = require('../auth');
 
 const router = express.Router();
@@ -28,7 +28,7 @@ router.get('/free-guide', (req, res) => res.render('marketing/free-guide', { tit
 router.post('/free-guide', h(async (req, res) => {
   const addr = normalizeEmail(req.body.email);
   if (!validEmail(addr)) return res.status(400).render('marketing/free-guide', { title: 'Free 7-Day Meal Guide', error: 'Please enter a valid email.' });
-  await db.insert('leads', { name: String(req.body.name || '').trim(), email: addr, source: 'guide', temperature: 'cold', utm: req.session.utm || null });
+  await db.insert('leads', { name: String(req.body.name || '').trim(), email: addr, source: 'guide', temperature: 'cold', utm: attribution(req) });
   await email.send(addr, 'lead_guide');
   await track(req, 'lead_guide');
   res.redirect('/free-guide/thanks');
@@ -57,7 +57,7 @@ router.post('/quiz', h(async (req, res) => {
     answers,
     recommendedPlan: result.plan,
     temperature: result.temperature,
-    utm: req.session.utm || null,
+    utm: attribution(req),
   });
   req.session.leadId = lead.id;
   await email.send(addr, 'lead_quiz', { plan: result.plan });
@@ -76,7 +76,7 @@ router.get('/quiz/results', h(async (req, res) => {
 router.get('/book-call', h(async (req, res) => {
   const lead = await db.get('leads', req.session.leadId);
   const days = sched.availability(await db.all('bookings'));
-  res.render('marketing/book-call', { title: 'Book a free discovery call', days, lead, error: null, interest: content.plans[req.query.plan] ? req.query.plan : null });
+  res.render('marketing/book-call', { title: 'Book a free discovery call', days, lead, error: null });
 }));
 
 router.post('/book-call', h(async (req, res) => {
@@ -87,7 +87,7 @@ router.post('/book-call', h(async (req, res) => {
   const open = days.some((d) => d.date === date && d.slots.includes(time));
   if (!validEmail(addr) || !open) {
     const lead = await db.get('leads', req.session.leadId);
-    return res.status(400).render('marketing/book-call', { title: 'Book a free discovery call', days, lead, interest: req.body.interest || null, error: !open ? 'That time was just taken — please pick another.' : 'Please enter a valid email.' });
+    return res.status(400).render('marketing/book-call', { title: 'Book a free discovery call', days, lead, error: !open ? 'That time was just taken — please pick another.' : 'Please enter a valid email.' });
   }
   let booking = await db.insert('bookings', {
     userId: req.user ? req.user.id : null,
@@ -97,7 +97,6 @@ router.post('/book-call', h(async (req, res) => {
     phone: String(req.body.phone || '').trim(),
     notes: String(req.body.notes || '').slice(0, 1000),
     type: 'discovery',
-    interest: content.plans[req.body.interest] ? req.body.interest : null,
     date,
     time,
     status: 'booked',

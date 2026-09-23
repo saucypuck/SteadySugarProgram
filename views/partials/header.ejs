@@ -24,7 +24,7 @@
 <% if (variant === 'app' || variant === 'admin') { %>
   <%
     const nav = variant === 'admin'
-      ? [['/admin', 'Overview', '📊'], ['/app', 'Member view', '👤'], ['/', 'Public site', '🌐']]
+      ? [['/admin', 'Overview', '📊'], ['/admin/marketing', 'Marketing', '📣'], ['/app', 'Member view', '👤'], ['/', 'Public site', '🌐']]
       : [['/app', 'Home', '🏠'], ['/app/courses', 'Courses', '🎓'], ['/app/plans/nutrition', 'Plans', '🥗'], ['/app/log', 'Tracker', '📈'], ['/app/calendar', 'Calls', '📅'], ['/app/account', 'Account', '⚙️']];
     const active = (href) => href === path || (href !== '/app' && href !== '/admin' && href !== '/' && path.startsWith(href.split('/').slice(0, 3).join('/')));
   %>

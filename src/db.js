@@ -43,6 +43,25 @@ async function insert(collection, data) {
   return doc;
 }
 
+// Bulk insert (used for seeding / future ad-platform imports).
+async function insertMany(collection, rows) {
+  const docs = rows.map((data) => ({ id: randomUUID(), createdAt: new Date().toISOString(), ...data }));
+  if (pool) {
+    for (let i = 0; i < docs.length; i += 500) {
+      const chunk = docs.slice(i, i + 500);
+      const params = [];
+      const values = chunk.map((d, j) => {
+        params.push(collection, d.id, d, d.createdAt);
+        return `($${j * 4 + 1}, $${j * 4 + 2}, $${j * 4 + 3}, $${j * 4 + 4})`;
+      });
+      await pool.query(`INSERT INTO docs (collection, id, data, created_at) VALUES ${values.join(', ')}`, params);
+    }
+  } else {
+    for (const d of docs) bucket(collection).set(d.id, d);
+  }
+  return docs;
+}
+
 async function get(collection, id) {
   if (!id) return null;
   if (pool) {
@@ -85,4 +104,4 @@ async function update(collection, id, patch) {
   return next;
 }
 
-module.exports = { init, insert, get, all, findBy, findOneBy, update };
+module.exports = { init, insert, insertMany, get, all, findBy, findOneBy, update };

@@ -23,7 +23,7 @@ With no `DATABASE_URL` it uses an in-memory store and seeds demo data:
 |------|-------|--------|
 | **Free** | $0 | Anyone can sign up. Quiz, tracker, browse everything, 3 preview lessons, sample meal-plan day, workout overview. Locked content shows an upgrade preview. |
 | **Core Program** (most popular) | $49/mo | All courses and lessons, full meal and workout plans, 2 × 30-min coaching calls a month. |
-| **VIP 1:1** | $999/mo | Everything in Core, plus a kickoff call, weekly 1:1 calls, a custom plan, CGM review, direct messaging and the bonus CGM course. Leads with "Apply — book a free call"; direct checkout is a secondary link. |
+| **VIP 1:1** | $999/mo | Everything in Core, plus a kickoff call, weekly 1:1 calls, a custom plan, CGM review, direct messaging and the bonus CGM course. |
 
 Tiers are defined in `src/content.js` (`plans`, each with a `rank`). A course sets the minimum `tier` it needs, and a lesson marked `free: true` is open to everyone. Gating is handled by `tierAllows` / `canOpenLesson` in `src/auth.js`.
 
@@ -48,6 +48,13 @@ Results /quiz/results  → persona + recommended plan (Free / Core / VIP)
 
 **Member area** `/app`: dashboard (next lesson, next call, glucose trend, quick log, daily habits, upgrade prompts) · courses and lessons with progress tracking · nutrition and workout plans · tracker · calls (monthly allowance per plan) · account and billing.
 
+**Marketing** `/admin/marketing`: one place for ad and landing-page decisions.
+- **Campaigns & ads**: spend, CTR, CPC, leads, CPL, customers, CAC and ROAS per ad and campaign. Each ad has a copy-ready tracking URL, and there's a daily spend log.
+- **Landing pages**: built from the admin with no code, live at `/lp/<slug>`. Each shows views, lead rate, revenue, and which ads send it traffic.
+- **A/B tests**: `/go/<slug>` splits traffic evenly between landing pages and keeps each visitor on the same variant. Results show lift and a significance test. Once you declare a winner, all traffic goes to it.
+- **Decisions needed**: flags things to act on automatically, such as ads to pause or scale, tests ready to call, and live pages with no traffic.
+- **Attribution**: the last ad clicked (UTMs) and the landing page are saved on the visitor's session and on every lead, signup and purchase.
+
 **Admin** `/admin`: MRR, revenue, members, leads (hot leads to call first), funnel conversion, members by plan, upcoming calls, orders with UTM source.
 
 ## Where things live
@@ -60,7 +67,9 @@ Results /quiz/results  → persona + recommended plan (Free / Core / VIP)
 | **Payments (Stripe goes here)** | `src/integrations/payments.js` |
 | **Email (Postmark/Resend/ConvertKit)** | `src/integrations/email.js` |
 | **Video calls (Zoom/Meet)** | `src/integrations/meetings.js` |
-| Funnel event tracking | `src/track.js` |
+| Funnel event tracking + attribution | `src/track.js` |
+| Marketing schemas, metrics, A/B stats, decision rules | `src/marketing.js` |
+| Landing page + A/B split routes | `src/routes/lp.js` |
 | Data store (Postgres JSONB, or in-memory) | `src/db.js` |
 | Routes | `src/routes/{public,auth,checkout,member,admin}.js` |
 | Templates / styles | `views/`, `public/css/styles.css` |
@@ -84,5 +93,7 @@ Environment variables:
 - [ ] Real testimonials, stats and coach bio (placeholders are in `[brackets]`)
 - [ ] Terms, privacy and medical disclaimer drafted by a lawyer; confirm refund and guarantee terms
 - [ ] Password reset tokens, rate limiting, CSRF protection
-- [ ] Analytics pixels (GA4/Meta) from `src/track.js`
+- [ ] Analytics pixels / server-side conversions (GA4, Meta CAPI, Google Ads) from `src/track.js`
+- [ ] Automatic daily spend import from the Meta and Google Ads APIs into `spend` (manual entry for now)
+- [ ] Set `PUBLIC_URL` so ad tracking URLs use your custom domain
 - [ ] `SEED_DEMO=false`, and set `ADMIN_EMAILS`

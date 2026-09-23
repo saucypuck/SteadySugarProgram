@@ -19,9 +19,6 @@
           <a href="/app" class="btn btn-secondary btn-block">Your current plan</a>
         <% } else if (!p.price) { %>
           <a href="<%= user ? '/app' : '/signup' %>" class="btn <%= hl ? 'btn-primary' : 'btn-secondary' %> btn-block"><%= user ? 'Go to dashboard' : 'Create free account' %></a>
-        <% } else if (p.applyFirst) { %>
-          <a href="/book-call?plan=<%= p.id %>" class="btn <%= hl ? 'btn-primary' : 'btn-secondary' %> btn-block">Apply — book a free call</a>
-          <a href="/checkout?plan=<%= p.id %>" class="small center-link">or enroll now</a>
         <% } else { %>
           <a href="/checkout?plan=<%= p.id %>" class="btn <%= hl ? 'btn-primary' : 'btn-secondary' %> btn-block"><%= user && tier !== 'free' ? `Switch to ${p.name}` : `Start ${p.name}` %></a>
         <% } %>

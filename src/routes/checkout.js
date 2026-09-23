@@ -4,7 +4,7 @@ const content = require('../content');
 const payments = require('../integrations/payments');
 const email = require('../integrations/email');
 const { createUser, verify, login, requireAuth, normalizeEmail, planOf } = require('../auth');
-const { track } = require('../track');
+const { track, attribution } = require('../track');
 
 const router = express.Router();
 const h = (fn) => (req, res, next) => Promise.resolve(fn(req, res, next)).catch(next);
@@ -39,32 +39,29 @@ router.post('/checkout', h(async (req, res) => {
       if (!user) return fail('You already have an account — enter that password, or log in first.');
     } else {
       if (password.length < 8) return fail('Password must be at least 8 characters.');
-      user = await createUser({ name, email: addr, password, extra: { leadId: req.session.leadId || null, utm: req.session.utm || null } });
+      user = await createUser({ name, email: addr, password, extra: { leadId: req.session.leadId || null, utm: attribution(req) } });
     }
     login(req, user);
   }
 
-  const bump = req.body.bump === 'on' ? content.orderBump : null;
-  const payment = await payments.charge({ user, plan, bump });
+  const payment = await payments.charge({ user, plan });
   if (payment.status !== 'paid') return fail('Payment didn’t go through. Please try again.');
 
   await db.insert('orders', {
     userId: user.id,
     email: user.email,
     plan: plan.id,
-    bump: bump ? bump.id : null,
     amount: payment.amount,
     status: payment.status,
     provider: payment.provider,
     reference: payment.reference,
-    utm: req.session.utm || null,
+    utm: attribution(req),
   });
   const isNew = planOf(user) === 'free';
   await db.update('users', user.id, {
     plan: plan.id,
     status: 'active',
     planStartedAt: isNew ? new Date().toISOString() : user.planStartedAt,
-    recipeVault: user.recipeVault || !!bump,
   });
   if (req.session.leadId) await db.update('leads', req.session.leadId, { convertedUserId: user.id });
   await email.send(user.email, 'welcome', { plan: plan.id });

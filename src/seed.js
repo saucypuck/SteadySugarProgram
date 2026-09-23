@@ -3,12 +3,14 @@
 const db = require('./db');
 const { createUser } = require('./auth');
 const sched = require('./scheduling');
+const { seedMarketing } = require('./seed-marketing');
 
 const DEMO_MEMBER = { email: 'demo@steadysugar.test', password: 'demo1234' };
 const DEMO_ADMIN = { email: 'admin@steadysugar.test', password: 'admin1234' };
 const DEMO_FREE = { email: 'free@steadysugar.test', password: 'free1234' };
 
 async function seedDemo() {
+  await seedMarketing();
   // Each account is ensured independently so a partial seed can't lock anyone out.
   if (!(await db.findOneBy('users', 'email', DEMO_ADMIN.email))) {
     await createUser({ name: 'Admin', ...DEMO_ADMIN, extra: { role: 'admin' } });

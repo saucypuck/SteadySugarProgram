@@ -1,7 +1,7 @@
 const express = require('express');
 const db = require('../db');
 const email = require('../integrations/email');
-const { track } = require('../track');
+const { track, attribution } = require('../track');
 const { createUser, verify, login, normalizeEmail, isAdmin } = require('../auth');
 
 const router = express.Router();
@@ -37,7 +37,7 @@ router.post('/signup', h(async (req, res) => {
   if (!name || !addr || !password) return fail('All fields are required.');
   if (password.length < 8) return fail('Password must be at least 8 characters.');
   if (await db.findOneBy('users', 'email', addr)) return fail('An account with that email already exists. Try logging in.');
-  const user = await createUser({ name, email: addr, password, extra: { leadId: req.session.leadId || null, utm: req.session.utm || null } });
+  const user = await createUser({ name, email: addr, password, extra: { leadId: req.session.leadId || null, utm: attribution(req) } });
   login(req, user);
   await track(req, 'signup_free');
   req.session.flash = { type: 'success', msg: `Welcome, ${user.name}! Your free account is ready — start with the first lesson below.` };

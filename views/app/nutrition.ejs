@@ -47,12 +47,4 @@
 </div>
 <% } %>
 
-<% if (full && !user.recipeVault) { %>
-  <div class="card upsell mt-2">
-    <h3>Want more variety?</h3>
-    <p class="muted"><%= c.orderBump.description %></p>
-    <a href="#" class="btn btn-secondary">Get the Recipe Vault — <%= money(c.orderBump.price) %></a>
-  </div>
-<% } %>
-
 <%- include('../partials/footer') %>

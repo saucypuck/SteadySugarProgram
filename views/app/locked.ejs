@@ -8,12 +8,7 @@
   <ul class="check-list left">
     <% need.features.forEach((f) => { %><li><%= f %></li><% }) %>
   </ul>
-  <% if (need.applyFirst) { %>
-    <a href="/book-call?plan=<%= need.id %>" class="btn btn-primary btn-lg">Apply for <%= need.name %> — book a free call</a>
-    <p class="mt-1 small"><a href="/checkout?plan=<%= need.id %>">or enroll now — <%= money(need.price) %>/mo</a></p>
-  <% } else { %>
-    <a href="/checkout?plan=<%= need.id %>" class="btn btn-primary btn-lg">Unlock with <%= need.name %> — <%= money(need.price) %>/mo</a>
-  <% } %>
+  <a href="/checkout?plan=<%= need.id %>" class="btn btn-primary btn-lg">Unlock with <%= need.name %> — <%= money(need.price) %>/mo</a>
   <p class="mt-1"><a href="/app/courses">Back to courses</a></p>
 </div>
 <%- include('../partials/footer') %>

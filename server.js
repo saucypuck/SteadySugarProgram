@@ -48,6 +48,7 @@ app.use(loadUser);
 app.use(captureUtm);
 
 app.use('/', require('./src/routes/public'));
+app.use('/', require('./src/routes/lp'));
 app.use('/', require('./src/routes/auth'));
 app.use('/', require('./src/routes/checkout'));
 app.use('/app', require('./src/routes/member'));

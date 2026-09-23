@@ -69,7 +69,7 @@
         <tbody>
           <% if (!bookings.length) { %><tr><td colspan="3" class="muted">None.</td></tr><% } %>
           <% bookings.forEach((b) => { %>
-            <tr><td><%= sched.formatDate(b.date) %> <%= sched.formatTime(b.time) %></td><td><%= b.name %><br><small class="muted"><%= b.email %></small></td><td><%= sched.CALL_TYPES[b.type].name %><%= b.interest === 'vip' ? ' · VIP applicant' : '' %></td></tr>
+            <tr><td><%= sched.formatDate(b.date) %> <%= sched.formatTime(b.time) %></td><td><%= b.name %><br><small class="muted"><%= b.email %></small></td><td><%= sched.CALL_TYPES[b.type].name %></td></tr>
           <% }) %>
         </tbody>
       </table>
@@ -99,7 +99,7 @@
       <tbody>
         <% if (!orders.length) { %><tr><td colspan="5" class="muted">No orders yet.</td></tr><% } %>
         <% orders.forEach((o) => { %>
-          <tr><td><%= new Date(o.createdAt).toLocaleDateString() %></td><td><%= o.email %></td><td><%= (c.plans[c.legacyPlans[o.plan] || o.plan] || { name: o.plan }).name %><%= o.bump ? ' + bump' : '' %></td><td><%= money(o.amount) %></td><td class="muted"><%= o.utm && o.utm.utm_source ? o.utm.utm_source : 'direct' %></td></tr>
+          <tr><td><%= new Date(o.createdAt).toLocaleDateString() %></td><td><%= o.email %></td><td><%= (c.plans[c.legacyPlans[o.plan] || o.plan] || { name: o.plan }).name %></td><td><%= money(o.amount) %></td><td class="muted"><%= o.utm && o.utm.utm_source ? o.utm.utm_source : 'direct' %></td></tr>
         <% }) %>
       </tbody>
     </table>

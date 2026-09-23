@@ -1,0 +1,78 @@
+<%- include('../../partials/header') %>
+<%- include('_tabs') %>
+
+<% const p = r.paid; %>
+<div class="kpi-grid">
+  <div class="card kpi"><small>Ad spend</small><strong><%= fmt.money(p.spend) %></strong></div>
+  <div class="card kpi"><small>Leads from ads</small><strong><%= fmt.num(p.leads) %></strong><em>CPL <%= fmt.money2(p.cpl) %></em></div>
+  <div class="card kpi"><small>Customers from ads</small><strong><%= fmt.num(p.customers) %></strong><em>CAC <%= fmt.money(p.cac) %></em></div>
+  <div class="card kpi"><small>Revenue from ads</small><strong><%= fmt.money(p.revenue) %></strong><em>ROAS <%= fmt.x(p.roas) %></em></div>
+  <div class="card kpi"><small>Landing page views</small><strong><%= fmt.num(r.site.views) %></strong><em>Lead rate <%= fmt.pct(r.site.leadRate) %></em></div>
+  <div class="card kpi"><small>Clicks</small><strong><%= fmt.num(p.clicks) %></strong><em>CTR <%= fmt.pct(p.ctr) %> · CPC <%= fmt.money2(p.cpc) %></em></div>
+  <div class="card kpi"><small>Live landing pages</small><strong><%= r.pages.filter((x) => x.status === 'live').length %></strong></div>
+  <div class="card kpi"><small>Running A/B tests</small><strong><%= r.experiments.filter((x) => x.status === 'running').length %></strong></div>
+</div>
+
+<div class="card mt-2">
+  <h3>Decisions needed</h3>
+  <% if (!r.decisions.length) { %><p class="muted">Nothing flagged. Numbers look steady.</p><% } %>
+  <ul class="decision-list">
+    <% r.decisions.forEach((d) => { %>
+      <li class="tone-<%= d.tone %>"><a href="<%= d.href %>"><%= d.text %></a></li>
+    <% }) %>
+  </ul>
+</div>
+
+<div class="card mt-2">
+  <div class="row-between"><h3>Campaigns</h3><a href="/admin/marketing/ads?range=<%= r.range %>" class="small">All ads →</a></div>
+  <div class="table-wrap">
+    <table class="table num-table">
+      <thead><tr><th>Campaign</th><th>Status</th><th>Spend</th><th>Clicks</th><th>Leads</th><th>CPL</th><th>Customers</th><th>CAC</th><th>Revenue</th><th>ROAS</th></tr></thead>
+      <tbody>
+        <% if (!r.campaigns.length) { %><tr><td colspan="10" class="muted">No campaigns yet. <a href="/admin/marketing/campaigns/new">Create one</a>.</td></tr><% } %>
+        <% r.campaigns.forEach((cmp) => { const m = cmp.m; %>
+          <tr>
+            <td><strong><%= cmp.name %></strong><br><small class="muted"><%= cmp.channel %> · <%= cmp.ads.length %> ads</small></td>
+            <td><span class="status s-<%= cmp.status %>"><%= cmp.status %></span></td>
+            <td><%= fmt.money(m.spend) %></td><td><%= fmt.num(m.clicks) %></td><td><%= fmt.num(m.leads) %></td>
+            <td><%= fmt.money2(m.cpl) %></td><td><%= fmt.num(m.customers) %></td><td><%= fmt.money(m.cac) %></td>
+            <td><%= fmt.money(m.revenue) %></td><td class="<%= m.roas >= 1 ? 'good' : m.roas != null ? 'warn' : '' %>"><%= fmt.x(m.roas) %></td>
+          </tr>
+        <% }) %>
+      </tbody>
+    </table>
+  </div>
+</div>
+
+<div class="grid-2 mt-2">
+  <div class="card">
+    <div class="row-between"><h3>Landing pages</h3><a href="/admin/marketing/pages?range=<%= r.range %>" class="small">Manage →</a></div>
+    <div class="table-wrap">
+      <table class="table num-table">
+        <thead><tr><th>Page</th><th>Views</th><th>Lead rate</th><th>Customers</th></tr></thead>
+        <tbody>
+          <% [...r.pages].sort((a, b) => (b.m.leadRate || 0) - (a.m.leadRate || 0)).forEach((pg) => { %>
+            <tr><td><%= pg.name %><br><small class="muted">/lp/<%= pg.slug %> · <span class="status s-<%= pg.status %>"><%= pg.status %></span></small></td><td><%= fmt.num(pg.m.views) %></td><td><strong><%= fmt.pct(pg.m.leadRate) %></strong></td><td><%= fmt.num(pg.m.customers) %></td></tr>
+          <% }) %>
+        </tbody>
+      </table>
+    </div>
+  </div>
+  <div class="card">
+    <div class="row-between"><h3>A/B tests</h3><a href="/admin/marketing/experiments?range=<%= r.range %>" class="small">All tests →</a></div>
+    <% if (!r.experiments.length) { %><p class="muted">No tests yet.</p><% } %>
+    <% r.experiments.forEach((x) => { %>
+      <a class="exp-mini" href="/admin/marketing/experiments/<%= x.id %>?range=<%= r.range %>">
+        <strong><%= x.name %></strong>
+        <span class="tone-<%= x.verdict.tone %> small"><%= x.verdict.text %></span>
+        <% x.variants.forEach((v, i) => { %>
+          <div class="row-between small"><span><%= i === 0 ? 'Control' : 'Variant' %>: <%= v.page.name %></span><span><%= fmt.pct(v.m[x.metric.key === 'leads' ? 'leadRate' : 'purchaseRate']) %> <small class="muted">(<%= fmt.num(v.m.views) %> views)</small></span></div>
+        <% }) %>
+      </a>
+    <% }) %>
+  </div>
+</div>
+
+<p class="fine">How attribution works: ads send visitors to /lp/… or /go/… with UTM tags. The landing page and last ad clicked are stored on the visitor’s session and on every lead, signup and purchase they make. Spend is logged manually until the Meta and Google Ads APIs are connected.</p>
+
+<%- include('../../partials/footer') %>

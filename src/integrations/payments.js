@@ -7,8 +7,8 @@
 
 const provider = process.env.STRIPE_SECRET_KEY ? 'stripe' : 'demo';
 
-async function charge({ user, plan, bump }) {
-  const amount = plan.price + (bump ? bump.price : 0);
+async function charge({ user, plan }) {
+  const amount = plan.price;
   if (provider === 'stripe') {
     throw new Error('Stripe not wired yet — see src/integrations/payments.js');
   }

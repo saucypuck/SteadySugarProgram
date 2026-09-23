@@ -1,0 +1,64 @@
+<%- include('../../partials/header') %>
+<%- include('_tabs') %>
+
+<div class="cta-row mb-2">
+  <a href="/admin/marketing/campaigns/new" class="btn btn-secondary btn-sm">+ New campaign</a>
+  <a href="/admin/marketing/ads/new" class="btn btn-primary btn-sm">+ New ad</a>
+</div>
+
+<% if (!r.campaigns.length) { %><div class="card"><p class="muted">Start by creating a campaign, then add the ads inside it.</p></div><% } %>
+
+<% r.campaigns.forEach((cmp) => { %>
+  <div class="card mb-2">
+    <div class="row-between wrap">
+      <div>
+        <h3 class="mb-0"><%= cmp.name %> <span class="status s-<%= cmp.status %>"><%= cmp.status %></span></h3>
+        <small class="muted"><%= cmp.channel %> · <%= cmp.objective || '—' %> · utm_campaign=<code><%= cmp.utmCampaign %></code><%= cmp.dailyBudget ? ' · ' + fmt.money(cmp.dailyBudget) + '/day' : '' %></small>
+      </div>
+      <div class="cta-row mt-0">
+        <span class="pill">Spend <%= fmt.money(cmp.m.spend) %> · CPL <%= fmt.money2(cmp.m.cpl) %> · ROAS <%= fmt.x(cmp.m.roas) %></span>
+        <a href="/admin/marketing/campaigns/<%= cmp.id %>/edit" class="btn btn-ghost btn-sm">Edit</a>
+      </div>
+    </div>
+    <div class="table-wrap mt-1">
+      <table class="table num-table">
+        <thead><tr><th>Ad</th><th>Destination</th><th>Spend</th><th>Impr.</th><th>CTR</th><th>CPC</th><th>Views</th><th>Leads</th><th>CPL</th><th>Cust.</th><th>CAC</th><th>ROAS</th><th></th></tr></thead>
+        <tbody>
+          <% if (!cmp.ads.length) { %><tr><td colspan="13" class="muted">No ads in this campaign. <a href="/admin/marketing/ads/new?campaignId=<%= cmp.id %>">Add one</a>.</td></tr><% } %>
+          <% cmp.ads.forEach((ad) => { const m = ad.m; %>
+            <tr>
+              <td class="ad-cell">
+                <strong><%= ad.name %></strong> <span class="status s-<%= ad.status %>"><%= ad.status %></span><br>
+                <small class="muted"><%= ad.format || '' %><%= ad.angle ? ' · “' + ad.angle + '”' : '' %></small>
+                <div class="url-copy"><input readonly value="<%= trackingUrl(ad) %>" aria-label="Tracking URL" onclick="this.select()"><button type="button" class="btn btn-ghost btn-sm" data-copy>Copy URL</button></div>
+              </td>
+              <td><small><%= ad.dest.type %>:</small><br><%= ad.dest.item ? ad.dest.item.name : '—' %></td>
+              <td><%= fmt.money(m.spend) %></td><td><%= fmt.num(m.impressions) %></td><td><%= fmt.pct(m.ctr) %></td><td><%= fmt.money2(m.cpc) %></td>
+              <td><%= fmt.num(m.views) %></td><td><%= fmt.num(m.leads) %></td><td><%= fmt.money2(m.cpl) %></td>
+              <td><%= fmt.num(m.customers) %></td><td><%= fmt.money(m.cac) %></td>
+              <td class="<%= m.roas >= 1 ? 'good' : m.roas != null ? 'warn' : '' %>"><%= fmt.x(m.roas) %></td>
+              <td><a href="/admin/marketing/ads/<%= ad.id %>/edit" class="small">Edit</a></td>
+            </tr>
+          <% }) %>
+        </tbody>
+      </table>
+    </div>
+  </div>
+<% }) %>
+
+<div class="card" id="spend">
+  <h3>Log daily spend</h3>
+  <p class="muted small">Enter each ad’s daily numbers from Ads Manager. This will be replaced by an automatic daily import from the Meta and Google Ads APIs.</p>
+  <form method="post" action="/admin/marketing/spend" class="spend-form">
+    <div class="field"><label>Ad</label>
+      <select name="adId" required><% r.ads.forEach((ad) => { %><option value="<%= ad.id %>"><%= ad.campaign.name %> → <%= ad.name %></option><% }) %></select>
+    </div>
+    <div class="field"><label>Date</label><input type="date" name="date" value="<%= today %>" max="<%= today %>"></div>
+    <div class="field"><label>Spend ($)</label><input type="number" step="0.01" name="spend" required></div>
+    <div class="field"><label>Impressions</label><input type="number" name="impressions"></div>
+    <div class="field"><label>Clicks</label><input type="number" name="clicks"></div>
+    <button class="btn btn-primary">Log spend</button>
+  </form>
+</div>
+
+<%- include('../../partials/footer') %>

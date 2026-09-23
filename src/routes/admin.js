@@ -60,4 +60,6 @@ router.get('/', h(async (req, res) => {
   });
 }));
 
+router.use('/marketing', require('./admin-marketing'));
+
 module.exports = router;

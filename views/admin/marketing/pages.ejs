@@ -1,0 +1,38 @@
+<%- include('../../partials/header') %>
+<%- include('_tabs') %>
+
+<div class="cta-row mb-2"><a href="/admin/marketing/pages/new" class="btn btn-primary btn-sm">+ New landing page</a></div>
+
+<div class="page-grid">
+  <% if (!r.pages.length) { %><div class="card"><p class="muted">No landing pages yet.</p></div><% } %>
+  <% r.pages.forEach((pg) => { const m = pg.m; %>
+    <div class="card lp-card">
+      <div class="row-between">
+        <span class="status s-<%= pg.status %>"><%= pg.status %></span>
+        <a href="/lp/<%= pg.slug %>" target="_blank" rel="noopener" class="small">/lp/<%= pg.slug %> ↗</a>
+      </div>
+      <h3 class="mt-1"><%= pg.name %></h3>
+      <p class="lp-headline">“<%= pg.headline %>”</p>
+      <% if (pg.angle) { %><p class="small muted"><strong>Testing:</strong> <%= pg.angle %></p><% } %>
+      <div class="mini-stats">
+        <div><small>Views</small><strong><%= fmt.num(m.views) %></strong></div>
+        <div><small>Lead rate</small><strong><%= fmt.pct(m.leadRate) %></strong></div>
+        <div><small>Customers</small><strong><%= fmt.num(m.customers) %></strong></div>
+        <div><small>Revenue</small><strong><%= fmt.money(m.revenue) %></strong></div>
+      </div>
+      <p class="small mt-1"><strong>Ads sending traffic (<%= pg.ads.length %>):</strong></p>
+      <% if (!pg.ads.length) { %><p class="small muted">None yet.</p><% } %>
+      <ul class="ad-mini-list">
+        <% pg.ads.forEach((ad) => { %>
+          <li><span><%= ad.name %> <small class="muted">· <%= ad.campaign.channel %><%= ad.dest.type === 'A/B test' ? ' · via A/B split' : '' %></small></span><span class="status s-<%= ad.status %>"><%= ad.status %></span></li>
+        <% }) %>
+      </ul>
+      <div class="cta-row mt-1">
+        <a href="/admin/marketing/pages/<%= pg.id %>/edit" class="btn btn-secondary btn-sm">Edit</a>
+        <a href="/lp/<%= pg.slug %>" target="_blank" rel="noopener" class="btn btn-ghost btn-sm">Preview</a>
+      </div>
+    </div>
+  <% }) %>
+</div>
+
+<%- include('../../partials/footer') %>

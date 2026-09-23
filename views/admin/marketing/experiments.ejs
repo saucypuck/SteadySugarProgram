@@ -1,0 +1,29 @@
+<%- include('../../partials/header') %>
+<%- include('_tabs') %>
+
+<div class="cta-row mb-2"><a href="/admin/marketing/experiments/new" class="btn btn-primary btn-sm">+ New A/B test</a></div>
+
+<% if (!r.experiments.length) { %><div class="card"><p class="muted">No A/B tests yet. Create two landing pages, then a test that splits traffic between them.</p></div><% } %>
+
+<% r.experiments.forEach((x) => { %>
+  <a href="/admin/marketing/experiments/<%= x.id %>?range=<%= r.range %>" class="card exp-card mb-2">
+    <div class="row-between wrap">
+      <h3 class="mb-0"><%= x.name %> <span class="status s-<%= x.status %>"><%= x.status %></span></h3>
+      <span class="tone-<%= x.verdict.tone %> small"><strong><%= x.verdict.text %></strong></span>
+    </div>
+    <% if (x.hypothesis) { %><p class="small muted mt-1"><%= x.hypothesis %></p><% } %>
+    <div class="variant-row">
+      <% x.variants.forEach((v, i) => { %>
+        <div class="variant <%= x.winnerId === v.page.id ? 'winner' : '' %>">
+          <small><%= i === 0 ? 'Control' : 'Variant ' + String.fromCharCode(65 + i) %></small>
+          <strong><%= v.page.name %></strong>
+          <span><%= x.metric.label %>: <b><%= fmt.pct(v.m[x.metric.key === 'leads' ? 'leadRate' : 'purchaseRate']) %></b></span>
+          <small class="muted"><%= fmt.num(v.m.views) %> views<% if (v.cmp && v.cmp.lift != null) { %> · <%= v.cmp.lift >= 0 ? '+' : '' %><%= Math.round(v.cmp.lift * 100) %>% vs control<% } %></small>
+        </div>
+      <% }) %>
+    </div>
+    <small class="muted"><%= x.ads.length %> ads pointing to /go/<%= x.slug %></small>
+  </a>
+<% }) %>
+
+<%- include('../../partials/footer') %>

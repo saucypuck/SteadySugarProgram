@@ -280,9 +280,6 @@ input:focus, textarea:focus, select:focus { outline: none; border-color: var(--b
 .plan-switch a.active { background: var(--brand); color: #fff; } .plan-switch a.active small { color: var(--brand-100); }
 .step-dot { display: inline-grid; place-items: center; width: 26px; height: 26px; border-radius: 50%; background: var(--brand); color: #fff; font-size: .8rem; margin-right: 6px; }
 .pay-wire { min-height: 150px; }
-.bump { display: flex; gap: 12px; padding: 16px; border: 2px dashed var(--cta); background: #fff7ed; border-radius: var(--radius); cursor: pointer; }
-.bump input { width: 22px; height: 22px; accent-color: var(--cta); flex-shrink: 0; margin-top: 2px; }
-.bump p { margin: 4px 0 0; font-size: .9rem; }
 .order-summary .line { display: flex; justify-content: space-between; gap: 12px; padding: 10px 0; border-bottom: 1px solid var(--line); }
 .order-summary .total { font-weight: 800; color: var(--ink); border: 0; font-size: 1.1rem; }
 .order-summary .quote { margin-top: 16px; }
@@ -463,3 +460,50 @@ input:focus, textarea:focus, select:focus { outline: none; border-color: var(--b
 .mb-2 { margin-bottom: 1rem; }
 .row-between.wrap { flex-wrap: wrap; }
 .check-list.left { text-align: left; display: inline-block; margin-top: 8px; }
+
+/* Admin → Marketing */
+.mb-0 { margin-bottom: 0; } .mt-0 { margin-top: 0; }
+.range-form select { width: auto; padding: 8px 12px; }
+.tabs-wide { max-width: none; overflow-x: auto; }
+.tabs-wide a { white-space: nowrap; }
+.kpi em { display: block; font-style: normal; font-size: .78rem; color: var(--muted); margin-top: 2px; }
+.decision-list { list-style: none; padding: 0; margin: 0; }
+.decision-list li { padding: 10px 12px 10px 14px; border-left: 4px solid var(--line); margin-bottom: 8px; background: var(--soft); border-radius: 0 8px 8px 0; }
+.decision-list a { color: var(--ink); text-decoration: none; font-weight: 600; font-size: .92rem; }
+.decision-list .tone-good { border-color: var(--good); } .decision-list .tone-warn { border-color: #f59e0b; } .decision-list .tone-bad { border-color: var(--bad); }
+.tone-good { color: var(--good); } .tone-warn { color: var(--warn); } .tone-bad { color: var(--bad); } .tone-muted { color: var(--muted); }
+.decision-list li.tone-good, .decision-list li.tone-warn, .decision-list li.tone-bad, .decision-list li.tone-muted { color: inherit; }
+.status { display: inline-block; font-size: .68rem; font-weight: 700; text-transform: uppercase; letter-spacing: .04em; padding: 2px 8px; border-radius: 999px; background: var(--soft); color: var(--muted); vertical-align: middle; }
+.s-active, .s-live, .s-running { background: #dcfce7; color: var(--good); }
+.s-paused { background: #fef3c7; color: var(--warn); }
+.s-winner, .s-concluded { background: var(--brand-100); color: var(--brand); }
+.s-ended, .s-retired { background: #f1f5f9; color: #94a3b8; }
+.num-table td, .num-table th { white-space: nowrap; }
+.num-table td:first-child { white-space: normal; min-width: 180px; }
+.ad-cell { min-width: 260px; }
+.url-copy { display: flex; gap: 4px; margin-top: 6px; }
+.url-copy input { font-size: .72rem !important; padding: 4px 8px !important; font-family: ui-monospace, monospace !important; color: var(--muted) !important; }
+.spend-form { display: grid; gap: 12px; grid-template-columns: 1fr; align-items: end; }
+@media (min-width: 900px) { .spend-form { grid-template-columns: 2fr 1fr 1fr 1fr 1fr auto; } }
+.page-grid { display: grid; gap: 16px; grid-template-columns: 1fr; }
+@media (min-width: 800px) { .page-grid { grid-template-columns: 1fr 1fr; } }
+@media (min-width: 1300px) { .page-grid { grid-template-columns: repeat(3, 1fr); } }
+.lp-headline { font-weight: 700; color: var(--ink); font-size: .95rem; }
+.mini-stats { display: grid; grid-template-columns: repeat(4, 1fr); gap: 8px; background: var(--soft); border-radius: 10px; padding: 10px; }
+.mini-stats small { display: block; font-size: .68rem; color: var(--muted); }
+.mini-stats strong { color: var(--ink); font-size: 1rem; }
+.ad-mini-list { list-style: none; padding: 0; margin: 4px 0 0; font-size: .85rem; }
+.ad-mini-list li { display: flex; justify-content: space-between; gap: 8px; padding: 6px 0; border-bottom: 1px solid var(--line); }
+.exp-mini { display: block; text-decoration: none; color: inherit; padding: 12px; border: 1px solid var(--line); border-radius: 10px; margin-top: 10px; }
+.exp-mini > strong, .exp-mini > span { display: block; }
+.exp-mini:hover, .exp-card:hover { border-color: var(--brand-600); }
+.exp-card { display: block; text-decoration: none; color: inherit; }
+.variant-row { display: grid; gap: 10px; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); margin: 12px 0 8px; }
+.variant { display: flex; flex-direction: column; gap: 2px; padding: 12px; background: var(--soft); border-radius: 10px; border: 2px solid transparent; }
+.variant.winner { border-color: var(--brand); background: var(--brand-50); }
+.verdict { margin-top: 12px; padding: 12px 14px; border-radius: 10px; background: var(--soft); font-weight: 700; }
+.card-table { background: #fff; border: 1px solid var(--line); border-radius: var(--radius); }
+.row-winner td { background: var(--brand-50); }
+.multi { display: grid; gap: 6px; padding: 10px; border: 1.5px solid var(--line); border-radius: 10px; }
+.form-card { max-width: 720px; }
+.shell-main { min-width: 0; }

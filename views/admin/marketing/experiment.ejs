@@ -1,0 +1,60 @@
+<%- include('../../partials/header') %>
+<%- include('_tabs') %>
+
+<p class="crumbs"><a href="/admin/marketing/experiments?range=<%= r.range %>">A/B tests</a> / <%= x.name %></p>
+
+<div class="card">
+  <div class="row-between wrap">
+    <h2 class="mb-0"><%= x.name %> <span class="status s-<%= x.status %>"><%= x.status %></span></h2>
+    <a href="/admin/marketing/experiments/<%= x.id %>/edit" class="btn btn-ghost btn-sm">Edit test</a>
+  </div>
+  <p class="muted"><%= x.hypothesis || 'No hypothesis written.' %></p>
+  <p class="small">Split URL: <code><%= base %>/go/<%= x.slug %></code> · Primary metric: <strong><%= x.metric.label %></strong> · Min. <%= x.minViews %> views per variant</p>
+  <div class="verdict tone-<%= x.verdict.tone %>"><%= x.verdict.text %></div>
+</div>
+
+<div class="table-wrap mt-2">
+  <table class="table num-table card-table">
+    <thead><tr><th>Variant</th><th>Views</th><th>Leads</th><th>Lead rate</th><th>Customers</th><th>Purchase rate</th><th>Revenue</th><th>Lift vs control</th><th>Confidence</th></tr></thead>
+    <tbody>
+      <% x.variants.forEach((v, i) => { const m = v.m; %>
+        <tr class="<%= x.winnerId === v.page.id ? 'row-winner' : '' %>">
+          <td><strong><%= i === 0 ? 'Control' : 'Variant ' + String.fromCharCode(65 + i) %></strong><br><%= v.page.name %><br><a href="/lp/<%= v.page.slug %>" target="_blank" rel="noopener" class="small">/lp/<%= v.page.slug %> ↗</a></td>
+          <td><%= fmt.num(m.views) %></td><td><%= fmt.num(m.leads) %></td><td><strong><%= fmt.pct(m.leadRate) %></strong></td>
+          <td><%= fmt.num(m.customers) %></td><td><%= fmt.pct(m.purchaseRate) %></td><td><%= fmt.money(m.revenue) %></td>
+          <td><%= v.cmp && v.cmp.lift != null ? (v.cmp.lift >= 0 ? '+' : '') + Math.round(v.cmp.lift * 100) + '%' : '—' %></td>
+          <td><%= v.cmp && v.cmp.confidence != null ? Math.round(v.cmp.confidence * 100) + '%' : '—' %></td>
+        </tr>
+      <% }) %>
+    </tbody>
+  </table>
+</div>
+<p class="fine">Confidence comes from a two-proportion z-test on the primary metric. Call a winner at ≥95% confidence once every variant has at least the minimum number of views.</p>
+
+<div class="grid-2 mt-2">
+  <div class="card">
+    <h3>Ads feeding this test</h3>
+    <% if (!x.ads.length) { %><p class="muted small">No ads point to /go/<%= x.slug %> yet.</p><% } %>
+    <ul class="ad-mini-list">
+      <% x.ads.forEach((ad) => { %><li><span><%= ad.name %> <small class="muted">· <%= ad.campaign.name %></small></span><span><%= fmt.money(ad.m.spend) %> · CPL <%= fmt.money2(ad.m.cpl) %></span></li><% }) %>
+    </ul>
+  </div>
+  <div class="card">
+    <h3><%= x.status === 'concluded' ? 'Decision' : 'Declare a winner' %></h3>
+    <% if (x.status === 'concluded') { %>
+      <p><strong>Winner:</strong> <%= (x.variants.find((v) => v.page.id === x.winnerId) || { page: { name: '—' } }).page.name %></p>
+      <p class="muted"><%= x.decision || 'No notes.' %></p>
+      <p class="small muted">Decided <%= new Date(x.decidedAt).toLocaleDateString() %>. The /go link now sends 100% of traffic to the winner.</p>
+    <% } else { %>
+      <form method="post" action="/admin/marketing/experiments/<%= x.id %>/decide" class="stack" data-confirm="End this test and send all traffic to the selected page?">
+        <div class="field"><label>Winning page</label>
+          <select name="winnerId" required><% x.variants.forEach((v) => { %><option value="<%= v.page.id %>"><%= v.page.name %></option><% }) %></select>
+        </div>
+        <div class="field"><label>What did we learn? What’s the next test?</label><textarea name="decision" rows="3"></textarea></div>
+        <button class="btn btn-primary">Record decision</button>
+      </form>
+    <% } %>
+  </div>
+</div>
+
+<%- include('../../partials/footer') %>

@@ -20,7 +20,7 @@
       <p><span class="badge"><%= plan.name %></span> <strong><%= money(plan.price) %>/<%= plan.interval %></strong></p>
       <p class="muted small">Status: active · Next renewal: [date from Stripe]</p>
       <div class="cta-row">
-        <% if (tier === 'core') { %><a href="/book-call?plan=vip" class="btn btn-primary btn-sm">Apply for VIP 1:1</a><% } %>
+        <% if (tier === 'core') { %><a href="/checkout?plan=vip" class="btn btn-primary btn-sm">Upgrade to VIP 1:1</a><% } %>
         <a href="#" class="btn btn-secondary btn-sm">Update payment method</a>
       </div>
       <form method="post" action="/app/account/cancel" class="mt-2" data-confirm="Cancel your subscription? You'll move to the Free plan and lose coaching calls and full content.">
@@ -47,7 +47,7 @@
         <% orders.forEach((o) => { %>
           <tr>
             <td><%= new Date(o.createdAt).toLocaleDateString() %></td>
-            <td><%= (c.plans[c.legacyPlans[o.plan] || o.plan] || { name: o.plan }).name %><%= o.bump ? ' + Recipe Vault' : '' %></td>
+            <td><%= (c.plans[c.legacyPlans[o.plan] || o.plan] || { name: o.plan }).name %></td>
             <td><%= money(o.amount) %></td>
             <td><span class="badge <%= o.status === 'paid' ? 'badge-good' : '' %>"><%= o.status %><%= o.provider === 'demo' ? ' (demo)' : '' %></span></td>
           </tr>

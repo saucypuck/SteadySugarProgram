@@ -1,0 +1,37 @@
+<%- include('../../partials/header') %>
+<%- include('_tabs') %>
+
+<form method="post" action="/admin/marketing/<%= entity %><%= doc.id ? '/' + doc.id : '' %>" class="card stack form-card">
+  <% if (error) { %><div class="alert alert-error"><%= error %></div><% } %>
+  <% fields.forEach((f) => { const v = doc[f.name]; const id = 'f-' + f.name; const label = f.label || (f.name[0].toUpperCase() + f.name.slice(1)); %>
+    <% if (f.type === 'checkbox') { %>
+      <label class="check"><input type="checkbox" name="<%= f.name %>" <%= v ? 'checked' : '' %>> <%= label %></label>
+    <% } else { %>
+      <div class="field">
+        <label for="<%= id %>"><%= label %><%= f.required ? ' *' : '' %></label>
+        <% if (f.type === 'select') { %>
+          <select id="<%= id %>" name="<%= f.name %>" <%= f.required ? 'required' : '' %>>
+            <% if (!f.required) { %><option value="">—</option><% } %>
+            <% f.opts.forEach((o) => { %><option value="<%= o.value %>" <%= String(v) === String(o.value) ? 'selected' : '' %>><%= o.label %></option><% }) %>
+          </select>
+          <% if (f.required && !f.opts.length) { %><small class="warn">Nothing to choose yet — create one first.</small><% } %>
+        <% } else if (f.type === 'multiselect') { %>
+          <div class="multi">
+            <% f.opts.forEach((o) => { %><label class="check"><input type="checkbox" name="<%= f.name %>" value="<%= o.value %>" <%= (v || []).includes(o.value) ? 'checked' : '' %>> <%= o.label %></label><% }) %>
+          </div>
+        <% } else if (f.type === 'textarea') { %>
+          <textarea id="<%= id %>" name="<%= f.name %>" rows="3"><%= v || '' %></textarea>
+        <% } else { %>
+          <input id="<%= id %>" name="<%= f.name %>" type="<%= f.type || 'text' %>" value="<%= v == null ? '' : v %>" <%= f.required ? 'required' : '' %> <%= f.type === 'number' ? 'step="any"' : '' %>>
+        <% } %>
+        <% if (f.help) { %><small class="muted"><%= f.help %></small><% } %>
+      </div>
+    <% } %>
+  <% }) %>
+  <div class="cta-row">
+    <button class="btn btn-primary"><%= doc.id ? 'Save' : 'Create' %> <%= schema.label.toLowerCase() %></button>
+    <a href="<%= schema.list %>" class="btn btn-ghost">Cancel</a>
+  </div>
+</form>
+
+<%- include('../../partials/footer') %>

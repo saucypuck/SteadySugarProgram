@@ -1,0 +1,15 @@
+<div class="page-head">
+  <div><p class="eyebrow">Marketing</p><h1><%= title %></h1></div>
+  <% if (locals.r) { %>
+    <form method="get" class="range-form">
+      <select name="range" onchange="this.form.submit()" aria-label="Date range">
+        <% Object.entries(ranges).forEach(([k, v]) => { %><option value="<%= k %>" <%= r.range === k ? 'selected' : '' %>><%= v %></option><% }) %>
+      </select>
+    </form>
+  <% } %>
+</div>
+<nav class="tabs tabs-wide">
+  <% [['overview', '/admin/marketing', 'Overview'], ['ads', '/admin/marketing/ads', 'Campaigns & ads'], ['pages', '/admin/marketing/pages', 'Landing pages'], ['experiments', '/admin/marketing/experiments', 'A/B tests']].forEach(([id, href, label]) => { %>
+    <a href="<%= href %><%= locals.r ? '?range=' + r.range : '' %>" class="<%= tab === id ? 'active' : '' %>"><%= label %></a>
+  <% }) %>
+</nav>

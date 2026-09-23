@@ -2,7 +2,7 @@
 
 <section class="checkout">
   <div class="container checkout-grid">
-    <form method="post" action="/checkout" class="checkout-form" data-checkout>
+    <form method="post" action="/checkout" class="checkout-form">
       <input type="hidden" name="plan" value="<%= plan.id %>">
       <div class="plan-switch" role="tablist" aria-label="Plan">
         <% Object.values(c.plans).filter((p) => p.price).forEach((p) => { %>
@@ -35,15 +35,7 @@
         <p class="small muted">🔒 Demo mode — no card is charged. Wire up in <code>src/integrations/payments.js</code>.</p>
       </div>
 
-      <label class="bump">
-        <input type="checkbox" name="bump" data-bump>
-        <div>
-          <strong>Yes! Add the <%= c.orderBump.name %> for just <%= money(c.orderBump.price) %></strong>
-          <p><%= c.orderBump.description %></p>
-        </div>
-      </label>
-
-      <button class="btn btn-primary btn-lg btn-block">Start my program — <span data-total><%= money(plan.price) %></span> today</button>
+      <button class="btn btn-primary btn-lg btn-block">Start my program — <%= money(plan.price) %> today</button>
       <p class="micro center">Renews at <%= money(plan.price) %>/<%= plan.interval %>. Cancel anytime. By continuing you agree to the <a href="/legal/terms">Terms</a> and <a href="/legal/disclaimer">Medical Disclaimer</a>.</p>
     </form>
 
@@ -51,8 +43,7 @@
       <div class="card">
         <h3>Order summary</h3>
         <div class="line"><span><%= c.brand.name %> — <%= plan.name %></span><span><%= money(plan.price) %>/mo</span></div>
-        <div class="line bump-line" data-bump-line hidden><span><%= c.orderBump.name %></span><span><%= money(c.orderBump.price) %></span></div>
-        <div class="line total"><span>Due today</span><span data-total data-base="<%= plan.price %>" data-bump-price="<%= c.orderBump.price %>"><%= money(plan.price) %></span></div>
+        <div class="line total"><span>Due today</span><span><%= money(plan.price) %></span></div>
         <ul class="check-list small mt-2"><% plan.features.forEach((f) => { %><li><%= f %></li><% }) %></ul>
       </div>
       <div class="guarantee small-g">

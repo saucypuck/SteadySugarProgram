@@ -66,19 +66,16 @@
     if (first) select(first.getAttribute('data-day'));
   });
 
-  // Checkout order bump updates the total.
-  var bump = document.querySelector('[data-bump]');
-  if (bump) {
-    var totalEl = document.querySelector('[data-base]');
-    var base = Number(totalEl.getAttribute('data-base'));
-    var extra = Number(totalEl.getAttribute('data-bump-price'));
-    var line = document.querySelector('[data-bump-line]');
-    bump.addEventListener('change', function () {
-      var t = '$' + (base + (bump.checked ? extra : 0)).toLocaleString('en-US');
-      document.querySelectorAll('[data-total]').forEach(function (el) { el.textContent = t; });
-      line.hidden = !bump.checked;
+  // Copy tracking URLs (admin → marketing)
+  document.querySelectorAll('[data-copy]').forEach(function (btn) {
+    btn.addEventListener('click', function () {
+      var input = btn.previousElementSibling;
+      input.select();
+      (navigator.clipboard ? navigator.clipboard.writeText(input.value) : Promise.reject()).catch(function () { document.execCommand('copy'); });
+      btn.textContent = 'Copied ✓';
+      setTimeout(function () { btn.textContent = 'Copy URL'; }, 1500);
     });
-  }
+  });
 
   // Daily habit checkboxes remembered for today (per device).
   var habits = document.querySelector('[data-habits]');

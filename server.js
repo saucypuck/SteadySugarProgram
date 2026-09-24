@@ -41,6 +41,7 @@ app.use(
 );
 
 app.get('/healthz', (req, res) => res.send('ok'));
+app.use('/', require('./src/routes/feed')); // calendar feed: no session/user lookup needed
 
 // Shared template locals.
 app.use((req, res, next) => {

@@ -2,7 +2,7 @@
 const express = require('express');
 const db = require('../db');
 const mk = require('../marketing');
-const { isoDate } = require('../scheduling');
+const { isoDate, today: todayIso } = require('../scheduling');
 
 const router = express.Router();
 const h = (fn) => (req, res, next) => Promise.resolve(fn(req, res, next)).catch(next);
@@ -45,13 +45,13 @@ router.get('/', h(async (req, res) => {
   });
 }));
 router.get('/pages', (req, res) => res.redirect(`/admin/marketing${req.query.range ? `?range=${req.query.range}` : ''}`));
-router.get('/ads', h(async (req, res) => res.render('admin/marketing/ads', { title: 'Campaigns & ads', tab: 'ads', today: isoDate(new Date()), ...(await load(req)) })));
+router.get('/ads', h(async (req, res) => res.render('admin/marketing/ads', { title: 'Campaigns & ads', tab: 'ads', today: todayIso(), ...(await load(req)) })));
 router.get('/experiments', h(async (req, res) => res.render('admin/marketing/experiments', { title: 'A/B tests', tab: 'experiments', ...(await load(req)) })));
 
 // ---- Spend log (manual until ad-platform APIs are connected) ------------------------
 router.post('/spend', h(async (req, res) => {
   const ad = await db.get('ads', req.body.adId);
-  const date = /^\d{4}-\d{2}-\d{2}$/.test(req.body.date) ? req.body.date : isoDate(new Date());
+  const date = /^\d{4}-\d{2}-\d{2}$/.test(req.body.date) ? req.body.date : todayIso();
   if (ad) {
     await db.insert('spend', {
       adId: ad.id,

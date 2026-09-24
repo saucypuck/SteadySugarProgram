@@ -25,8 +25,8 @@
   <%
     const nav = variant === 'admin'
       ? [['/admin', 'Overview', '📊'], ['/admin/members', 'Members', '👥'], ['/admin/crm', 'CRM', '🗂️'], ['/admin/marketing', 'Marketing', '📣'], ['/admin/integrations', 'Integrations', '🔌'], ['/app', 'Member view', '👤', 'desk-only'], ['/', 'Public site', '🌐', 'desk-only']]
-      : [['/app', 'Home', '🏠'], ['/app/courses', 'Courses', '🎓'], ['/app/plans/nutrition', 'Plans', '🥗'], ['/app/log', 'Tracker', '📈'], ['/app/calendar', 'Calls', '📅'], ['/app/account', 'Account', '⚙️']];
-    const active = (href) => href === path || (href !== '/app' && href !== '/admin' && href !== '/' && path.startsWith(href.split('/').slice(0, 3).join('/')));
+      : [['/app', 'Home', '🏠'], ['/app/courses', 'Courses', '🎓'], ['/app/plans/nutrition', 'Plans', '🥗'], ['/app/log', 'Tracker', '📈'], ['/app/schedule', 'Calendar', '📅'], ['/app/account', 'Account', '⚙️']];
+    const active = (href) => href === path || (href === '/app/schedule' && path.startsWith('/app/calendar')) || (href !== '/app' && href !== '/admin' && href !== '/' && path.startsWith(href.split('/').slice(0, 3).join('/')));
   %>
   <div class="shell">
     <aside class="sidebar">

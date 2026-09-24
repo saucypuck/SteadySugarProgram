@@ -36,7 +36,7 @@ router.get('/', h(async (req, res) => {
     temp,
     tasks,
     names,
-    today: sched.isoDate(new Date()),
+    today: sched.today(),
     stats: {
       open: open.length,
       hot: open.filter((c) => c.temperature === 'hot').length,
@@ -63,7 +63,7 @@ router.get('/leads/:id', h(async (req, res, next) => {
     notes, tasks, member, bookings, activity,
     memberTier: member ? planOf(member) : null,
     quiz: content.quiz,
-    today: sched.isoDate(new Date()),
+    today: sched.today(),
   });
 }));
 

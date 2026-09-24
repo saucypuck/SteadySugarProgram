@@ -87,7 +87,7 @@ router.get('/export.csv', h(async (req, res) => {
   const cols = ['name', 'email', 'tier', 'status', 'comp', 'createdAt', 'lessons', 'lastLog', 'ltv', 'mrr', 'source', 'tags'];
   const esc = (v) => `"${String(Array.isArray(v) ? v.join('; ') : v == null ? '' : v).replace(/"/g, '""')}"`;
   res.set('Content-Type', 'text/csv');
-  res.set('Content-Disposition', `attachment; filename="members-${sched.isoDate(new Date())}.csv"`);
+  res.set('Content-Disposition', `attachment; filename="members-${sched.today()}.csv"`);
   res.send([cols.join(','), ...list.map((r) => cols.map((c) => esc(r[c])).join(','))].join('\n'));
 }));
 
@@ -130,7 +130,7 @@ router.get('/:id', h(loadMember), h(async (req, res) => {
     notes,
     tasks,
     timeline,
-    today: sched.isoDate(new Date()),
+    today: sched.today(),
   });
 }));
 

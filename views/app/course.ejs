@@ -51,6 +51,12 @@
         <a href="/app/courses/<%= course.slug %>/<%= course.lessons[0].slug %>" class="btn btn-secondary btn-lg">✓ Completed — review</a>
       <% } %>
     </div>
+    <% if (course.state !== 'locked') { %>
+      <form method="post" action="/app/schedule/enroll" class="mt-1">
+        <input type="hidden" name="course" value="<%= course.slug %>"><input type="hidden" name="on" value="<%= inPlan ? '0' : '1' %>">
+        <button class="btn btn-ghost btn-sm"><%= inPlan ? '✓ In my calendar — remove' : '📅 Add lessons to my calendar' %></button>
+      </form>
+    <% } %>
     <% if (course.next && course.progress.done) { %><p class="small muted mt-1">Up next: <strong><%= course.next.title %></strong> · <%= course.next.minutes %> min</p><% } %>
 
     <div class="tag-row">

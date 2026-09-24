@@ -1,7 +1,7 @@
 // CRM essentials shared by members and leads: notes, follow-up tasks, activity
 // log, lead pipeline stages, and a unified timeline.
 const db = require('./db');
-const { isoDate } = require('./scheduling');
+const { isoDate, today: todayIso } = require('./scheduling');
 
 const LEAD_STAGES = [
   { id: 'new', label: 'New' },
@@ -34,7 +34,7 @@ async function tasksFor(subjectType, subjectId) {
 
 // Open tasks across the business, bucketed for the CRM home.
 async function openTasks() {
-  const today = isoDate(new Date());
+  const today = todayIso();
   const open = (await db.all('tasks')).filter((t) => !t.done).sort((a, b) => String(a.due).localeCompare(String(b.due)));
   return {
     overdue: open.filter((t) => t.due && t.due < today),

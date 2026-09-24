@@ -70,7 +70,8 @@
   document.querySelectorAll('[data-copy]').forEach(function (btn) {
     btn.addEventListener('click', function () {
       var text = btn.getAttribute('data-copy');
-      var done = function () { btn.textContent = 'Copied ✓'; setTimeout(function () { btn.textContent = 'Copy link'; }, 1500); };
+      var original = btn.innerHTML;
+      var done = function () { btn.textContent = 'Copied ✓'; setTimeout(function () { btn.innerHTML = original; }, 1500); };
       if (navigator.clipboard) navigator.clipboard.writeText(text).then(done, function () { window.prompt('Copy this link:', text); });
       else window.prompt('Copy this link:', text);
     });

@@ -51,6 +51,14 @@ Results /quiz/results  → persona + recommended plan (Free / Core / VIP)
 - **Course landing pages:** a trailer (YouTube, Vimeo or .mp4, with a placeholder until one is added), description, outcomes, who it's for, tags, bundles, a sectioned lesson menu with done / free / locked / up-next states, what's included and downloads, the coach, and related courses.
 - All course content lives in `src/courses.js`. Keep slugs stable, because member progress is keyed on them.
 
+**Calendar** `/app/schedule`:
+- **My Plan:** the courses a member follows (recommended from their quiz answers and plan), lesson days and time, meal reminders (per meal, a daily summary, or off), their weekly workout routine, a fasting-reading reminder, a weekly check-in, and how early alerts fire.
+- **Week view** in the app, plus a **private calendar feed** at `/cal/<token>.ics` for Apple, Google or Outlook Calendar. Members subscribe once and get every event with alerts on their phone, no login needed.
+- Events include the actual content: the meals, the exercises, the lesson's action step.
+- Coaching calls carry the business time zone plus alerts 1 day and 1 hour before.
+- The feed only includes content the member's tier unlocks. Members can reset their link; admins can see who has synced.
+- "Today" follows the business time zone (`APP_TIMEZONE`, default America/New_York).
+
 **Member area** `/app`: dashboard (next lesson, next call, glucose trend, quick log, daily habits, upgrade prompts) · courses and lessons with progress tracking · nutrition and workout plans · tracker · calls (monthly allowance per plan) · account and billing.
 
 **Marketing** `/admin/marketing`: one lean page for ad and landing-page decisions.

@@ -7,6 +7,9 @@ const payments = require('../integrations/payments');
 const email = require('../integrations/email');
 const { requireAuth, planOf, tierAllows, canOpenLesson } = require('../auth');
 const { track } = require('../track');
+const crypto = require('crypto');
+const schedule = require('../schedule');
+const ics = require('../ics');
 
 const router = express.Router();
 const h = (fn) => (req, res, next) => Promise.resolve(fn(req, res, next)).catch(next);
@@ -46,7 +49,7 @@ function nextLesson(user) {
 async function callQuota(user) {
   const plan = content.plans[planOf(user)];
   const allowed = plan.callsPerMonth;
-  const month = sched.isoDate(new Date()).slice(0, 7);
+  const month = sched.today().slice(0, 7);
   const mine = await db.findBy('bookings', 'userId', user.id);
   const used = mine.filter((b) => b.type === 'coaching' && b.status === 'booked' && b.date.startsWith(month)).length;
   const hadKickoff = mine.some((b) => b.type === 'kickoff' && b.status !== 'canceled');
@@ -72,7 +75,11 @@ router.get('/', h(async (req, res) => {
   const accessible = content.courses.filter((c) => inLibrary(user, c));
   const totals = accessible.reduce((acc, c) => { const p = courseProgress(user, c); acc.done += p.done; acc.total += p.total; return acc; }, { done: 0, total: 0 });
   const fasting = logs.filter((l) => l.fasting).map((l) => Number(l.fasting));
+  const today = sched.today();
+  const lead = user.leadId ? await db.get('leads', user.leadId) : null;
+  const todays = schedule.buildEvents(user, schedule.getSchedule(user, lead), { from: today, to: today, bookings: quota.mine });
   res.render('app/dashboard', {
+    todays,
     title: 'Dashboard',
     week: programWeek(user),
     next: nextLesson(user),
@@ -156,9 +163,10 @@ function findLesson(req) {
 }
 
 // Course landing page: trailer, description, outcomes, tags/bundles, lesson menu.
-router.get('/courses/:course', (req, res, next) => {
+router.get('/courses/:course', h(async (req, res, next) => {
   const raw = content.courses.find((c) => c.slug === req.params.course);
   if (!raw) return next();
+  const lead = req.user.leadId ? await db.get('leads', req.user.leadId) : null;
   const course = decorate(req.user, raw);
   const related = content.courses
     .filter((c) => c.slug !== raw.slug && inLibrary(req.user, c))
@@ -175,9 +183,10 @@ router.get('/courses/:course', (req, res, next) => {
     related,
     inBundles: content.bundles.filter((b) => raw.tags.includes(b.tag)),
     trailer: trailerEmbed(raw.trailer && raw.trailer.url),
+    inPlan: schedule.getSchedule(req.user, lead).courses.includes(raw.slug),
     counts: { videos: course.lessons.filter((l) => l.type === 'video').length, worksheets: course.lessons.filter((l) => l.type === 'worksheet').length, readings: course.lessons.filter((l) => l.type === 'reading').length },
   });
-});
+}));
 
 router.get('/courses/:course/:lesson', (req, res, next) => {
   const { course, lesson, idx } = findLesson(req);
@@ -262,7 +271,7 @@ router.post('/calendar', h(async (req, res) => {
   booking = await db.update('bookings', booking.id, { joinUrl: meeting.joinUrl });
   await email.send(req.user.email, 'booking_confirmed', { date, time, type });
   req.session.flash = { type: 'success', msg: `Booked: ${sched.CALL_TYPES[type].name} on ${sched.formatDate(date)} at ${sched.formatTime(time)} ${content.brand.timezoneLabel}.` };
-  res.redirect(req.body.onboarding === '1' ? '/app?welcome=1' : '/app/calendar');
+  res.redirect(req.body.onboarding === '1' ? '/app/schedule?welcome=1' : '/app/calendar');
 }));
 
 router.post('/calendar/:id/cancel', h(async (req, res) => {
@@ -272,6 +281,97 @@ router.post('/calendar/:id/cancel', h(async (req, res) => {
   res.redirect('/app/calendar');
 }));
 
+// ---- Calendar: my plan + week view + private feed -------------------------------
+const baseUrl = (req) => process.env.PUBLIC_URL || `${req.protocol}://${req.get('host')}`;
+const newToken = () => crypto.randomBytes(24).toString('hex');
+
+async function ensureToken(user) {
+  if (user.calendarToken) return user.calendarToken;
+  const token = newToken();
+  await db.update('users', user.id, { calendarToken: token });
+  return token;
+}
+
+router.get('/schedule', h(async (req, res) => {
+  const user = req.user;
+  const token = await ensureToken(user);
+  const lead = user.leadId ? await db.get('leads', user.leadId) : null;
+  const s = schedule.getSchedule(user, lead);
+  const week = Math.max(-4, Math.min(8, parseInt(req.query.week, 10) || 0));
+  const today = sched.today();
+  const monday = schedule.addDays(today, -((new Date(`${today}T12:00:00Z`).getUTCDay() + 6) % 7) + week * 7);
+  const sunday = schedule.addDays(monday, 6);
+  const bookings = await db.findBy('bookings', 'userId', user.id);
+  const events = schedule.buildEvents(user, s, { from: monday, to: sunday, bookings });
+  const days = [];
+  for (let i = 0; i < 7; i++) {
+    const date = schedule.addDays(monday, i);
+    days.push({ date, label: sched.formatDate(date), isToday: date === today, isPast: date < today, events: events.filter((e) => e.date === date) });
+  }
+  const httpsUrl = `${baseUrl(req)}/cal/${token}.ics`;
+  const webcal = httpsUrl.replace(/^https?:/, 'webcal:');
+  res.render('app/schedule', {
+    title: 'Calendar',
+    s,
+    days,
+    week,
+    range: `${sched.formatDate(monday)} – ${sched.formatDate(sunday)}`,
+    welcome: req.query.welcome === '1',
+    feed: {
+      https: httpsUrl,
+      webcal,
+      google: `https://calendar.google.com/calendar/render?cid=${encodeURIComponent(webcal)}`,
+      outlook: `https://outlook.live.com/calendar/0/addfromweb?url=${encodeURIComponent(httpsUrl)}&name=${encodeURIComponent('Steady Sugar')}`,
+    },
+    synced: user.calendarFetchedAt || null,
+    full: tierAllows(user, 'core'),
+    courseOptions: content.courses.filter((c) => inLibrary(user, c)).map((c) => ({
+      slug: c.slug, title: c.title, cat: content.categoryById[c.category], recommended: s.recommended.includes(c.slug),
+      openLessons: c.lessons.filter((l) => canOpenLesson(user, c, l)).length, total: c.lessons.length,
+    })),
+    counts: events.reduce((acc, e) => { acc[e.type] = (acc[e.type] || 0) + 1; return acc; }, {}),
+    DAY_NAMES: schedule.DAY_NAMES,
+    ALARMS: schedule.ALARMS,
+  });
+}));
+
+router.post('/schedule', h(async (req, res) => {
+  const lead = req.user.leadId ? await db.get('leads', req.user.leadId) : null;
+  const current = schedule.getSchedule(req.user, lead);
+  await db.update('users', req.user.id, { schedule: schedule.parse(req.body, current) });
+  req.session.flash = { type: 'success', msg: 'Your plan is saved — your calendar will update on its next sync.' };
+  res.redirect('/app/schedule');
+}));
+
+// Add/remove a course from My Plan (from the course landing page).
+router.post('/schedule/enroll', h(async (req, res, next) => {
+  const course = content.courses.find((c) => c.slug === req.body.course);
+  if (!course) return next();
+  const lead = req.user.leadId ? await db.get('leads', req.user.leadId) : null;
+  const s = schedule.getSchedule(req.user, lead);
+  const courses = s.courses.filter((x) => x !== course.slug);
+  if (req.body.on === '1') courses.push(course.slug);
+  const { recommended, isSetUp, ...saved } = s;
+  await db.update('users', req.user.id, { schedule: { ...saved, courses, updatedAt: new Date().toISOString() } });
+  req.session.flash = { type: 'success', msg: req.body.on === '1' ? `${course.title} added to your calendar.` : `${course.title} removed from your calendar.` };
+  res.redirect(`/app/courses/${course.slug}`);
+}));
+
+router.post('/schedule/reset-link', h(async (req, res) => {
+  await db.update('users', req.user.id, { calendarToken: newToken(), calendarFetchedAt: null });
+  req.session.flash = { type: 'info', msg: 'New calendar link created. The old link stops working — re-subscribe on your devices.' };
+  res.redirect('/app/schedule#sync');
+}));
+
+// Single coaching call as an .ics download (for "Add to calendar" buttons).
+router.get('/calendar/:id.ics', h(async (req, res, next) => {
+  const b = await db.get('bookings', req.params.id);
+  if (!b || b.userId !== req.user.id) return next();
+  const [event] = schedule.buildEvents(req.user, { ...schedule.getSchedule(req.user), readings: false, weeklyReview: false, meals: 'off', workouts: false, lessonDays: [] }, { from: b.date, to: b.date, base: baseUrl(req), bookings: [b] });
+  res.set('Content-Disposition', `attachment; filename="steady-sugar-call-${b.date}.ics"`);
+  res.type('text/calendar; charset=utf-8').send(ics.calendar({ name: 'Steady Sugar call', events: [event], domain: req.get('host') }));
+}));
+
 // ---- Tracker -----------------------------------------------------------------
 router.get('/log', h(async (req, res) => {
   const logs = (await db.findBy('logs', 'userId', req.user.id)).sort((a, b) => b.date.localeCompare(a.date));
@@ -279,7 +379,7 @@ router.get('/log', h(async (req, res) => {
   res.render('app/log', {
     title: 'Tracker',
     logs,
-    today: sched.isoDate(new Date()),
+    today: sched.today(),
     fastingSpark: sparkline(asc.filter((l) => l.fasting).map((l) => Number(l.fasting)).slice(-30), 600, 120),
     postSpark: sparkline(asc.filter((l) => l.postMeal).map((l) => Number(l.postMeal)).slice(-30), 600, 120),
   });
@@ -289,7 +389,7 @@ router.post('/log', h(async (req, res) => {
   const num = (v) => (v === '' || v == null ? null : Math.max(0, Math.min(100000, Number(v)) || 0));
   await db.insert('logs', {
     userId: req.user.id,
-    date: /^\d{4}-\d{2}-\d{2}$/.test(req.body.date) ? req.body.date : sched.isoDate(new Date()),
+    date: /^\d{4}-\d{2}-\d{2}$/.test(req.body.date) ? req.body.date : sched.today(),
     fasting: num(req.body.fasting),
     postMeal: num(req.body.postMeal),
     weight: num(req.body.weight),

@@ -1,0 +1,158 @@
+<%- include('../partials/header') %>
+
+<div class="page-head">
+  <div><p class="eyebrow">My plan</p><h1>Calendar</h1></div>
+  <div class="cta-row mt-0">
+    <a href="#plan" class="btn btn-secondary btn-sm">Edit my plan</a>
+    <a href="/app/calendar" class="btn btn-primary btn-sm">📞 Coaching calls</a>
+  </div>
+</div>
+
+<% if (welcome) { %>
+  <div class="card upsell mb-2">
+    <h3>🎉 Your plan is ready</h3>
+    <p class="mb-0">We’ve scheduled your lessons<%= full ? ', meals and workouts' : '' %> and daily reminders. <strong>Add it to your phone’s calendar below</strong> so reminders come to you — no need to log in each day.</p>
+  </div>
+<% } %>
+
+<!-- 1. Sync -->
+<section class="card sync-card" id="sync">
+  <div class="sync-head">
+    <div>
+      <h3 class="mb-0">📲 Put your plan on your phone</h3>
+      <p class="small muted mb-0">Subscribe once. Lessons, <%= full ? 'meals, workouts, ' : '' %>reminders and coaching calls show up in your calendar with alerts, and update automatically as your plan changes.</p>
+    </div>
+    <span class="sync-status <%= synced ? 'ok' : '' %>"><%= synced ? '✓ Synced ' + new Date(synced).toLocaleDateString('en-US', { month: 'short', day: 'numeric' }) : 'Not synced yet' %></span>
+  </div>
+  <div class="sync-buttons">
+    <a href="<%= feed.webcal %>" class="sync-btn"><span>🍎</span>Apple Calendar<small>iPhone, iPad, Mac</small></a>
+    <a href="<%= feed.google %>" target="_blank" rel="noopener" class="sync-btn"><span>📅</span>Google Calendar<small>Android, Gmail</small></a>
+    <a href="<%= feed.outlook %>" target="_blank" rel="noopener" class="sync-btn"><span>📧</span>Outlook<small>Outlook.com, Office</small></a>
+    <button type="button" class="sync-btn" data-copy="<%= feed.https %>"><span>🔗</span>Copy link<small>Any other calendar app</small></button>
+  </div>
+  <details class="more mt-1">
+    <summary>Privacy &amp; troubleshooting</summary>
+    <ul class="small muted help-list">
+      <li>This private link shows your plan and call times (never your glucose readings). Don’t share it.</li>
+      <li>Calendar apps refresh subscribed calendars every few hours — Google can take up to 24h. Changes here appear on the next refresh.</li>
+      <li>Times follow your phone’s time zone. Coaching calls are set in <%= c.brand.timezoneLabel %> and convert automatically.</li>
+      <li>Lesson and meal links in events open the app — you’ll only need to log in if your session has expired (sessions last 30 days).</li>
+    </ul>
+    <form method="post" action="/app/schedule/reset-link" data-confirm="Create a new private link? The current one will stop working on every device.">
+      <button class="btn btn-ghost btn-sm danger">Reset my calendar link</button>
+    </form>
+  </details>
+</section>
+
+<!-- 2. Week view -->
+<section class="mt-2">
+  <div class="week-nav">
+    <a href="/app/schedule?week=<%= week - 1 %>" class="btn btn-ghost btn-sm" aria-label="Previous week">‹ Prev</a>
+    <div class="center"><strong><%= range %></strong><% if (week !== 0) { %> · <a href="/app/schedule" class="small">This week</a><% } %></div>
+    <a href="/app/schedule?week=<%= week + 1 %>" class="btn btn-ghost btn-sm" aria-label="Next week">Next ›</a>
+  </div>
+  <div class="legend-row">
+    <% [['lesson', '🎓 Lessons'], ['meal', '🥗 Meals'], ['workout', '💪 Movement'], ['habit', '🩸 Habits'], ['call', '📞 Calls']].forEach(([t, label]) => { if (!counts[t]) return; %>
+      <span class="ev-chip ev-<%= t %>"><%= label %> <b><%= counts[t] %></b></span>
+    <% }) %>
+  </div>
+  <div class="week-grid">
+    <% days.forEach((d) => { %>
+      <div class="day-col <%= d.isToday ? 'today' : '' %> <%= d.isPast ? 'past' : '' %>">
+        <div class="day-col-head"><strong><%= d.label.split(',')[0] %></strong> <span><%= d.label.split(', ')[1] %></span><% if (d.isToday) { %><em>Today</em><% } %></div>
+        <% if (!d.events.length) { %><p class="muted small day-empty">Nothing scheduled</p><% } %>
+        <% d.events.forEach((e) => { %>
+          <a href="<%= e.url ? e.url.replace(/^https?:\/\/[^/]+/, '') : '#' %>" class="ev ev-<%= e.type %>" <%- e.type === 'call' && e.url && /^https?:/.test(e.url) && !e.url.includes('/app/') ? 'target="_blank" rel="noopener"' : '' %>>
+            <span class="ev-time"><%= e.time ? sched.formatTime(e.time) : 'All day' %><%= e.tzid ? ' ' + c.brand.timezoneLabel : '' %></span>
+            <span class="ev-title"><%= e.icon %> <%= e.summary %></span>
+          </a>
+        <% }) %>
+      </div>
+    <% }) %>
+  </div>
+</section>
+
+<!-- 3. My plan settings -->
+<form method="post" action="/app/schedule" class="plan-form mt-3" id="plan">
+  <div class="section-head mt-0"><h2 class="h3 mb-0">My plan</h2><button class="btn btn-primary btn-sm">Save plan</button></div>
+  <div class="plan-grid">
+    <fieldset class="card">
+      <legend>🎓 Courses I’m following</legend>
+      <p class="small muted">Lessons are scheduled one per lesson day, in this order. Recommended for you based on your quiz and plan.</p>
+      <div class="course-picks">
+        <% courseOptions.forEach((co) => { %>
+          <label class="check pick">
+            <input type="checkbox" name="courses" value="<%= co.slug %>" <%= s.courses.includes(co.slug) ? 'checked' : '' %>>
+            <span><%= co.cat.icon %> <%= co.title %>
+              <% if (co.recommended) { %><span class="badge">Recommended</span><% } %>
+              <small class="muted"><%= co.openLessons < co.total ? co.openLessons + ' of ' + co.total + ' lessons available on your plan' : co.total + ' lessons' %></small></span>
+          </label>
+        <% }) %>
+      </div>
+    </fieldset>
+
+    <div class="stack-lg">
+      <fieldset class="card">
+        <legend>📚 Lesson days</legend>
+        <div class="day-picks">
+          <% ['mon', 'tue', 'wed', 'thu', 'fri', 'sat', 'sun'].forEach((d) => { %>
+            <label class="day-pick"><input type="checkbox" name="lessonDays" value="<%= d %>" <%= s.lessonDays.includes(d) ? 'checked' : '' %>><span><%= DAY_NAMES[d] %></span></label>
+          <% }) %>
+        </div>
+        <div class="field mt-1"><label for="lt">Time</label><input id="lt" type="time" name="lessonTime" value="<%= s.lessonTime %>"></div>
+      </fieldset>
+
+      <fieldset class="card <%= full ? '' : 'is-locked' %>">
+        <legend>🥗 Meal plan</legend>
+        <% if (full) { %>
+          <div class="seg">
+            <% [['each', 'Each meal'], ['daily', 'Daily summary'], ['off', 'Off']].forEach(([v, l]) => { %><label><input type="radio" name="meals" value="<%= v %>" <%= s.meals === v ? 'checked' : '' %>><span><%= l %></span></label><% }) %>
+          </div>
+          <div class="grid-3 tight3 mt-1">
+            <div class="field"><label for="mb">Breakfast</label><input id="mb" type="time" name="breakfast" value="<%= s.mealTimes.breakfast %>"></div>
+            <div class="field"><label for="ml">Lunch</label><input id="ml" type="time" name="lunch" value="<%= s.mealTimes.lunch %>"></div>
+            <div class="field"><label for="md">Dinner</label><input id="md" type="time" name="dinner" value="<%= s.mealTimes.dinner %>"></div>
+          </div>
+        <% } else { %>
+          <p class="small muted">Meal reminders with what to eat each day are included with Core.</p>
+          <a href="/checkout?plan=core" class="btn btn-secondary btn-sm">Unlock — <%= money(c.plans.core.price) %>/mo</a>
+        <% } %>
+      </fieldset>
+
+      <fieldset class="card <%= full ? '' : 'is-locked' %>">
+        <legend>💪 Workouts</legend>
+        <% if (full) { %>
+          <label class="check"><input type="checkbox" name="workouts" <%= s.workouts ? 'checked' : '' %>> Add my weekly workout routine (strength days, walks, rest)</label>
+          <div class="field mt-1"><label for="wt">Strength workout time</label><input id="wt" type="time" name="workoutTime" value="<%= s.workoutTime %>"><small class="muted">Walk reminders go 30 min after lunch.</small></div>
+        <% } else { %>
+          <p class="small muted">Your weekly workout routine with exercises is included with Core.</p>
+        <% } %>
+      </fieldset>
+    </div>
+
+    <div class="stack-lg">
+      <fieldset class="card">
+        <legend>🩸 Daily &amp; weekly habits</legend>
+        <label class="check"><input type="checkbox" name="readings" <%= s.readings ? 'checked' : '' %>> Fasting reading reminder</label>
+        <div class="field mt-1"><label for="rt">Time</label><input id="rt" type="time" name="readingTime" value="<%= s.readingTime %>"></div>
+        <label class="check mt-2"><input type="checkbox" name="weeklyReview" <%= s.weeklyReview ? 'checked' : '' %>> Weekly check-in</label>
+        <div class="grid-2 tight mt-1">
+          <div class="field"><label for="rd">Day</label><select id="rd" name="reviewDay"><% ['mon', 'tue', 'wed', 'thu', 'fri', 'sat', 'sun'].forEach((d) => { %><option value="<%= d %>" <%= s.reviewDay === d ? 'selected' : '' %>><%= DAY_NAMES[d] %></option><% }) %></select></div>
+          <div class="field"><label for="rvt">Time</label><input id="rvt" type="time" name="reviewTime" value="<%= s.reviewTime %>"></div>
+        </div>
+      </fieldset>
+
+      <fieldset class="card">
+        <legend>🔔 Reminders</legend>
+        <div class="field"><label for="al">Alert me before lessons &amp; workouts</label>
+          <select id="al" name="alarm"><% ALARMS.forEach((m) => { %><option value="<%= m %>" <%= s.alarm === m ? 'selected' : '' %>><%= m === 0 ? 'At start time' : m < 60 ? m + ' minutes before' : (m / 60) + ' hour' + (m > 60 ? 's' : '') + ' before' %></option><% }) %></select>
+        </div>
+        <p class="small muted mt-1">Coaching calls always alert 1 day and 1 hour before.</p>
+        <label class="check mt-1"><input type="checkbox" name="emailDigest" <%= s.emailDigest ? 'checked' : '' %>> Also email me a morning agenda <span class="badge">soon</span></label>
+      </fieldset>
+    </div>
+  </div>
+  <div class="cta-row"><button class="btn btn-primary">Save plan</button></div>
+</form>
+
+<%- include('../partials/footer') %>

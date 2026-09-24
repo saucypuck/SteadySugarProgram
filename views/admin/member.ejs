@@ -60,6 +60,10 @@
           <dt>Doctor aware</dt><dd><%= m.goals.doctorAware ? 'Yes' : 'No' %></dd>
         </dl>
       <% } %>
+      <dl class="kv mt-1">
+        <dt>Calendar</dt><dd><%= m.calendarFetchedAt ? '✓ Synced to their phone · last ' + new Date(m.calendarFetchedAt).toLocaleDateString() : (m.calendarToken ? 'Link created, not synced yet' : 'Not set up') %></dd>
+        <dt>Following</dt><dd><%= m.schedule && m.schedule.courses ? m.schedule.courses.map((s) => (c.courses.find((x) => x.slug === s) || { title: s }).title).join(', ') : 'Default recommendations' %></dd>
+      </dl>
     </section>
 
     <!-- Profile & source -->

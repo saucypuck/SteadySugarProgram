@@ -82,13 +82,15 @@
 
   <!-- Daily habits -->
   <div class="card">
-    <p class="eyebrow">Today’s habits</p>
-    <ul class="habits" data-habits>
-      <li><label><input type="checkbox"> Protein at breakfast</label></li>
-      <li><label><input type="checkbox"> 10-min walk after a meal</label></li>
-      <li><label><input type="checkbox"> Veggies first at dinner</label></li>
-      <li><label><input type="checkbox"> Lights out on time</label></li>
+    <div class="row-between"><p class="eyebrow mb-0">Today’s plan</p><a href="/app/schedule" class="small">Calendar →</a></div>
+    <% if (!todays.length) { %><p class="muted small mt-1">Nothing scheduled today. <a href="/app/schedule#plan">Set up your plan</a>.</p><% } %>
+    <ul class="today-list">
+      <% todays.slice(0, 7).forEach((e) => { %>
+        <li class="ev-<%= e.type %>"><span class="ev-time"><%= sched.formatTime(e.time) %></span><a href="<%= (e.url || '#').replace(/^https?:\/\/[^/]+/, '') %>"><%= e.icon %> <%= e.summary %></a></li>
+      <% }) %>
     </ul>
+    <% if (todays.length > 7) { %><a href="/app/schedule" class="small">+<%= todays.length - 7 %> more</a><% } %>
+    <a href="/app/schedule#sync" class="btn btn-ghost btn-sm mt-1">📲 Get reminders on my phone</a>
   </div>
 
   <% if (tier === 'free' && !isAdmin) { %>

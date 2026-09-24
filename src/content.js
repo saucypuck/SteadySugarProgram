@@ -9,6 +9,7 @@ const brand = {
   supportEmail: 'support@steadysugar.example',
   programWeeks: 12,
   timezoneLabel: 'ET',
+  timezone: 'America/New_York', // coaching call times are in this zone
 };
 
 // Tiers, lowest to highest. `rank` drives content gating (see tierAllows).

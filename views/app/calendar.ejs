@@ -7,7 +7,7 @@
 <% } %>
 
 <div class="page-head">
-  <div><p class="eyebrow">Coaching calls</p><h1><%= onboarding ? 'Book your ' + (type.id === 'kickoff' ? 'kickoff' : 'first coaching') + ' call' : 'Calls' %></h1></div>
+  <div><p class="eyebrow"><a href="/app/schedule" class="plain-link">Calendar</a> / Coaching calls</p><h1><%= onboarding ? 'Book your ' + (type.id === 'kickoff' ? 'kickoff' : 'first coaching') + ' call' : 'Coaching calls' %></h1></div>
   <% if (quota.allowed) { %><span class="pill"><%= quota.remaining %> of <%= quota.allowed %> coaching calls left this month</span><% } %>
 </div>
 
@@ -50,6 +50,7 @@
             <div><strong><%= sched.CALL_TYPES[b.type].name %></strong><small><%= sched.formatDate(b.date) %> · <%= sched.formatTime(b.time) %> <%= c.brand.timezoneLabel %></small></div>
             <div class="call-actions">
               <a href="<%= b.joinUrl || '#' %>" class="btn btn-secondary btn-sm">Join</a>
+              <a href="/app/calendar/<%= b.id %>.ics" class="btn btn-ghost btn-sm" title="Download for Apple/Outlook calendar">+ Calendar</a>
               <form method="post" action="/app/calendar/<%= b.id %>/cancel" data-confirm="Cancel this call?"><button class="btn btn-ghost btn-sm">Cancel</button></form>
             </div>
           </li>

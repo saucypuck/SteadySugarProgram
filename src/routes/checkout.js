@@ -91,8 +91,7 @@ router.post('/welcome', requireAuth, h(async (req, res) => {
   });
   const plan = content.plans[planOf(req.user)];
   if (plan.callsPerMonth > 0) return res.redirect('/app/calendar?onboarding=1');
-  req.session.flash = { type: 'success', msg: 'You\u2019re all set — start with your first lesson below.' };
-  res.redirect('/app');
+  res.redirect('/app/schedule?welcome=1');
 }));
 
 module.exports = router;

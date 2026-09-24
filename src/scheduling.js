@@ -13,6 +13,11 @@ const WORKDAYS = [1, 2, 3, 4, 5]; // Mon–Fri
 const pad = (n) => String(n).padStart(2, '0');
 const isoDate = (d) => `${d.getUTCFullYear()}-${pad(d.getUTCMonth() + 1)}-${pad(d.getUTCDate())}`;
 
+// "Today" in the business time zone (not the server's UTC clock), so evening
+// users in the US don't see tomorrow's plan. Override with APP_TIMEZONE.
+const TZ = process.env.APP_TIMEZONE || 'America/New_York';
+const today = () => new Intl.DateTimeFormat('en-CA', { timeZone: TZ, year: 'numeric', month: '2-digit', day: '2-digit' }).format(new Date());
+
 function formatDate(iso) {
   const d = new Date(`${iso}T12:00:00Z`);
   return d.toLocaleDateString('en-US', { weekday: 'short', month: 'short', day: 'numeric', timeZone: 'UTC' });
@@ -38,7 +43,7 @@ function availability(bookings, days = 14) {
 }
 
 function isUpcoming(b) {
-  return b.status === 'booked' && b.date >= isoDate(new Date());
+  return b.status === 'booked' && b.date >= today();
 }
 
-module.exports = { CALL_TYPES, availability, formatDate, formatTime, isUpcoming, isoDate };
+module.exports = { CALL_TYPES, availability, formatDate, formatTime, isUpcoming, isoDate, today };

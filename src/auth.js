@@ -74,7 +74,10 @@ function requireAuth(req, res, next) {
 
 function requireAdmin(req, res, next) {
   if (isAdmin(req.user)) return next();
-  if (!req.user) return requireAuth(req, res, next);
+  if (!req.user) {
+    req.session.returnTo = req.originalUrl;
+    return res.redirect('/login');
+  }
   res.status(403).render('marketing/error', { title: 'Not allowed', message: 'Admins only.' });
 }
 

@@ -18,7 +18,7 @@ router.get('/', h(async (req, res) => {
   );
   const accounts = users.filter((u) => !isAdmin(u));
   const members = accounts.filter(isPaid);
-  const mrr = members.reduce((sum, u) => sum + content.plans[planOf(u)].price, 0);
+  const mrr = members.filter((u) => !u.comp).reduce((sum, u) => sum + content.plans[planOf(u)].price, 0);
   const revenue = orders.filter((o) => o.status === 'paid').reduce((s, o) => s + Number(o.amount || 0), 0);
   const count = (name) => events.filter((e) => e.name === name).length;
 
@@ -61,5 +61,8 @@ router.get('/', h(async (req, res) => {
 }));
 
 router.use('/marketing', require('./admin-marketing'));
+router.use('/members', require('./admin-members'));
+router.use('/crm', require('./admin-crm'));
+router.use('/integrations', require('./admin-integrations'));
 
 module.exports = router;

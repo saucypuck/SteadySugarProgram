@@ -24,7 +24,7 @@
 <% if (variant === 'app' || variant === 'admin') { %>
   <%
     const nav = variant === 'admin'
-      ? [['/admin', 'Overview', '📊'], ['/admin/marketing', 'Marketing', '📣'], ['/app', 'Member view', '👤'], ['/', 'Public site', '🌐']]
+      ? [['/admin', 'Overview', '📊'], ['/admin/members', 'Members', '👥'], ['/admin/crm', 'CRM', '🗂️'], ['/admin/marketing', 'Marketing', '📣'], ['/admin/integrations', 'Integrations', '🔌'], ['/app', 'Member view', '👤', 'desk-only'], ['/', 'Public site', '🌐', 'desk-only']]
       : [['/app', 'Home', '🏠'], ['/app/courses', 'Courses', '🎓'], ['/app/plans/nutrition', 'Plans', '🥗'], ['/app/log', 'Tracker', '📈'], ['/app/calendar', 'Calls', '📅'], ['/app/account', 'Account', '⚙️']];
     const active = (href) => href === path || (href !== '/app' && href !== '/admin' && href !== '/' && path.startsWith(href.split('/').slice(0, 3).join('/')));
   %>
@@ -32,8 +32,8 @@
     <aside class="sidebar">
       <%- brandMark %>
       <nav class="side-nav">
-        <% nav.forEach(([href, label, icon]) => { %>
-          <a href="<%= href %>" class="<%= active(href) ? 'active' : '' %>"><span class="ico"><%= icon %></span><span><%= label %></span></a>
+        <% nav.forEach(([href, label, icon, cls]) => { %>
+          <a href="<%= href %>" class="<%= active(href) ? 'active' : '' %> <%= cls || '' %>"><span class="ico"><%= icon %></span><span><%= label %></span></a>
         <% }) %>
         <% if (variant === 'app' && tier === 'free' && !isAdmin) { %><a href="/pricing" class="side-upgrade"><span class="ico">⭐</span><span>Upgrade</span></a><% } %>
         <% if (isAdmin && variant === 'app') { %><a href="/admin"><span class="ico">📊</span><span>Admin</span></a><% } %>

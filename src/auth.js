@@ -47,6 +47,7 @@ async function verify(email, password) {
 
 function login(req, user) {
   req.session.userId = user.id;
+  req.user = user; // so events fired later in this request know who it was
 }
 
 async function loadUser(req, res, next) {

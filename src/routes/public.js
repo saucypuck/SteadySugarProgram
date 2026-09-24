@@ -30,7 +30,7 @@ router.post('/free-guide', h(async (req, res) => {
   if (!validEmail(addr)) return res.status(400).render('marketing/free-guide', { title: 'Free 7-Day Meal Guide', error: 'Please enter a valid email.' });
   await db.insert('leads', { name: String(req.body.name || '').trim(), email: addr, source: 'guide', temperature: 'cold', utm: attribution(req) });
   await email.send(addr, 'lead_guide');
-  await track(req, 'lead_guide');
+  await track(req, 'lead_guide', { email: addr });
   res.redirect('/free-guide/thanks');
 }));
 router.get('/free-guide/thanks', (req, res) => res.render('marketing/free-guide-thanks', { title: 'Check your inbox' }));
@@ -61,7 +61,7 @@ router.post('/quiz', h(async (req, res) => {
   });
   req.session.leadId = lead.id;
   await email.send(addr, 'lead_quiz', { plan: result.plan });
-  await track(req, 'quiz_complete', { plan: result.plan });
+  await track(req, 'quiz_complete', { plan: result.plan, email: addr, name: lead.name, temperature: result.temperature });
   res.redirect('/quiz/results');
 }));
 
@@ -105,7 +105,7 @@ router.post('/book-call', h(async (req, res) => {
   booking = await db.update('bookings', booking.id, { joinUrl: meeting.joinUrl });
   if (req.session.leadId) await db.update('leads', req.session.leadId, { temperature: 'hot', bookedCall: true });
   await email.send(addr, 'booking_confirmed', { date, time });
-  await track(req, 'discovery_booked');
+  await track(req, 'discovery_booked', { email: addr, date, time });
   req.session.lastBookingId = booking.id;
   res.redirect('/book-call/confirmed');
 }));

@@ -57,6 +57,18 @@ Results /quiz/results  → persona + recommended plan (Free / Core / VIP)
 - **A/B tests**: `/go/<slug>` splits traffic evenly and keeps each visitor on the same variant. Results show lift and significance; declaring a winner sends all traffic to it.
 - **Attribution**: the last ad clicked (UTMs) and the landing page are saved on every lead, signup and purchase.
 
+**Members** `/admin/members`: every account, with tabs by tier (Free / Core / VIP / Canceled / Complimentary), search, sorting and CSV export. Headline numbers: MRR, ARPU, free accounts, cancellations and weekly engagement. Each member page covers:
+- **Subscription management:** change plan, cancel (with a reason), reactivate, mark complimentary (excluded from MRR), and send a password reset.
+- **Profile:** engagement (lessons, readings, glucose trend, calls), goals, quiz answers, attribution, tags and billing history.
+- **CRM:** notes, follow-up tasks and a full activity timeline.
+
+**CRM** `/admin/crm`: a lead pipeline (New → Contacted → Call booked → Won / Lost, with lost reasons), follow-ups grouped into overdue / today / upcoming, a hot-lead filter and win rate. Leads come from the quiz, the free guide and discovery calls. A lead that becomes a member moves to Won automatically.
+
+**Integrations** `/admin/integrations`: a catalog covering payments, email, SMS, calls and calendar, ad platforms, analytics, content and health data. Connect, change, test or disconnect each one.
+- Keys are encrypted at rest with AES-256-GCM, using a key derived from `SESSION_SECRET`. Environment variables take precedence over saved values.
+- **Live today:** Slack alerts, and custom outgoing webhooks (Zapier, Make, your own endpoints) that are HMAC-signed and fire on leads, signups, calls, purchases, cancellations and plan changes.
+- The other integrations store their credentials now, ready for their adapters to be built.
+
 **Admin** `/admin`: MRR, revenue, members, leads (hot leads to call first), funnel conversion, members by plan, upcoming calls, orders with UTM source.
 
 ## Where things live
@@ -70,6 +82,9 @@ Results /quiz/results  → persona + recommended plan (Free / Core / VIP)
 | **Email (Postmark/Resend/ConvertKit)** | `src/integrations/email.js` |
 | **Video calls (Zoom/Meet)** | `src/integrations/meetings.js` |
 | Funnel event tracking + attribution | `src/track.js` |
+| CRM helpers (notes, tasks, pipeline, timeline) | `src/crm.js` |
+| Integration catalog + encrypted settings | `src/integrations/registry.js` |
+| Outgoing webhooks + Slack alerts | `src/integrations/webhooks.js` |
 | Marketing schemas, metrics, A/B stats, decision rules | `src/marketing.js` |
 | Landing page + A/B split routes | `src/routes/lp.js` |
 | Data store (Postgres JSONB, or in-memory) | `src/db.js` |

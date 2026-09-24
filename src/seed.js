@@ -5,6 +5,33 @@ const { createUser } = require('./auth');
 const sched = require('./scheduling');
 const { seedMarketing } = require('./seed-marketing');
 
+// Demo CRM data: pipeline stages, a few notes and follow-ups. Runs once.
+async function seedCrm() {
+  if ((await db.all('tasks')).length) return;
+  const day = (n) => sched.isoDate(new Date(Date.now() + n * 864e5));
+  const leads = await db.all('leads');
+  const byEmail = Object.fromEntries(leads.map((l) => [l.email, l]));
+  const by = 'admin@steadysugar.test';
+  if (byEmail['pat@example.com']) {
+    const l = byEmail['pat@example.com'];
+    await db.update('leads', l.id, { stage: 'contacted' });
+    await db.insert('notes', { subjectType: 'lead', subjectId: l.id, body: 'Left a voicemail. Very interested in Core; wants to know if it works with metformin.', by });
+    await db.insert('tasks', { subjectType: 'lead', subjectId: l.id, title: 'Call Pat back re: metformin question', due: day(-1), done: false, by });
+  }
+  if (byEmail['sam@example.com']) {
+    const l = byEmail['sam@example.com'];
+    await db.insert('tasks', { subjectType: 'lead', subjectId: l.id, title: 'Send VIP 1:1 overview + testimonials', due: day(0), done: false, by });
+  }
+  if (byEmail['jo@example.com']) await db.update('leads', byEmail['jo@example.com'].id, { stage: 'lost', lostReason: 'Not ready / timing' });
+  const member = await db.findOneBy('users', 'email', DEMO_MEMBER.email);
+  if (member) {
+    await db.update('users', member.id, { tags: ['prediabetes', 'grandparent', 'morning-highs'] });
+    await db.insert('notes', { subjectType: 'user', subjectId: member.id, body: 'Kickoff: fasting readings high on weekends. Focus on consistent Sat/Sun breakfast + evening walk.', by });
+    await db.insert('tasks', { subjectType: 'user', subjectId: member.id, title: 'Review week 4 readings before next call', due: day(2), done: false, by });
+    await db.insert('tasks', { subjectType: 'user', subjectId: member.id, title: 'Send welcome gift', due: day(-10), done: true, by });
+  }
+}
+
 const DEMO_MEMBER = { email: 'demo@steadysugar.test', password: 'demo1234' };
 const DEMO_ADMIN = { email: 'admin@steadysugar.test', password: 'admin1234' };
 const DEMO_FREE = { email: 'free@steadysugar.test', password: 'free1234' };
@@ -19,6 +46,7 @@ async function seedDemo() {
     await createUser({ name: 'Frankie Free', ...DEMO_FREE, extra: { completedLessons: ['foundations/how-blood-sugar-works'] } });
   }
   if (await db.findOneBy('users', 'email', DEMO_MEMBER.email)) {
+    await seedCrm();
     console.log('[seed] Demo accounts present.');
     return;
   }
@@ -61,6 +89,7 @@ async function seedDemo() {
   for (const [name, n] of [['quiz_start', 42], ['quiz_complete', 27], ['signup_free', 18], ['checkout_view', 11], ['purchase', 4]]) {
     for (let i = 0; i < n; i++) await db.insert('events', { name, seeded: true });
   }
+  await seedCrm();
   console.log(`[seed] Demo member ${DEMO_MEMBER.email} / ${DEMO_MEMBER.password} · free ${DEMO_FREE.email} / ${DEMO_FREE.password} · admin ${DEMO_ADMIN.email} / ${DEMO_ADMIN.password}`);
 }
 

@@ -1,0 +1,67 @@
+<%- include('../partials/header') %>
+
+<div class="page-head">
+  <div><p class="eyebrow">Settings</p><h1>Integrations</h1></div>
+  <span class="pill"><%= connected %> of <%= total %> connected</span>
+</div>
+
+<p class="muted small">Connect the tools that run the business. Keys are encrypted at rest, and values set as Render environment variables always take precedence. <strong>Live</strong> integrations work today; the rest store credentials now so the code hookup is plug-and-play.</p>
+
+<% categories.forEach((cat) => { %>
+  <h2 class="cat-title"><%= cat.name %></h2>
+  <div class="int-grid">
+    <% cat.items.forEach((it) => { %>
+      <a href="/admin/integrations/<%= it.id %>" class="int-card">
+        <div class="row-between">
+          <div class="int-logo"><%= it.name.slice(0, 1) %></div>
+          <span class="int-state st-<%= it.state %>"><%= { connected: 'Connected', saved: 'Credentials saved', disabled: 'Disabled', incomplete: 'Incomplete', not_connected: 'Not connected' }[it.state] %></span>
+        </div>
+        <strong><%= it.name %> <% if (it.live) { %><span class="live-tag">Live</span><% } %></strong>
+        <small class="muted"><%= it.desc %></small>
+        <span class="int-cta"><%= it.state === 'not_connected' ? 'Connect →' : 'Manage →' %></span>
+      </a>
+    <% }) %>
+  </div>
+<% }) %>
+
+<!-- Custom webhooks -->
+<h2 class="cat-title" id="webhooks">Automation — custom webhooks <span class="live-tag">Live</span></h2>
+<div class="lp-block">
+  <p class="muted small">Send business events to Zapier, Make, n8n or your own endpoint as JSON. Each request is signed with <code>X-SteadySugar-Signature</code> (HMAC-SHA256 of the body using the webhook’s secret).</p>
+  <div class="table-wrap">
+    <table class="traffic">
+      <thead><tr><th>Webhook</th><th>Events</th><th>Last delivery</th><th></th></tr></thead>
+      <tbody>
+        <% if (!hooks.length) { %><tr><td colspan="4" class="muted">No webhooks yet.</td></tr><% } %>
+        <% hooks.forEach((w) => { %>
+          <tr>
+            <td><strong><%= w.name %></strong> <span class="status s-<%= w.enabled ? 'active' : 'paused' %>"><%= w.enabled ? 'on' : 'paused' %></span><br><small class="muted break"><%= w.url %></small>
+              <details class="more"><summary>Signing secret</summary><code class="break"><%= w.secret %></code></details></td>
+            <td><small><%= (w.events || []).map((e) => events[e] || e).join(', ') %></small></td>
+            <td><% if (w.lastAt) { %><span class="<%= w.lastOk ? 'tone-good' : 'tone-bad' %>"><%= w.lastOk ? '✓' : '✕' %> <%= w.lastStatus || w.lastError %></span><br><small class="muted"><%= new Date(w.lastAt).toLocaleString() %></small><% } else { %><span class="muted">—</span><% } %></td>
+            <td class="row-actions">
+              <form method="post" action="/admin/integrations/webhooks/<%= w.id %>/test"><button class="btn btn-ghost btn-sm">Test</button></form>
+              <form method="post" action="/admin/integrations/webhooks/<%= w.id %>/toggle"><button class="btn btn-ghost btn-sm"><%= w.enabled ? 'Pause' : 'Enable' %></button></form>
+              <form method="post" action="/admin/integrations/webhooks/<%= w.id %>/delete" data-confirm="Remove this webhook?"><button class="btn btn-ghost btn-sm danger">Remove</button></form>
+            </td>
+          </tr>
+        <% }) %>
+      </tbody>
+    </table>
+  </div>
+  <details class="more mt-1" <%= hooks.length ? '' : 'open' %>>
+    <summary>+ Add webhook</summary>
+    <form method="post" action="/admin/integrations/webhooks" class="stack mt-1 form-card">
+      <div class="grid-2 tight">
+        <div class="field"><label for="wh-name">Name</label><input id="wh-name" name="name" placeholder="Zapier — new sales to Google Sheet"></div>
+        <div class="field"><label for="wh-url">URL (https)</label><input id="wh-url" name="url" type="url" placeholder="https://hooks.zapier.com/…" required></div>
+      </div>
+      <div class="multi multi-cols">
+        <% Object.entries(events).forEach(([id, label]) => { %><label class="check"><input type="checkbox" name="events" value="<%= id %>"> <%= label %></label><% }) %>
+      </div>
+      <button class="btn btn-primary btn-sm">Add webhook</button>
+    </form>
+  </details>
+</div>
+
+<%- include('../partials/footer') %>

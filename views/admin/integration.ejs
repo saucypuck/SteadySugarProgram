@@ -1,0 +1,59 @@
+<%- include('../partials/header') %>
+
+<p class="crumbs"><a href="/admin/integrations">Integrations</a> / <%= it.name %></p>
+
+<div class="page-head">
+  <div>
+    <p class="eyebrow"><%= it.category %></p>
+    <h1><%= it.name %> <% if (it.live) { %><span class="live-tag">Live</span><% } %></h1>
+    <p class="muted mb-0"><%= it.desc %></p>
+  </div>
+  <span class="int-state st-<%= it.state %>"><%= { connected: 'Connected', saved: 'Credentials saved', disabled: 'Disabled', incomplete: 'Incomplete', not_connected: 'Not connected' }[it.state] %></span>
+</div>
+
+<% if (!it.live) { %>
+  <div class="alert alert-info">Credentials are stored now; this integration goes live once its adapter is built<%= it.adapter ? ' in ' : '' %><% if (it.adapter) { %><code><%= it.adapter %></code><% } %>. Until then the app keeps using its demo behavior.</div>
+<% } %>
+
+<form method="post" action="/admin/integrations/<%= it.id %>" class="card stack form-card">
+  <% it.fields.forEach((f) => { const id = 'i-' + f.key; %>
+    <% if (f.type === 'checkbox') { %>
+      <label class="check"><input type="checkbox" name="<%= f.key %>" <%= f.display ? 'checked' : '' %>> <%= f.label %></label>
+    <% } else if (f.type === 'events') { %>
+      <div class="field"><label><%= f.label %></label>
+        <div class="multi multi-cols">
+          <% const chosen = Array.isArray(f.display) && f.display.length ? f.display : slackDefaults; %>
+          <% Object.entries(events).forEach(([ev, label]) => { %><label class="check"><input type="checkbox" name="<%= f.key %>" value="<%= ev %>" <%= chosen.includes(ev) ? 'checked' : '' %>> <%= label %></label><% }) %>
+        </div>
+      </div>
+    <% } else { %>
+      <div class="field">
+        <label for="<%= id %>"><%= f.label %><%= f.required ? ' *' : '' %> <% if (f.fromEnv) { %><span class="env-tag">from env <%= f.env %></span><% } %></label>
+        <% if (f.fromEnv) { %>
+          <input id="<%= id %>" value="Set via environment variable" disabled>
+        <% } else if (f.secret) { %>
+          <input id="<%= id %>" name="<%= f.key %>" type="password" autocomplete="new-password" placeholder="<%= f.has ? f.display + ' — leave blank to keep' : 'Paste key' %>">
+          <% if (f.unreadable) { %><small class="tone-bad">Saved value can’t be decrypted (SESSION_SECRET changed) — re-enter it.</small><% } %>
+        <% } else { %>
+          <input id="<%= id %>" name="<%= f.key %>" value="<%= f.display || '' %>" placeholder="<%= f.placeholder || '' %>">
+        <% } %>
+      </div>
+    <% } %>
+  <% }) %>
+  <label class="check"><input type="checkbox" name="enabled" <%= it.enabled || it.state === 'not_connected' ? 'checked' : '' %>> Enabled</label>
+  <div class="cta-row">
+    <button class="btn btn-primary"><%= it.state === 'not_connected' ? 'Connect' : 'Save changes' %></button>
+    <a href="/admin/integrations" class="btn btn-ghost">Back</a>
+  </div>
+  <% if (it.updatedAt) { %><p class="micro">Last updated <%= new Date(it.updatedAt).toLocaleString() %></p><% } %>
+</form>
+
+<div class="cta-row mt-2">
+  <form method="post" action="/admin/integrations/<%= it.id %>/test"><button class="btn btn-secondary btn-sm" <%- it.testable ? '' : 'disabled title="Available once the adapter is built"' %>>Send test</button></form>
+  <% if (it.state !== 'not_connected') { %>
+    <form method="post" action="/admin/integrations/<%= it.id %>/disconnect" data-confirm="Disconnect <%= it.name %> and clear its saved credentials?"><button class="btn btn-ghost btn-sm danger">Disconnect</button></form>
+  <% } %>
+</div>
+<% if (it.lastTest) { %><p class="small <%= it.lastTest.ok ? 'tone-good' : 'tone-bad' %>">Last test <%= new Date(it.lastTest.at).toLocaleString() %>: <%= it.lastTest.ok ? 'OK' : (it.lastTest.error || 'HTTP ' + it.lastTest.status) %></p><% } %>
+
+<%- include('../partials/footer') %>

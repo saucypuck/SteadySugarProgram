@@ -1,0 +1,73 @@
+<%- include('../partials/header') %>
+
+<p class="crumbs"><a href="/admin/crm">CRM</a> / <%= lead.name || lead.email %></p>
+
+<div class="page-head">
+  <div>
+    <h1><%= lead.name || lead.email %></h1>
+    <p class="muted mb-0"><a href="mailto:<%= lead.email %>"><%= lead.email %></a> · <%= lead.source %> lead · <%= new Date(lead.createdAt).toLocaleDateString() %></p>
+  </div>
+  <span class="temp temp-<%= lead.temperature %> tier-lg"><%= lead.temperature %></span>
+</div>
+
+<!-- Stage -->
+<div class="stage-bar">
+  <% stages.forEach((s) => { %>
+    <form method="post" action="/admin/crm/leads/<%= lead.id %>/stage">
+      <input type="hidden" name="stage" value="<%= s.id %>">
+      <button class="stage <%= lead.stage === s.id ? 'current' : '' %> stage-<%= s.id %>" <%- lead.stage === s.id ? 'aria-current="step"' : '' %> <%- lead.convertedUserId && s.id !== 'won' ? 'disabled' : '' %>><%= s.label %></button>
+    </form>
+  <% }) %>
+</div>
+<% if (lead.stage === 'lost' && lead.lostReason) { %><p class="small muted">Lost reason: <%= lead.lostReason %></p><% } %>
+<% if (lead.stage !== 'won' && lead.stage !== 'lost') { %>
+  <details class="more"><summary>Mark lost with a reason</summary>
+    <form method="post" action="/admin/crm/leads/<%= lead.id %>/stage" class="inline-add mt-1">
+      <input type="hidden" name="stage" value="lost">
+      <select name="lostReason" aria-label="Lost reason"><% ['Price', 'Not ready / timing', 'Chose another program', 'No response', 'Not a fit (medical)', 'Other'].forEach((r) => { %><option><%= r %></option><% }) %></select>
+      <button class="btn btn-ghost btn-sm danger">Mark lost</button>
+    </form>
+  </details>
+<% } %>
+
+<div class="member-grid mt-2">
+  <div class="stack-lg">
+    <section class="card">
+      <h3>Lead details</h3>
+      <dl class="kv">
+        <dt>Recommended</dt><dd><%= lead.recommendedPlan && c.plans[c.legacyPlans[lead.recommendedPlan] || lead.recommendedPlan] ? c.plans[c.legacyPlans[lead.recommendedPlan] || lead.recommendedPlan].name : '—' %></dd>
+        <dt>Source</dt><dd><%= lead.utm ? [lead.utm.utm_source, lead.utm.utm_campaign, lead.utm.utm_content].filter(Boolean).join(' / ') || 'direct' : 'direct' %></dd>
+        <% if (lead.utm && lead.utm.lp) { %><dt>Landing page</dt><dd>/lp/<%= lead.utm.lp %></dd><% } %>
+        <dt>Account</dt><dd><% if (member) { %><a href="/admin/members/<%= member.id %>"><%= member.name %> — <%= c.plans[memberTier].name %></a><% } else { %>No account yet<% } %></dd>
+      </dl>
+      <div class="cta-row">
+        <a href="mailto:<%= lead.email %>?subject=Your%20Steady%20Sugar%20results" class="btn btn-secondary btn-sm">Email lead</a>
+        <a href="/book-call" target="_blank" rel="noopener" class="btn btn-ghost btn-sm">Booking page ↗</a>
+      </div>
+    </section>
+
+    <% if (lead.answers) { %>
+      <section class="card">
+        <h3>Quiz answers</h3>
+        <dl class="kv"><% quiz.forEach((q) => { const o = q.options.find((x) => x.value === lead.answers[q.id]); %><dt><%= q.question.replace(/\?$/, '') %></dt><dd><%= o ? o.label : '—' %></dd><% }) %></dl>
+      </section>
+    <% } %>
+
+    <section class="card">
+      <h3>Calls</h3>
+      <% if (!bookings.length) { %><p class="muted small">No calls booked.</p><% } %>
+      <ul class="call-list"><% bookings.forEach((b) => { %><li><div><strong><%= sched.CALL_TYPES[b.type].name %></strong><small><%= sched.formatDate(b.date) %> · <%= sched.formatTime(b.time) %> · <%= b.status %></small></div><% if (b.notes) { %><small class="muted">“<%= b.notes %>”</small><% } %></li><% }) %></ul>
+    </section>
+  </div>
+
+  <div class="stack-lg">
+    <%- include('_crm-panel', { subjectType: 'lead', subjectId: lead.id, back: '/admin/crm/leads/' + lead.id }) %>
+    <% if (activity.length) { %>
+      <section class="card"><h3>Activity</h3>
+        <ul class="timeline"><% activity.forEach((a) => { %><li><span class="t-ico">⚙️</span><div><p><%= a.text %></p><small class="muted"><%= new Date(a.createdAt).toLocaleString() %> · <%= a.by %></small></div></li><% }) %></ul>
+      </section>
+    <% } %>
+  </div>
+</div>
+
+<%- include('../partials/footer') %>

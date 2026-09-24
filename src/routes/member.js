@@ -6,6 +6,7 @@ const meetings = require('../integrations/meetings');
 const payments = require('../integrations/payments');
 const email = require('../integrations/email');
 const { requireAuth, planOf, tierAllows, canOpenLesson } = require('../auth');
+const { track } = require('../track');
 
 const router = express.Router();
 const h = (fn) => (req, res, next) => Promise.resolve(fn(req, res, next)).catch(next);
@@ -241,7 +242,8 @@ router.get('/account', h(async (req, res) => {
 router.post('/account/cancel', h(async (req, res) => {
   // TODO(retention): route through a save flow (pause / downgrade offer) before cancelling.
   await payments.cancelSubscription(req.user);
-  await db.update('users', req.user.id, { status: 'canceled' });
+  await db.update('users', req.user.id, { status: 'canceled', canceledAt: new Date().toISOString() });
+  await track(req, 'subscription_canceled', { plan: req.user.plan });
   req.session.flash = { type: 'info', msg: 'Your subscription is canceled — you’re now on the Free plan. Rejoin anytime.' };
   res.redirect('/app/account');
 }));

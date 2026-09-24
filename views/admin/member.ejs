@@ -1,0 +1,113 @@
+<%- include('../partials/header') %>
+
+<p class="crumbs"><a href="/admin/members">Members</a> / <%= m.name %></p>
+
+<div class="page-head">
+  <div>
+    <h1><%= m.name %></h1>
+    <p class="muted mb-0"><a href="mailto:<%= m.email %>"><%= m.email %></a> · member since <%= new Date(m.createdAt).toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' }) %></p>
+  </div>
+  <span class="tier tier-<%= m.status === 'canceled' ? 'canceled' : tier %> tier-lg"><%= m.status === 'canceled' ? 'Canceled' : plan.name %><%= m.comp ? ' · comp' : '' %></span>
+</div>
+
+<div class="member-grid">
+  <div class="stack-lg">
+    <!-- Subscription -->
+    <section class="card">
+      <h3>Subscription</h3>
+      <dl class="kv">
+        <dt>Plan</dt><dd><%= plan.name %> <%= plan.price ? '· ' + money(plan.price) + '/mo' : '' %></dd>
+        <dt>Status</dt><dd><%= m.status %><%= m.canceledAt ? ' · ' + new Date(m.canceledAt).toLocaleDateString() : '' %></dd>
+        <% if (m.planStartedAt) { %><dt>Plan started</dt><dd><%= new Date(m.planStartedAt).toLocaleDateString() %></dd><% } %>
+        <dt>Lifetime value</dt><dd><%= money(ltv) %></dd>
+        <dt>Billing</dt><dd class="muted">[Stripe customer link once connected]</dd>
+      </dl>
+      <form method="post" action="/admin/members/<%= m.id %>/plan" class="inline-add">
+        <select name="plan" aria-label="Plan"><% Object.values(c.plans).forEach((p) => { %><option value="<%= p.id %>" <%= p.id === tier ? 'selected' : '' %>><%= p.name %><%= p.price ? ' — ' + money(p.price) + '/mo' : '' %></option><% }) %></select>
+        <button class="btn btn-secondary btn-sm">Change plan</button>
+      </form>
+      <div class="cta-row">
+        <% if (m.status === 'canceled') { %>
+          <form method="post" action="/admin/members/<%= m.id %>/status"><input type="hidden" name="action" value="reactivate"><button class="btn btn-primary btn-sm">Reactivate</button></form>
+        <% } else if (tier !== 'free') { %>
+          <form method="post" action="/admin/members/<%= m.id %>/status" class="inline-add" data-confirm="Cancel this member's subscription? They keep Free access.">
+            <input type="hidden" name="action" value="cancel">
+            <input name="reason" placeholder="Reason (optional)" aria-label="Cancel reason">
+            <button class="btn btn-ghost btn-sm danger">Cancel subscription</button>
+          </form>
+        <% } %>
+        <form method="post" action="/admin/members/<%= m.id %>/comp"><button class="btn btn-ghost btn-sm"><%= m.comp ? 'Remove complimentary' : 'Mark complimentary' %></button></form>
+        <form method="post" action="/admin/members/<%= m.id %>/reset"><button class="btn btn-ghost btn-sm">Send password reset</button></form>
+      </div>
+    </section>
+
+    <!-- Engagement -->
+    <section class="card">
+      <h3>Engagement</h3>
+      <div class="lp-stats">
+        <div><small>Lessons</small><strong><%= (m.completedLessons || []).length %>/<%= lessonsTotal %></strong></div>
+        <div><small>Readings logged</small><strong><%= logCount %></strong></div>
+        <div><small>Fasting change</small><strong class="<%= fastingChange != null && fastingChange <= 0 ? 'good' : '' %>"><%= fastingChange == null ? '—' : (fastingChange > 0 ? '+' : '') + fastingChange + ' mg/dL' %></strong></div>
+        <div><small>Past calls</small><strong><%= pastCalls %></strong></div>
+        <div><small>Next call</small><strong><%= upcoming[0] ? sched.formatDate(upcoming[0].date) : '—' %></strong></div>
+        <div><small>Last reading</small><strong><%= logs[0] ? sched.formatDate(logs[0].date) : '—' %></strong></div>
+      </div>
+      <% if (m.goals) { %>
+        <dl class="kv">
+          <% if (m.goals.target) { %><dt>Goal</dt><dd><%= m.goals.target %></dd><% } %>
+          <% if (m.goals.why) { %><dt>Why</dt><dd><%= m.goals.why %></dd><% } %>
+          <% if (m.goals.baselineA1c) { %><dt>Baseline A1C</dt><dd><%= m.goals.baselineA1c %>%</dd><% } %>
+          <dt>Doctor aware</dt><dd><%= m.goals.doctorAware ? 'Yes' : 'No' %></dd>
+        </dl>
+      <% } %>
+    </section>
+
+    <!-- Profile & source -->
+    <section class="card">
+      <h3>Profile &amp; source</h3>
+      <form method="post" action="/admin/members/<%= m.id %>/tags" class="inline-add">
+        <input name="tags" value="<%= (m.tags || []).join(', ') %>" placeholder="Tags, comma-separated (e.g. t2, cgm-user, referral)" aria-label="Tags">
+        <button class="btn btn-secondary btn-sm">Save tags</button>
+      </form>
+      <dl class="kv mt-1">
+        <dt>Source</dt><dd><%= m.utm ? [m.utm.utm_source, m.utm.utm_medium, m.utm.utm_campaign].filter(Boolean).join(' / ') || 'direct' : 'direct' %></dd>
+        <% if (m.utm && m.utm.utm_content) { %><dt>Ad</dt><dd><code><%= m.utm.utm_content %></code></dd><% } %>
+        <% if (m.utm && m.utm.lp) { %><dt>Landing page</dt><dd>/lp/<%= m.utm.lp %><%= m.utm.exp ? ' (A/B: ' + m.utm.exp + ')' : '' %></dd><% } %>
+        <% if (lead) { %><dt>Lead record</dt><dd><a href="/admin/crm/leads/<%= lead.id %>"><%= lead.source %> lead · <%= lead.temperature %></a></dd><% } %>
+      </dl>
+      <% if (lead && lead.answers) { %>
+        <details class="more mt-1"><summary>Quiz answers</summary>
+          <dl class="kv mt-1"><% quiz.forEach((q) => { const o = q.options.find((x) => x.value === lead.answers[q.id]); %><dt><%= q.id %></dt><dd><%= o ? o.label : '—' %></dd><% }) %></dl>
+        </details>
+      <% } %>
+    </section>
+
+    <!-- Billing -->
+    <section class="card">
+      <h3>Billing history</h3>
+      <div class="table-wrap">
+        <table class="traffic">
+          <thead><tr><th>Date</th><th>Plan</th><th>Amount</th><th>Status</th></tr></thead>
+          <tbody>
+            <% if (!orders.length) { %><tr><td colspan="4" class="muted">No payments.</td></tr><% } %>
+            <% orders.forEach((o) => { %><tr><td><%= new Date(o.createdAt).toLocaleDateString() %></td><td><%= (c.plans[c.legacyPlans[o.plan] || o.plan] || { name: o.plan }).name %></td><td><%= money(o.amount) %></td><td><%= o.status %><%= o.provider === 'demo' ? ' (demo)' : '' %></td></tr><% }) %>
+          </tbody>
+        </table>
+      </div>
+    </section>
+  </div>
+
+  <div class="stack-lg">
+    <%- include('_crm-panel', { subjectType: 'user', subjectId: m.id, back: '/admin/members/' + m.id }) %>
+    <section class="card">
+      <h3>Timeline</h3>
+      <ul class="timeline">
+        <% timeline.forEach((t) => { %>
+          <li class="<%= t.note ? 'is-note' : '' %>"><span class="t-ico"><%= t.icon %></span><div><p><%= t.text %></p><small class="muted"><%= new Date(t.at).toLocaleString('en-US', { month: 'short', day: 'numeric', hour: 'numeric', minute: '2-digit' }) %><%= t.by ? ' · ' + t.by : '' %></small></div></li>
+        <% }) %>
+      </ul>
+    </section>
+  </div>
+</div>
+
+<%- include('../partials/footer') %>

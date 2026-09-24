@@ -1,0 +1,56 @@
+<%- include('../partials/header') %>
+
+<div class="page-head">
+  <div><p class="eyebrow">Business</p><h1>Members</h1></div>
+  <a href="/admin/members/export.csv?tier=<%= tab %>&q=<%= encodeURIComponent(search) %>&sort=<%= sort %>" class="btn btn-secondary btn-sm">Export CSV</a>
+</div>
+
+<div class="stat-strip">
+  <div><small>MRR</small><strong><%= money(stats.mrr) %></strong><em>excl. complimentary</em></div>
+  <div><small>Paying members</small><strong><%= stats.paying %></strong><em>ARPU <%= money(Math.round(stats.arpu)) %>/mo</em></div>
+  <div><small>Free accounts</small><strong><%= stats.free %></strong><em>upgrade pool</em></div>
+  <div><small>Canceled</small><strong><%= stats.churned %></strong><em>win-back list</em></div>
+  <div><small>Logged a reading (7d)</small><strong><%= stats.activeWeek %></strong><em>engagement</em></div>
+  <div><small>Total accounts</small><strong><%= counts.all %></strong><em>&nbsp;</em></div>
+</div>
+
+<nav class="tabs tabs-wide mt-2" aria-label="Filter by tier">
+  <% tabs.forEach((t) => { %>
+    <a href="?tier=<%= t.id %>&q=<%= encodeURIComponent(search) %>&sort=<%= sort %>" class="<%= tab === t.id ? 'active' : '' %>" <%- tab === t.id ? 'aria-current="page"' : '' %>><%= t.label %> <span class="tab-count"><%= counts[t.id] %></span></a>
+  <% }) %>
+</nav>
+
+<form method="get" class="filter-bar">
+  <input type="hidden" name="tier" value="<%= tab %>">
+  <input type="search" name="q" value="<%= search %>" placeholder="Search name, email or tag" aria-label="Search members">
+  <select name="sort" aria-label="Sort" onchange="this.form.submit()">
+    <% [['newest', 'Newest'], ['active', 'Recently active'], ['ltv', 'Lifetime value'], ['name', 'Name']].forEach(([v, l]) => { %><option value="<%= v %>" <%= sort === v ? 'selected' : '' %>><%= l %></option><% }) %>
+  </select>
+  <button class="btn btn-secondary btn-sm">Search</button>
+</form>
+
+<div class="lp-block">
+  <div class="table-wrap">
+    <table class="traffic member-table">
+      <thead><tr><th>Member</th><th>Plan</th><th>Joined</th><th>Progress</th><th>Last reading</th><th>Next call</th><th>LTV</th><th>Source</th></tr></thead>
+      <tbody>
+        <% if (!list.length) { %><tr><td colspan="8" class="muted">No members match.</td></tr><% } %>
+        <% list.forEach((r) => { %>
+          <tr>
+            <td><a href="/admin/members/<%= r.id %>"><strong><%= r.name || '—' %></strong></a><br><small class="muted"><%= r.email %></small>
+              <% (r.tags || []).forEach((t) => { %><span class="tag"><%= t %></span><% }) %></td>
+            <td><span class="tier tier-<%= r.status === 'canceled' ? 'canceled' : r.tier %>"><%= r.status === 'canceled' ? 'Canceled' : c.plans[r.tier].name %></span><%= r.comp ? ' · comp' : '' %></td>
+            <td><%= new Date(r.createdAt).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: '2-digit' }) %></td>
+            <td><%= r.lessons %>/<%= r.lessonsTotal %><div class="mini-bar"><span style="width:<%= Math.round(r.lessons / Math.max(1, r.lessonsTotal) * 100) %>%"></span></div></td>
+            <td><%= r.lastLog ? sched.formatDate(r.lastLog) : '—' %></td>
+            <td><%= r.nextCall ? sched.formatDate(r.nextCall.date) : '—' %></td>
+            <td><%= money(r.ltv) %></td>
+            <td><small class="muted"><%= r.source %></small></td>
+          </tr>
+        <% }) %>
+      </tbody>
+    </table>
+  </div>
+</div>
+
+<%- include('../partials/footer') %>

@@ -104,4 +104,9 @@ async function update(collection, id, patch) {
   return next;
 }
 
-module.exports = { init, insert, insertMany, get, all, findBy, findOneBy, update };
+async function remove(collection, id) {
+  if (pool) await pool.query('DELETE FROM docs WHERE collection = $1 AND id = $2', [collection, id]);
+  else bucket(collection).delete(id);
+}
+
+module.exports = { init, insert, insertMany, remove, get, all, findBy, findOneBy, update };

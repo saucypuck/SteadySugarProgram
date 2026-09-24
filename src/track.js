@@ -2,6 +2,7 @@
 // marketing dashboard. Also the place to forward events to GA4 / Meta CAPI /
 // Google Ads conversions server-side later.
 const db = require('./db');
+const webhooks = require('./integrations/webhooks');
 
 const UTM_KEYS = ['utm_source', 'utm_medium', 'utm_campaign', 'utm_content', 'utm_term', 'ref'];
 
@@ -32,12 +33,16 @@ function attribution(req) {
 
 async function track(req, name, data = {}) {
   try {
+    const u = req.user;
     await db.insert('events', {
       name,
-      userId: req.user ? req.user.id : null,
+      userId: u ? u.id : null,
       utm: attribution(req),
       ...data,
     });
+    if (name !== 'lp_view' && name !== 'quiz_start') {
+      webhooks.fire(name, { user: u ? { id: u.id, email: u.email, name: u.name, plan: u.plan } : null, attribution: attribution(req), ...data });
+    }
   } catch (err) {
     console.error('[track]', err.message);
   }

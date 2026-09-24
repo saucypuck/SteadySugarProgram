@@ -22,7 +22,7 @@
         <% } else if (f.type === 'textarea') { %>
           <textarea id="<%= id %>" name="<%= f.name %>" rows="3"><%= v || '' %></textarea>
         <% } else { %>
-          <input id="<%= id %>" name="<%= f.name %>" type="<%= f.type || 'text' %>" value="<%= v == null ? '' : v %>" <%= f.required ? 'required' : '' %> <%= f.type === 'number' ? 'step="any"' : '' %>>
+          <input id="<%= id %>" name="<%= f.name %>" type="<%= f.type || 'text' %>" value="<%= v == null ? '' : v %>" <%= f.required ? 'required' : '' %> <%- f.type === 'number' ? 'step="any"' : '' %>>
         <% } %>
         <% if (f.help) { %><small class="muted"><%= f.help %></small><% } %>
       </div>

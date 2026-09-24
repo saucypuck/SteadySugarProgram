@@ -1,0 +1,60 @@
+<%- include('../partials/header') %>
+
+<div class="page-head">
+  <div><p class="eyebrow">Sales</p><h1>CRM</h1></div>
+  <form method="get" class="range-form">
+    <select name="temp" onchange="this.form.submit()" aria-label="Lead temperature">
+      <% [['all', 'All leads'], ['hot', '🔥 Hot'], ['warm', 'Warm'], ['cold', 'Cold']].forEach(([v, l]) => { %><option value="<%= v %>" <%= temp === v ? 'selected' : '' %>><%= l %></option><% }) %>
+    </select>
+  </form>
+</div>
+
+<div class="stat-strip stat-4">
+  <div><small>Open leads</small><strong><%= stats.open %></strong></div>
+  <div><small>Hot leads open</small><strong><%= stats.hot %></strong><em>call within 24h</em></div>
+  <div><small>Win rate</small><strong><%= stats.winRate == null ? '—' : stats.winRate + '%' %></strong><em>won ÷ (won + lost)</em></div>
+  <div><small>Overdue tasks</small><strong class="<%= stats.overdue ? 'tone-bad' : '' %>"><%= stats.overdue %></strong></div>
+</div>
+
+<!-- Tasks -->
+<section class="card mt-2">
+  <h3>Follow-ups</h3>
+  <% if (!tasks.all.length) { %><p class="muted small">No open tasks. Add them from any lead or member page.</p><% } %>
+  <div class="task-cols">
+    <% [['Overdue', tasks.overdue, 'tone-bad'], ['Today', tasks.today, 'tone-warn'], ['Upcoming', tasks.upcoming, 'muted']].forEach(([label, list, tone]) => { if (!list.length) return; %>
+      <div>
+        <p class="task-group <%= tone %>"><%= label %> (<%= list.length %>)</p>
+        <ul class="task-list">
+          <% list.slice(0, 8).forEach((t) => { const s = names[t.subjectType + ':' + t.subjectId] || { name: '—', href: '#', kind: '' }; %>
+            <li>
+              <form method="post" action="/admin/crm/tasks/<%= t.id %>/toggle"><input type="hidden" name="back" value="/admin/crm"><button class="tick-btn" aria-label="Mark done"></button></form>
+              <span class="task-title"><%= t.title %> <small class="muted">— <a href="<%= s.href %>"><%= s.name %></a> · <%= s.kind %></small></span>
+              <% if (t.due) { %><small class="<%= tone %>"><%= sched.formatDate(t.due) %></small><% } %>
+            </li>
+          <% }) %>
+        </ul>
+      </div>
+    <% }) %>
+  </div>
+</section>
+
+<!-- Pipeline -->
+<div class="section-head"><h2>Lead pipeline</h2><span class="muted small">Leads come from the quiz, free guide and discovery calls. Won = became a member.</span></div>
+<div class="pipeline">
+  <% columns.forEach((col) => { %>
+    <section class="pipe-col pipe-<%= col.id %>">
+      <header><strong><%= col.label %></strong><span class="tab-count"><%= col.cards.length %></span></header>
+      <% col.cards.slice(0, 30).forEach((l) => { %>
+        <a href="/admin/crm/leads/<%= l.id %>" class="pipe-card">
+          <div class="row-between"><strong><%= l.name || l.email %></strong><span class="temp temp-<%= l.temperature %>"><%= l.temperature %></span></div>
+          <small class="muted"><%= l.source %><%= l.recommendedPlan && c.plans[c.legacyPlans[l.recommendedPlan] || l.recommendedPlan] ? ' · ' + c.plans[c.legacyPlans[l.recommendedPlan] || l.recommendedPlan].name : '' %><%= l.utm && l.utm.utm_source ? ' · ' + l.utm.utm_source : '' %></small>
+          <small class="muted"><%= Math.max(0, Math.floor((Date.now() - new Date(l.createdAt)) / 864e5)) %>d old<%= l.member ? ' · has account' : '' %></small>
+        </a>
+      <% }) %>
+      <% if (col.cards.length > 30) { %><p class="small muted center"><%= col.cards.length - 30 %> more</p><% } %>
+      <% if (!col.cards.length) { %><p class="small muted center">—</p><% } %>
+    </section>
+  <% }) %>
+</div>
+
+<%- include('../partials/footer') %>

@@ -1,0 +1,161 @@
+<%- include('../partials/header') %>
+<% const typeIcon = { video: '▶', reading: '📄', worksheet: '✍️' }; const typeLabel = { video: 'Video', reading: 'Reading', worksheet: 'Worksheet' }; %>
+
+<p class="crumbs"><a href="/app/courses">Courses</a> / <a href="/app/courses?cat=<%= course.category %>"><%= course.cat.name %></a></p>
+
+<!-- Hero: trailer + key info + primary action -->
+<section class="course-hero cat-<%= course.category %>">
+  <div class="trailer">
+    <% if (trailer && trailer.kind === 'iframe') { %>
+      <iframe src="<%= trailer.src %>" title="<%= course.title %> trailer" allow="autoplay; fullscreen; picture-in-picture" allowfullscreen loading="lazy"></iframe>
+    <% } else if (trailer && trailer.kind === 'video') { %>
+      <video src="<%= trailer.src %>" controls preload="metadata" <%- course.trailer.poster ? 'poster="' + course.trailer.poster + '"' : '' %>></video>
+    <% } else { %>
+      <div class="trailer-placeholder">
+        <span class="play">▶</span>
+        <strong>Course trailer</strong>
+        <small><%= course.trailer.duration %> · add a YouTube, Vimeo or .mp4 URL in src/courses.js</small>
+      </div>
+    <% } %>
+  </div>
+
+  <div class="course-info">
+    <div class="chip-row">
+      <a href="/app/courses?cat=<%= course.category %>" class="cat-chip"><%= course.cat.icon %> <%= course.cat.name %></a>
+      <% if (course.tier === 'vip') { %><span class="tier tier-vip">VIP course</span><% } %>
+      <% if (course.state === 'preview') { %><span class="badge free-badge"><%= course.freeCount %> free preview lesson<%= course.freeCount > 1 ? 's' : '' %></span><% } %>
+    </div>
+    <h1><%= course.title %></h1>
+    <p class="lead"><%= course.summary %></p>
+    <ul class="course-meta">
+      <li><strong><%= course.lessons.length %></strong> lessons</li>
+      <li><strong><%= course.totalMinutes %></strong> min</li>
+      <li><%= course.level %></li>
+      <% if (course.weeks) { %><li>Program weeks <%= course.weeks %></li><% } %>
+    </ul>
+
+    <% if (course.progress.done) { %>
+      <div class="progress"><span style="width:<%= course.progress.pct %>%"></span></div>
+      <small class="muted"><%= course.progress.done %> of <%= course.progress.total %> lessons complete</small>
+    <% } %>
+
+    <div class="cta-row">
+      <% if (course.state === 'locked') { %>
+        <a href="/checkout?plan=<%= course.needPlan.id %>" class="btn btn-primary btn-lg">🔒 Unlock with <%= course.needPlan.name %> — <%= money(course.needPlan.price) %>/mo</a>
+      <% } else if (course.next) { %>
+        <a href="/app/courses/<%= course.slug %>/<%= course.next.slug %>" class="btn btn-primary btn-lg"><%= course.progress.done ? 'Continue' : (course.state === 'preview' ? 'Start free preview' : 'Start course') %> →</a>
+        <% if (course.state === 'preview') { %><a href="/checkout?plan=<%= course.needPlan.id %>" class="btn btn-secondary btn-lg">Unlock full course</a><% } %>
+      <% } else if (course.state === 'preview') { %>
+        <a href="/checkout?plan=<%= course.needPlan.id %>" class="btn btn-primary btn-lg">Unlock the rest — <%= money(course.needPlan.price) %>/mo</a>
+      <% } else { %>
+        <a href="/app/courses/<%= course.slug %>/<%= course.lessons[0].slug %>" class="btn btn-secondary btn-lg">✓ Completed — review</a>
+      <% } %>
+    </div>
+    <% if (course.next && course.progress.done) { %><p class="small muted mt-1">Up next: <strong><%= course.next.title %></strong> · <%= course.next.minutes %> min</p><% } %>
+
+    <div class="tag-row">
+      <% course.tags.forEach((t) => { %><a href="/app/courses?tag=<%= t %>" class="tag">#<%= t %></a><% }) %>
+    </div>
+  </div>
+</section>
+
+<div class="course-layout">
+  <div class="stack-lg">
+    <section class="card">
+      <h2 class="h3">About this course</h2>
+      <p><%= course.description %></p>
+      <h3 class="mt-2">What you’ll learn</h3>
+      <ul class="check-list two-col">
+        <% course.outcomes.forEach((o) => { %><li><%= o %></li><% }) %>
+      </ul>
+      <p class="small muted mb-0"><strong>Who it’s for:</strong> <%= course.audience %></p>
+    </section>
+
+    <!-- Table of contents -->
+    <section class="card toc" id="lessons">
+      <div class="row-between wrap">
+        <h2 class="h3 mb-0">Course content</h2>
+        <small class="muted"><%= modules.length %> section<%= modules.length > 1 ? 's' : '' %> · <%= course.lessons.length %> lessons · <%= course.totalMinutes %> min</small>
+      </div>
+      <% modules.forEach((m, mi) => { %>
+        <details class="toc-module" <%= mi === 0 || m.lessons.some((l) => course.next && l.slug === course.next.slug) ? 'open' : '' %>>
+          <summary>
+            <span><span class="muted">Section <%= mi + 1 %> ·</span> <strong><%= m.title %></strong></span>
+            <small class="muted"><%= m.lessons.filter((l) => l.done).length %>/<%= m.lessons.length %> · <%= m.lessons.reduce((n, l) => n + l.minutes, 0) %> min</small>
+          </summary>
+          <ol class="toc-list">
+            <% m.lessons.forEach((l) => { const isNext = course.next && course.next.slug === l.slug; %>
+              <li class="<%= l.done ? 'done' : '' %> <%= l.open ? '' : 'locked' %> <%= isNext ? 'next' : '' %>">
+                <a href="/app/courses/<%= course.slug %>/<%= l.slug %>">
+                  <span class="toc-num"><%= l.done ? '✓' : l.index + 1 %></span>
+                  <span class="toc-title"><%= l.title %>
+                    <small><%= typeIcon[l.type] %> <%= typeLabel[l.type] %> · <%= l.minutes %> min</small>
+                  </span>
+                  <span class="toc-state">
+                    <% if (isNext) { %><span class="badge">Up next</span>
+                    <% } else if (!l.open) { %>🔒
+                    <% } else if (l.free && !course.unlocked) { %><span class="badge free-badge">Free</span><% } %>
+                  </span>
+                </a>
+              </li>
+            <% }) %>
+          </ol>
+        </details>
+      <% }) %>
+    </section>
+
+    <% if (related.length) { %>
+      <section>
+        <h2 class="h3">Pairs well with</h2>
+        <div class="course-grid">
+          <% related.forEach((rc) => { %><%- include('_course-card', { course: rc }) %><% }) %>
+        </div>
+      </section>
+    <% } %>
+  </div>
+
+  <aside class="stack-lg course-aside">
+    <section class="card">
+      <h3>This course includes</h3>
+      <ul class="includes">
+        <% if (counts.videos) { %><li>▶ <%= counts.videos %> video lesson<%= counts.videos > 1 ? 's' : '' %></li><% } %>
+        <% if (counts.readings) { %><li>📄 <%= counts.readings %> reading<%= counts.readings > 1 ? 's' : '' %></li><% } %>
+        <% if (counts.worksheets) { %><li>✍️ <%= counts.worksheets %> worksheet<%= counts.worksheets > 1 ? 's' : '' %></li><% } %>
+        <li>⏱ <%= course.totalMinutes %> minutes total</li>
+        <li>✅ An action step with every lesson</li>
+        <li>📱 Works on phone, tablet &amp; desktop</li>
+      </ul>
+      <% if (course.resources && course.resources.length) { %>
+        <h4 class="mt-2">Downloads</h4>
+        <ul class="resource-list">
+          <% course.resources.forEach((r) => { %><li><span>📎 <%= r %></span><% if (course.state === 'locked') { %><small class="muted">🔒</small><% } else { %><a href="#" class="small">PDF</a><% } %></li><% }) %>
+        </ul>
+      <% } %>
+    </section>
+
+    <section class="card">
+      <h3>Your coach</h3>
+      <div class="coach-mini mt-0"><div class="avatar lg"></div><div><strong><%= c.brand.coach %></strong><small class="muted"><%= c.brand.coachTitle %></small></div></div>
+      <% if (tier !== 'free') { %><a href="/app/calendar" class="btn btn-ghost btn-sm mt-1">Questions? Book a call</a><% } %>
+    </section>
+
+    <% if (inBundles.length) { %>
+      <section class="card">
+        <h3>Part of</h3>
+        <ul class="bundle-list">
+          <% inBundles.forEach((b) => { %><li><a href="/app/courses?bundle=<%= b.id %>"><strong><%= b.name %></strong></a><small class="muted"><%= b.blurb %></small></li><% }) %>
+        </ul>
+      </section>
+    <% } %>
+
+    <% if (course.state !== 'unlocked') { %>
+      <section class="card upsell">
+        <h3>Unlock <%= course.state === 'preview' ? 'the full course' : 'this course' %></h3>
+        <p class="small muted">Included with <%= course.needPlan.name %><%= course.tier === 'core' ? ' along with every other course and 2 coaching calls a month' : '' %>.</p>
+        <a href="/checkout?plan=<%= course.needPlan.id %>" class="btn btn-primary btn-block">Upgrade — <%= money(course.needPlan.price) %>/mo</a>
+      </section>
+    <% } %>
+  </aside>
+</div>
+
+<%- include('../partials/footer') %>

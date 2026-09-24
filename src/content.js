@@ -23,7 +23,7 @@ const plans = {
     callsPerMonth: 0,
     features: [
       'Blood Sugar Profile quiz + results',
-      'Foundations course preview (3 lessons)',
+      '4 free preview lessons (Foundations + Gut Health)',
       'Sample day from the meal plan',
       'Glucose & habit tracker',
       'Browse the full program',
@@ -40,7 +40,7 @@ const plans = {
     callsPerMonth: 2,
     features: [
       'Everything in Free',
-      'All courses & lessons unlocked',
+      'All 8 courses unlocked (nutrition, gut health, exercise & more)',
       'Full weekly meal plans + grocery lists',
       'Full walk & strength workout plans',
       '2 × 30-min coaching calls / month',
@@ -86,7 +86,7 @@ const faqs = [
   { q: 'Who is this for?', a: 'Adults with prediabetes, type 2 diabetes, or a family history who want practical food, movement and habit changes. It is not designed for type 1 diabetes or pregnancy.' },
   { q: 'Do I need a continuous glucose monitor (CGM)?', a: 'No. A basic finger-stick meter works great. If you have a CGM, VIP members get weekly data reviews.' },
   { q: 'How much time does it take?', a: 'About 20 minutes of lessons per week plus small daily habits. Coaching calls are 30 minutes.' },
-  { q: 'Is there really a free plan?', a: 'Yes. Create a free account to take the quiz, use the tracker, try the first 3 lessons and a sample meal plan day. No credit card needed.' },
+  { q: 'Is there really a free plan?', a: 'Yes. Create a free account to take the quiz, use the tracker, try 4 preview lessons and a sample meal plan day. No credit card needed.' },
   { q: 'Can I switch or cancel my plan?', a: 'Yes — upgrade, downgrade or cancel anytime from your account page.' },
 ];
 
@@ -97,75 +97,8 @@ const roadmap = [
   { weeks: '11–12', title: 'Habits That Stick', body: 'Handle setbacks, eat out with confidence, and lock in your maintenance plan.' },
 ];
 
-const courses = [
-  {
-    slug: 'foundations',
-    title: 'Steady Sugar Foundations',
-    summary: 'How blood sugar works and the three habits that move it most.',
-    weeks: '1–2',
-    tier: 'core',
-    lessons: [
-      { slug: 'how-blood-sugar-works', title: 'How blood sugar really works', minutes: 8, free: true, action: 'Write down three meals from this week that left you tired or hungry within two hours.' },
-      { slug: 'know-your-numbers', title: 'Know your numbers: A1C, fasting & post-meal', minutes: 10, free: true, action: 'Log a fasting reading on 3 mornings this week.' },
-      { slug: 'the-steady-plate', title: 'The Steady Plate', minutes: 9, free: true, action: 'Build one Steady Plate for dinner tonight and snap a photo.' },
-      { slug: 'food-order', title: 'Food order: veggies & protein first', minutes: 6, action: 'Eat your vegetables and protein before your carbs at two meals.' },
-      { slug: 'ten-minute-walk', title: 'The 10-minute post-meal walk', minutes: 7, action: 'Walk for 10 minutes after your largest meal on 4 days.' },
-      { slug: 'sleep-and-stress', title: 'Sleep, stress & morning highs', minutes: 11, action: 'Pick a consistent lights-out time and hold it for 5 nights.' },
-    ],
-  },
-  {
-    slug: 'eat-to-stabilize',
-    title: 'Eat to Stabilize',
-    summary: 'Practical nutrition without cutting out every food you love.',
-    weeks: '3–6',
-    tier: 'core',
-    lessons: [
-      { slug: 'smart-carbs', title: 'Smart carbs: swap, pair, portion', minutes: 12, action: 'Make 2 carb swaps from the swap list.' },
-      { slug: 'protein-breakfast', title: 'The protein-forward breakfast', minutes: 8, action: 'Hit 25g+ protein at breakfast 5 days this week.' },
-      { slug: 'snacks-that-dont-spike', title: 'Snacks that don’t spike', minutes: 7, action: 'Stock 3 steady snacks at home and at work.' },
-      { slug: 'eating-out', title: 'Eating out & social meals', minutes: 9, action: 'Use the restaurant script at your next meal out.' },
-      { slug: 'label-reading', title: 'Reading labels in 30 seconds', minutes: 6, action: 'Audit 5 items in your pantry.' },
-    ],
-  },
-  {
-    slug: 'move-and-build',
-    title: 'Move & Build',
-    summary: 'Movement that improves insulin sensitivity — no gym required.',
-    weeks: '7–10',
-    tier: 'core',
-    lessons: [
-      { slug: 'why-muscle-matters', title: 'Why muscle is your glucose sponge', minutes: 7, action: 'Complete Strength A this week.' },
-      { slug: 'progressing-safely', title: 'Progressing safely', minutes: 8, action: 'Add one rep or one set to each exercise.' },
-      { slug: 'step-targets', title: 'Setting your step target', minutes: 5, action: 'Average +1,000 steps over last week.' },
-      { slug: 'exercise-and-readings', title: 'Exercise & your readings', minutes: 9, action: 'Compare post-meal readings with and without a walk.' },
-    ],
-  },
-  {
-    slug: 'habits-that-stick',
-    title: 'Habits That Stick',
-    summary: 'Make the changes automatic and build your maintenance plan.',
-    weeks: '11–12',
-    tier: 'core',
-    lessons: [
-      { slug: 'tiny-habits', title: 'Tiny habits, big results', minutes: 8, action: 'Stack one new habit onto an existing routine.' },
-      { slug: 'tracking-without-obsessing', title: 'Tracking without obsessing', minutes: 7, action: 'Choose your long-term tracking cadence.' },
-      { slug: 'handling-setbacks', title: 'Handling setbacks', minutes: 9, action: 'Write your "bad week" reset plan.' },
-      { slug: 'maintenance-plan', title: 'Your maintenance plan', minutes: 12, action: 'Complete the maintenance worksheet and review it on your final call.' },
-    ],
-  },
-  {
-    slug: 'cgm-deep-dive',
-    title: 'CGM Deep Dive',
-    summary: 'Read your CGM like a pro and run personal food experiments.',
-    weeks: 'Bonus',
-    tier: 'vip',
-    lessons: [
-      { slug: 'reading-your-cgm', title: 'Reading your CGM graph', minutes: 10, action: 'Screenshot your 24h graph and label the spikes.' },
-      { slug: 'food-experiments', title: 'Running a food experiment', minutes: 9, action: 'Test one favorite food two different ways.' },
-      { slug: 'time-in-range', title: 'Time in range goals', minutes: 8, action: 'Set your personal time-in-range target.' },
-    ],
-  },
-];
+// Courses, categories and bundles live in ./courses.js
+const { courses, courseCategories, categoryById, bundles } = require('./courses');
 
 const nutritionPlan = {
   targets: [
@@ -296,4 +229,4 @@ const quiz = [
   },
 ];
 
-module.exports = { brand, plans, legacyPlans, guarantee, testimonials, faqs, roadmap, courses, nutritionPlan, workoutPlan, quiz };
+module.exports = { brand, plans, legacyPlans, guarantee, testimonials, faqs, roadmap, courses, courseCategories, categoryById, bundles, nutritionPlan, workoutPlan, quiz };

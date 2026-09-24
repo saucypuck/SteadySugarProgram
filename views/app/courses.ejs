@@ -1,36 +1,65 @@
 <%- include('../partials/header') %>
 
-<div class="page-head"><div><p class="eyebrow">Learn</p><h1>Courses</h1></div></div>
+<div class="page-head">
+  <div><p class="eyebrow">Learn</p><h1>Courses</h1><p class="muted mb-0"><%= totalCourses %> courses across <%= c.courseCategories.length %> topics</p></div>
+</div>
 
 <% if (tier === 'free' && !isAdmin) { %>
   <div class="card upsell mb-2">
     <div class="row-between wrap">
-      <div><strong>You’re on the Free plan.</strong> <span class="muted">Try 3 lessons free, then unlock all <%= courses.filter((x) => x.tier === 'core').reduce((n, x) => n + x.lessons.length, 0) %> lessons with Core.</span></div>
+      <div><strong>You’re on the Free plan.</strong> <span class="muted">Try <%= freeLessons %> preview lessons free, then unlock every course with Core.</span></div>
       <a href="/checkout?plan=core" class="btn btn-primary btn-sm">Unlock everything — <%= money(c.plans.core.price) %>/mo</a>
     </div>
   </div>
 <% } %>
 
-<div class="course-grid">
-  <% courses.forEach((course) => { const preview = !course.unlocked && course.freeCount > 0; %>
-    <a href="/app/courses/<%= course.slug %>" class="card course-card <%= course.unlocked || preview ? '' : 'locked' %>">
-      <div class="wire course-thumb"><%= course.unlocked || preview ? '▶' : '🔒' %></div>
-      <div class="row-between mt-1">
-        <span class="badge"><%= course.weeks === 'Bonus' ? 'VIP bonus' : 'Weeks ' + course.weeks %></span>
-        <small class="muted"><%= course.lessons.length %> lessons</small>
-      </div>
-      <h3><%= course.title %></h3>
-      <p class="muted small"><%= course.summary %></p>
-      <% if (course.unlocked) { %>
-        <div class="progress"><span style="width:<%= course.progress.pct %>%"></span></div>
-        <small class="muted"><%= course.progress.done %>/<%= course.progress.total %> complete</small>
-      <% } else if (preview) { %>
-        <span class="badge free-badge"><%= course.freeCount %> free preview lessons</span>
-      <% } else { %>
-        <span class="small upsell-text">Unlock with <%= c.plans[course.tier].name %> →</span>
-      <% } %>
-    </a>
+<% if (inProgress.length && !filtered) { %>
+  <section class="mb-2">
+    <h2 class="h3">Continue learning</h2>
+    <div class="continue-row">
+      <% inProgress.forEach((ic) => { %>
+        <a href="/app/courses/<%= ic.slug %>/<%= ic.next.slug %>" class="continue-card">
+          <span class="thumb-mini cat-<%= ic.category %>"><%= ic.cat.icon %></span>
+          <span class="cc-text"><small class="muted"><%= ic.title %></small><strong><%= ic.next.title %></strong>
+            <span class="progress"><span style="width:<%= ic.progress.pct %>%"></span></span></span>
+          <span class="play-btn">▶</span>
+        </a>
+      <% }) %>
+    </div>
+  </section>
+<% } %>
+
+<!-- Filters: category, bundle, tag -->
+<nav class="chip-filter" aria-label="Filter courses by topic">
+  <a href="/app/courses" class="<%= !filtered ? 'on' : '' %>">All</a>
+  <% c.courseCategories.forEach((g) => { %>
+    <a href="/app/courses?cat=<%= g.id %>" class="<%= active.cat === g.id ? 'on' : '' %>"><%= g.icon %> <%= g.name %> <small><%= counts[g.id] %></small></a>
   <% }) %>
-</div>
+</nav>
+<nav class="chip-filter bundles" aria-label="Filter courses by bundle">
+  <span class="muted small">Bundles:</span>
+  <% c.bundles.forEach((b) => { %><a href="/app/courses?bundle=<%= b.id %>" class="<%= active.bundle && active.bundle.id === b.id ? 'on' : '' %>"><%= b.name %></a><% }) %>
+</nav>
+
+<% if (filtered) { %>
+  <p class="filter-note">
+    Showing
+    <% if (active.cat) { %><strong><%= c.categoryById[active.cat].name %></strong><% } %>
+    <% if (active.bundle) { %><strong><%= active.bundle.name %></strong> — <%= active.bundle.blurb %><% } %>
+    <% if (active.tag) { %>tag <strong>#<%= active.tag %></strong><% } %>
+    · <a href="/app/courses">Clear filter ✕</a>
+  </p>
+<% } %>
+
+<% if (!groups.length) { %><div class="card"><p class="muted">No courses match that filter.</p></div><% } %>
+
+<% groups.forEach((g) => { %>
+  <section class="course-group">
+    <div class="group-head"><h2 class="h3"><%= g.icon %> <%= g.name %></h2><p class="muted small mb-0"><%= g.blurb %></p></div>
+    <div class="course-grid">
+      <% g.courses.forEach((course) => { %><%- include('_course-card', { course }) %><% }) %>
+    </div>
+  </section>
+<% }) %>
 
 <%- include('../partials/footer') %>

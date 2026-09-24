@@ -9,6 +9,6 @@
     <% need.features.forEach((f) => { %><li><%= f %></li><% }) %>
   </ul>
   <a href="/checkout?plan=<%= need.id %>" class="btn btn-primary btn-lg">Unlock with <%= need.name %> — <%= money(need.price) %>/mo</a>
-  <p class="mt-1"><a href="/app/courses">Back to courses</a></p>
+  <p class="mt-1"><a href="/app/courses/<%= course.slug %>">Back to course overview</a></p>
 </div>
 <%- include('../partials/footer') %>

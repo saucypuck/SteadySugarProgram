@@ -46,6 +46,11 @@ Results /quiz/results  → persona + recommended plan (Free / Core / VIP)
       └──► Free discovery call /book-call (VIP applications: /book-call?plan=vip)
 ```
 
+**Courses** `/app/courses`: 9 courses in 7 categories (Blood Sugar Education, Frameworks & Habits, Nutrition, Gut Health, Exercise & Movement, Sleep & Stress, Tracking & Tech).
+- **Catalog:** a continue-learning row, and filters by category, bundle and tag.
+- **Course landing pages:** a trailer (YouTube, Vimeo or .mp4, with a placeholder until one is added), description, outcomes, who it's for, tags, bundles, a sectioned lesson menu with done / free / locked / up-next states, what's included and downloads, the coach, and related courses.
+- All course content lives in `src/courses.js`. Keep slugs stable, because member progress is keyed on them.
+
 **Member area** `/app`: dashboard (next lesson, next call, glucose trend, quick log, daily habits, upgrade prompts) · courses and lessons with progress tracking · nutrition and workout plans · tracker · calls (monthly allowance per plan) · account and billing.
 
 **Marketing** `/admin/marketing`: one lean page for ad and landing-page decisions.
@@ -75,7 +80,8 @@ Results /quiz/results  → persona + recommended plan (Free / Core / VIP)
 
 | What | File |
 |------|------|
-| Pricing, plans, courses, meal and workout plans, quiz questions, FAQs, testimonials | `src/content.js` |
+| Pricing, plans, meal and workout plans, quiz questions, FAQs, testimonials | `src/content.js` |
+| Courses, categories, bundles, trailers | `src/courses.js` |
 | Quiz scoring (persona, recommended plan, lead temperature) | `src/quiz.js` |
 | Availability, call types | `src/scheduling.js` |
 | **Payments (Stripe goes here)** | `src/integrations/payments.js` |

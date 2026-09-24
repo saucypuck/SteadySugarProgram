@@ -87,14 +87,65 @@ router.get('/', h(async (req, res) => {
 }));
 
 // ---- Courses ---------------------------------------------------------------
-router.get('/courses', (req, res) => {
-  const courses = content.courses.map((c) => ({
-    ...c,
-    unlocked: tierAllows(req.user, c.tier),
-    freeCount: c.lessons.filter((l) => l.free).length,
-    progress: courseProgress(req.user, c),
+// Access state + progress for one course, from this user's point of view.
+function decorate(user, c) {
+  const done = new Set(user.completedLessons || []);
+  const unlocked = tierAllows(user, c.tier);
+  const lessons = c.lessons.map((l, i) => ({
+    ...l,
+    index: i,
+    done: done.has(lessonKey(c, l)),
+    open: canOpenLesson(user, c, l),
   }));
-  res.render('app/courses', { title: 'Courses', courses });
+  const openLessons = lessons.filter((l) => l.open);
+  const next = openLessons.find((l) => !l.done) || null;
+  const freeCount = c.lessons.filter((l) => l.free).length;
+  return {
+    ...c,
+    lessons,
+    cat: content.categoryById[c.category],
+    unlocked,
+    state: unlocked ? 'unlocked' : openLessons.length ? 'preview' : 'locked',
+    freeCount,
+    next,
+    progress: courseProgress(user, c),
+    needPlan: content.plans[c.tier],
+  };
+}
+
+// Turn a YouTube/Vimeo/mp4 URL into something the page can play.
+function trailerEmbed(url) {
+  if (!url) return null;
+  let m = url.match(/(?:youtube\.com\/watch\?v=|youtu\.be\/|youtube\.com\/embed\/)([\w-]{6,})/);
+  if (m) return { kind: 'iframe', src: `https://www.youtube-nocookie.com/embed/${m[1]}?rel=0` };
+  m = url.match(/vimeo\.com\/(?:video\/)?(\d+)/);
+  if (m) return { kind: 'iframe', src: `https://player.vimeo.com/video/${m[1]}` };
+  if (/\.(mp4|webm|m3u8)(\?|$)/i.test(url)) return { kind: 'video', src: url };
+  return null;
+}
+
+router.get('/courses', (req, res) => {
+  const all = content.courses.map((c) => decorate(req.user, c));
+  const cat = content.categoryById[req.query.cat] ? req.query.cat : null;
+  const bundle = content.bundles.find((b) => b.id === req.query.bundle) || null;
+  const tag = req.query.tag ? String(req.query.tag).slice(0, 40) : null;
+  let list = all;
+  if (cat) list = list.filter((c) => c.category === cat);
+  if (bundle) list = list.filter((c) => c.tags.includes(bundle.tag));
+  if (tag) list = list.filter((c) => c.tags.includes(tag));
+  const groups = content.courseCategories
+    .map((g) => ({ ...g, courses: list.filter((c) => c.category === g.id) }))
+    .filter((g) => g.courses.length);
+  res.render('app/courses', {
+    title: 'Courses',
+    groups,
+    filtered: !!(cat || bundle || tag),
+    active: { cat, bundle, tag },
+    inProgress: all.filter((c) => c.progress.done > 0 && c.next).slice(0, 3),
+    counts: Object.fromEntries(content.courseCategories.map((g) => [g.id, all.filter((c) => c.category === g.id).length])),
+    totalCourses: all.length,
+    freeLessons: all.reduce((n, c) => n + c.freeCount, 0),
+  });
 });
 
 function findLesson(req) {
@@ -104,13 +155,28 @@ function findLesson(req) {
   return { course, lesson: course.lessons[idx], idx };
 }
 
+// Course landing page: trailer, description, outcomes, tags/bundles, lesson menu.
 router.get('/courses/:course', (req, res, next) => {
-  const { course } = findLesson(req);
-  if (!course) return next();
-  const open = course.lessons.filter((l) => canOpenLesson(req.user, course, l));
-  if (!open.length) return res.render('app/locked', { title: course.title, course, lesson: null });
-  const resume = open.find((l) => !(req.user.completedLessons || []).includes(lessonKey(course, l))) || open[0];
-  res.redirect(`/app/courses/${course.slug}/${resume.slug}`);
+  const raw = content.courses.find((c) => c.slug === req.params.course);
+  if (!raw) return next();
+  const course = decorate(req.user, raw);
+  const related = content.courses
+    .filter((c) => c.slug !== raw.slug && inLibrary(req.user, c))
+    .map((c) => ({ c, score: (c.category === raw.category ? 2 : 0) + c.tags.filter((t) => raw.tags.includes(t)).length }))
+    .filter((x) => x.score > 0)
+    .sort((a, b) => b.score - a.score)
+    .slice(0, 3)
+    .map((x) => decorate(req.user, x.c));
+  const modules = raw.modules.map((m) => ({ title: m.title, lessons: course.lessons.filter((l) => l.module === m.title) }));
+  res.render('app/course', {
+    title: course.title,
+    course,
+    modules,
+    related,
+    inBundles: content.bundles.filter((b) => raw.tags.includes(b.tag)),
+    trailer: trailerEmbed(raw.trailer && raw.trailer.url),
+    counts: { videos: course.lessons.filter((l) => l.type === 'video').length, worksheets: course.lessons.filter((l) => l.type === 'worksheet').length, readings: course.lessons.filter((l) => l.type === 'reading').length },
+  });
 });
 
 router.get('/courses/:course/:lesson', (req, res, next) => {
@@ -120,6 +186,7 @@ router.get('/courses/:course/:lesson', (req, res, next) => {
   const done = (req.user.completedLessons || []);
   res.render('app/lesson', {
     title: lesson.title,
+    cat: content.categoryById[course.category],
     course,
     lesson,
     idx,
@@ -141,7 +208,7 @@ router.post('/courses/:course/:lesson/complete', h(async (req, res, next) => {
   const nxt = course.lessons[idx + 1];
   if (nxt) return res.redirect(`/app/courses/${course.slug}/${nxt.slug}`);
   req.session.flash = { type: 'success', msg: `Course complete: ${course.title}! 🎉` };
-  res.redirect('/app/courses');
+  res.redirect(`/app/courses/${course.slug}`);
 }));
 
 // ---- Plans -------------------------------------------------------------------

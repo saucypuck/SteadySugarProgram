@@ -1,12 +1,12 @@
 <%- include('../partials/header') %>
 
-<p class="crumbs"><a href="/app/courses">Courses</a> / <%= course.title %></p>
+<p class="crumbs"><a href="/app/courses">Courses</a> / <a href="/app/courses/<%= course.slug %>"><%= course.title %></a> / <%= lesson.module %></p>
 
 <div class="lesson-layout">
   <article>
-    <div class="wire video">▶ Lesson video (<%= lesson.minutes %> min)<br><small>Embed Vimeo / Mux / YouTube unlisted</small></div>
+    <div class="wire video"><%= { video: '▶ Lesson video', reading: '📄 Reading', worksheet: '✍️ Worksheet' }[lesson.type] || '▶ Lesson video' %> (<%= lesson.minutes %> min)<br><small><%= lesson.type === 'video' ? 'Embed Vimeo / Mux / YouTube unlisted' : 'Content / downloadable PDF goes here' %></small></div>
     <h1 class="mt-2"><%= lesson.title %></h1>
-    <p class="muted">Lesson <%= idx + 1 %> of <%= course.lessons.length %> · <%= lesson.minutes %> min</p>
+    <p class="muted"><%= cat.icon %> <%= cat.name %> · Lesson <%= idx + 1 %> of <%= course.lessons.length %> · <%= lesson.minutes %> min</p>
     <div class="prose">
       <p>[Lesson notes / transcript summary. Keep it skimmable: 3 key ideas, a simple visual, and one takeaway.]</p>
     </div>
@@ -24,7 +24,7 @@
   </article>
 
   <aside class="card lesson-list">
-    <h3><%= course.title %></h3>
+    <h3><a href="/app/courses/<%= course.slug %>" class="plain-link"><%= course.title %></a></h3>
     <div class="progress"><span style="width:<%= progress.pct %>%"></span></div>
     <small class="muted"><%= progress.done %>/<%= progress.total %> complete</small>
     <ol>

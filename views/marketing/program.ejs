@@ -19,7 +19,7 @@
       <% c.courses.forEach((course) => { %>
         <div class="card">
           <div class="row-between">
-            <span class="badge"><%= course.weeks === 'Bonus' ? 'VIP bonus' : 'Weeks ' + course.weeks %></span>
+            <span class="badge"><%= c.categoryById[course.category].icon %> <%= c.categoryById[course.category].name %><%= course.weeks ? ' · Weeks ' + course.weeks : '' %><%= course.tier === 'vip' ? ' · VIP' : '' %></span>
             <small class="muted"><%= course.lessons.length %> lessons</small>
           </div>
           <h3 class="mt-1"><%= course.title %></h3>

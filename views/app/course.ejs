@@ -51,7 +51,18 @@
         <a href="/app/courses/<%= course.slug %>/<%= course.lessons[0].slug %>" class="btn btn-secondary btn-lg">✓ Completed — review</a>
       <% } %>
     </div>
-    <% if (course.state !== 'locked') { %>
+    <% if (course.blueprint && course.state !== 'locked') { %>
+      <% if (activeBp && activeBp.slug === course.slug) { %>
+        <a href="/app/blueprint" class="btn btn-secondary btn-sm mt-1">🧭 Open my blueprint tracker</a>
+      <% } else { %>
+        <form method="post" action="/app/blueprints/<%= course.slug %>/start" class="inline-add mt-1" <%- activeBp && activeBp.state !== 'completed' ? 'data-confirm="This replaces your current blueprint (' + activeBp.course.title + '). Continue?"' : '' %>>
+          <% if (activeProg && activeProg.state !== 'completed') { %>
+            <select name="align" aria-label="Start date"><option value="plan">Start with my plan (<%= sched.formatDate(activeProg.startDate > sched.today() ? activeProg.startDate : sched.today()) %>)</option><option value="today">Start today</option></select>
+          <% } else { %><input type="date" name="startDate" value="<%= sched.today() %>" min="<%= sched.today() %>" aria-label="Start date"><% } %>
+          <button class="btn btn-primary btn-sm">🧭 Start this <%= course.blueprint.days %>-day blueprint</button>
+        </form>
+      <% } %>
+    <% } else if (course.state !== 'locked') { %>
       <form method="post" action="/app/schedule/enroll" class="mt-1">
         <input type="hidden" name="course" value="<%= course.slug %>"><input type="hidden" name="on" value="<%= inPlan ? '0' : '1' %>">
         <button class="btn btn-ghost btn-sm"><%= inPlan ? '✓ In my calendar — remove' : '📅 Add lessons to my calendar' %></button>
@@ -76,6 +87,17 @@
       </ul>
       <p class="small muted mb-0"><strong>Who it’s for:</strong> <%= course.audience %></p>
     </section>
+
+    <% if (course.blueprint) { const bpd = course.blueprint; %>
+      <section class="card bp-panel">
+        <h2 class="h3">🧭 How this blueprint works</h2>
+        <p class="small muted"><%= bpd.days %> days · a daily checklist, a streak to protect, weekly milestones and a check-in at the end of each week<%= tier !== 'free' && c.plans[tier].callsPerMonth ? ' that your coach reviews' : '' %>.</p>
+        <div class="grid-2">
+          <div><h3 class="h4">Every day</h3><ul class="check-list"><% bpd.daily.forEach((t) => { %><li><%= t.label %></li><% }) %></ul></div>
+          <div><h3 class="h4">Week by week</h3><ol class="phase-list"><% bpd.weeks.forEach((w, i) => { %><li><strong>Week <%= i + 1 %>: <%= w.title %></strong><span><%= w.goal %></span></li><% }) %></ol></div>
+        </div>
+      </section>
+    <% } %>
 
     <!-- Table of contents -->
     <section class="card toc" id="lessons">

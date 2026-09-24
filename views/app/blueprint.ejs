@@ -1,0 +1,136 @@
+<%- include('../partials/header') %>
+
+<div class="page-head">
+  <div><p class="eyebrow">Plans</p><h1><%= blueprint ? blueprint.course.title : 'Blueprints' %></h1></div>
+</div>
+<%- include('_plan-tabs') %>
+
+<% if (blueprint) { const b = blueprint; %>
+  <section class="prog-hero">
+    <div>
+      <span class="pill"><%= b.state === 'upcoming' ? 'Starts ' + sched.formatDate(b.startDate) : b.state === 'completed' ? 'Completed' : 'Day ' + b.dayNumber + ' of ' + b.bp.days %></span>
+      <h2 class="mt-1 mb-0"><%= b.state === 'completed' ? '🏁 Blueprint complete!' : 'Week ' + b.week + ': ' + b.milestone.title %></h2>
+      <p class="muted mb-0"><%= b.state === 'completed' ? 'You finished ' + b.course.title + '. Here’s how you did.' : 'Goal this week: ' + b.milestone.goal %></p>
+    </div>
+    <div class="bp-stats">
+      <div><strong>🔥 <%= b.streak %></strong><small>day streak</small></div>
+      <div><strong><%= b.completion %>%</strong><small>tasks done</small></div>
+      <div><strong><%= b.completeDays %></strong><small>perfect days</small></div>
+    </div>
+  </section>
+
+  <div class="bp-grid mt-2">
+    <div class="stack-lg">
+      <% if (b.state === 'active') { %>
+        <section class="card">
+          <div class="row-between"><h3 class="mb-0">Today’s checklist</h3><small class="muted"><%= b.todayChecks.length %>/<%= b.bp.daily.length %></small></div>
+          <ul class="checklist">
+            <% b.bp.daily.forEach((t) => { const on = b.todayChecks.includes(t.id); %>
+              <li>
+                <form method="post" action="/app/blueprint/check">
+                  <input type="hidden" name="task" value="<%= t.id %>"><input type="hidden" name="date" value="<%= today %>">
+                  <button class="check-row <%= on ? 'on' : '' %>" aria-pressed="<%= on %>"><span class="box"><%= on ? '✓' : '' %></span><%= t.label %></button>
+                </form>
+              </li>
+            <% }) %>
+          </ul>
+          <% const yd = b.days.find((d) => d.date < today && d.date >= b.startDate && d.dayNumber === b.dayNumber - 1); if (yd && !yd.complete) { %>
+            <details class="more mt-1"><summary>Forgot to check off yesterday?</summary>
+              <ul class="checklist small-list">
+                <% b.bp.daily.forEach((t) => { const on = (b.checks[yd.date] || []).includes(t.id); %>
+                  <li><form method="post" action="/app/blueprint/check"><input type="hidden" name="task" value="<%= t.id %>"><input type="hidden" name="date" value="<%= yd.date %>"><button class="check-row <%= on ? 'on' : '' %>"><span class="box"><%= on ? '✓' : '' %></span><%= t.label %></button></form></li>
+                <% }) %>
+              </ul>
+            </details>
+          <% } %>
+        </section>
+      <% } else if (b.state === 'upcoming') { %>
+        <section class="card"><h3>Starts <%= sched.formatDate(b.startDate) %></h3><p class="muted">Your daily checklist appears here (and on your calendar) from day one. Meanwhile, watch the lessons.</p></section>
+      <% } %>
+
+      <section class="card">
+        <h3>Progress</h3>
+        <div class="heat" aria-label="Daily completion">
+          <% b.days.forEach((d) => { const lvl = d.future ? 'f' : d.done === 0 ? 0 : d.complete ? 3 : d.done / d.total >= .5 ? 2 : 1; %>
+            <span class="heat-cell l<%= lvl %> <%= d.today ? 'is-today' : '' %>" title="Day <%= d.dayNumber %> · <%= d.date %> · <%= d.done %>/<%= d.total %>"></span>
+          <% }) %>
+        </div>
+        <p class="small muted mt-1">Each square is a day: darker = more tasks done.</p>
+        <ol class="phase-list mt-1">
+          <% b.bp.weeks.forEach((w, i) => { const cur = i + 1 === b.week && b.state !== 'completed'; const ci = b.checkins.find((x) => x.week === i + 1); %>
+            <li class="<%= cur ? 'current' : '' %>"><strong>Week <%= i + 1 %>: <%= w.title %> <%= ci ? '· ✓ checked in (' + ci.score + '/5)' : '' %></strong><span>Goal: <%= w.goal %></span>
+              <ul class="wk-tasks"><% w.tasks.forEach((t) => { %><li><%= t %></li><% }) %></ul></li>
+          <% }) %>
+        </ol>
+      </section>
+    </div>
+
+    <div class="stack-lg">
+      <section class="card <%= b.checkinDue ? 'due' : '' %>" id="checkin">
+        <h3>📋 Weekly check-in <% if (b.checkinDue) { %><span class="count">due</span><% } %></h3>
+        <% if (b.checkinDone && b.state !== 'completed') { %>
+          <p class="small muted">✓ Week <%= b.week %> check-in submitted. The next one opens at the end of week <%= b.week + 1 %>.</p>
+        <% } else if (b.state === 'upcoming') { %>
+          <p class="small muted">Opens at the end of week 1.</p>
+        <% } else { %>
+          <form method="post" action="/app/blueprint/checkin" class="stack">
+            <p class="small"><strong><%= b.bp.checkin %></strong></p>
+            <div class="score-row"><% [1, 2, 3, 4, 5].forEach((n) => { %><label><input type="radio" name="score" value="<%= n %>" <%= n === 3 ? 'checked' : '' %>><span><%= n %></span></label><% }) %></div>
+            <small class="muted">1 = rough week · 5 = nailed it</small>
+            <div class="field"><label for="wins">A win this week</label><input id="wins" name="wins" placeholder="e.g. walked after dinner 5 nights"></div>
+            <div class="field"><label for="blk">What got in the way?</label><input id="blk" name="blockers" placeholder="e.g. late meetings, travel"></div>
+            <% if (hasCoach) { %><label class="check small"><input type="checkbox" name="help"> I’d like my coach to reach out</label><% } %>
+            <button class="btn btn-primary btn-block">Submit check-in</button>
+          </form>
+        <% } %>
+        <p class="micro"><%= hasCoach ? 'Your coach reviews every check-in — and reaches out if you’re stuck.' : 'Tip: coaching members get a coach reviewing their check-ins.' %></p>
+      </section>
+
+      <section class="card">
+        <h3>Lessons</h3>
+        <ul class="toc-list compact">
+          <% b.course.lessons.forEach((l, i) => { const done = (user.completedLessons || []).includes(b.course.slug + '/' + l.slug); %>
+            <li class="<%= done ? 'done' : '' %>"><a href="/app/courses/<%= b.course.slug %>/<%= l.slug %>"><span class="toc-num"><%= done ? '✓' : i + 1 %></span><span class="toc-title"><%= l.title %><small><%= l.minutes %> min</small></span></a></li>
+          <% }) %>
+        </ul>
+      </section>
+
+      <form method="post" action="/app/blueprint/end" data-confirm="<%= b.state === 'completed' ? 'Archive this blueprint so you can start another?' : 'End this blueprint early? Your progress is saved to your history.' %>">
+        <button class="btn btn-ghost btn-sm <%= b.state === 'completed' ? '' : 'danger' %>"><%= b.state === 'completed' ? 'Archive & choose my next blueprint' : 'End blueprint early' %></button>
+      </form>
+    </div>
+  </div>
+
+<% } else { %>
+  <p class="muted">Blueprints are short, dated action programs: a daily checklist, a streak, weekly milestones and a check-in each week — so you actually do the thing, not just learn it. Run one at a time, alongside your meal &amp; movement plan.</p>
+  <div class="bp-list">
+    <% list.forEach((co) => { %>
+      <article class="card bp-card cat-<%= co.category %>">
+        <div class="row-between"><h3 class="mb-0"><%= co.title %></h3><span class="pill"><%= co.blueprint.days %> days</span></div>
+        <p class="small muted"><%= co.summary %></p>
+        <p class="small mb-0"><strong>Every day:</strong></p>
+        <ul class="bp-daily"><% co.blueprint.daily.forEach((t) => { %><li><%= t.label %></li><% }) %></ul>
+        <div class="cta-row">
+          <% if (co.unlocked) { %>
+            <form method="post" action="/app/blueprints/<%= co.slug %>/start" class="inline-add mt-0">
+              <% if (program && program.state !== 'completed') { %>
+                <select name="align" aria-label="Start"><option value="plan">Start with my plan (<%= sched.formatDate(program.startDate > today ? program.startDate : today) %>)</option><option value="today">Start today</option></select>
+              <% } else { %><input type="hidden" name="startDate" value="<%= today %>"><% } %>
+              <button class="btn btn-primary btn-sm">Start blueprint</button>
+            </form>
+          <% } else { %>
+            <a href="/checkout?plan=core" class="btn btn-secondary btn-sm">🔒 Unlock with Core</a>
+          <% } %>
+          <a href="/app/courses/<%= co.slug %>" class="btn btn-ghost btn-sm">Details</a>
+        </div>
+      </article>
+    <% }) %>
+  </div>
+  <% if (history.length) { %>
+    <details class="archived mt-2"><summary>Past blueprints (<%= history.length %>)</summary>
+      <ul class="archived-list"><% history.slice().reverse().forEach((hh) => { const hc = list.find((x) => x.slug === hh.slug) || { title: hh.slug }; %><li><span><strong><%= hc.title %></strong> <small class="muted"><%= hh.startDate %> → <%= hh.endedAt || hh.endDate %><%= hh.completion != null ? ' · ' + hh.completion + '% tasks' : '' %></small></span><span class="status s-<%= hh.status === 'completed' ? 'winner' : 'ended' %>"><%= hh.status %></span></li><% }) %></ul>
+    </details>
+  <% } %>
+<% } %>
+
+<%- include('../partials/footer') %>

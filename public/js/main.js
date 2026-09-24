@@ -77,6 +77,19 @@
     });
   });
 
+  // Plan enroll: show the end date as the start date changes.
+  var startInput = document.querySelector('[data-plan-weeks]');
+  var endLabel = document.querySelector('[data-plan-end]');
+  if (startInput && endLabel) {
+    startInput.addEventListener('change', function () {
+      var weeks = Number(startInput.getAttribute('data-plan-weeks'));
+      var d = new Date(startInput.value + 'T12:00:00Z');
+      if (isNaN(d)) return;
+      d.setUTCDate(d.getUTCDate() + weeks * 7 - 1);
+      endLabel.textContent = 'Ends ' + d.toLocaleDateString('en-US', { weekday: 'short', month: 'short', day: 'numeric', timeZone: 'UTC' }) + ' (' + weeks + ' weeks)';
+    });
+  }
+
   // Daily habit checkboxes remembered for today (per device).
   var habits = document.querySelector('[data-habits]');
   if (habits) {

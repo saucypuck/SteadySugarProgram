@@ -4,20 +4,23 @@
 const content = require('./content');
 const sched = require('./scheduling');
 const { planOf, tierAllows, canOpenLesson } = require('./auth');
+const plans = require('./plans');
+const enroll = require('./enroll');
 
 const WEEKDAYS = ['sun', 'mon', 'tue', 'wed', 'thu', 'fri', 'sat'];
 const DAY_NAMES = { sun: 'Sun', mon: 'Mon', tue: 'Tue', wed: 'Wed', thu: 'Thu', fri: 'Fri', sat: 'Sat' };
 const ALARMS = [0, 5, 10, 15, 30, 60, 120];
 // Quiz "biggest challenge" → extra course to recommend alongside the core program.
-const CHALLENGE_COURSE = { cravings: 'gut-health-reset', energy: 'sleep-stress-reset', food: 'meal-prep-simplified', time: 'steady-5', consistency: 'steady-5' };
+// (Blueprints are run from the Blueprint tracker, so they're never auto-added here.)
+const CHALLENGE_COURSE = { cravings: 'gut-health-reset', energy: 'sleep-stress-reset', food: 'meal-prep-simplified', time: 'meal-prep-simplified', consistency: 'eat-to-stabilize' };
 
 const courseBySlug = Object.fromEntries(content.courses.map((c) => [c.slug, c]));
 const inLibrary = (user, c) => c.tier !== 'vip' || tierAllows(user, 'vip');
 
 function recommendedCourses(user, lead) {
   const tier = planOf(user);
-  if (tier === 'free' && !tierAllows(user, 'core')) return content.courses.filter((c) => c.lessons.some((l) => l.free)).map((c) => c.slug);
-  const list = content.courses.filter((c) => c.tags.includes('core-program')).map((c) => c.slug);
+  if (tier === 'free' && !tierAllows(user, 'core')) return content.courses.filter((c) => !c.blueprint && c.lessons.some((l) => l.free)).map((c) => c.slug);
+  const list = content.courses.filter((c) => c.tags.includes('core-program') && !c.blueprint).map((c) => c.slug);
   const extra = lead && lead.answers && CHALLENGE_COURSE[lead.answers.challenge];
   if (extra) list.splice(1, 0, extra);
   if (tierAllows(user, 'vip')) list.push('cgm-deep-dive');
@@ -38,6 +41,8 @@ function defaults(user, lead) {
     weeklyReview: true,
     reviewDay: 'sun',
     reviewTime: '18:00',
+    blueprintTime: '08:00',
+    lessonStart: null,
     alarm: 10,
     emailDigest: false,
   };
@@ -71,6 +76,8 @@ function parse(body, current) {
     weeklyReview: body.weeklyReview === 'on',
     reviewDay: WEEKDAYS.includes(body.reviewDay) ? body.reviewDay : current.reviewDay,
     reviewTime: validTime(body.reviewTime, current.reviewTime),
+    blueprintTime: validTime(body.blueprintTime, current.blueprintTime),
+    lessonStart: current.lessonStart || null,
     alarm: ALARMS.includes(Number(body.alarm)) ? Number(body.alarm) : current.alarm,
     emailDigest: body.emailDigest === 'on',
     updatedAt: new Date().toISOString(),
@@ -89,12 +96,13 @@ const shiftTime = (t, mins) => {
 };
 
 // Lessons still to do, in the member's chosen course order (only ones they can open).
-function lessonQueue(user, s) {
+function lessonQueue(user, s, skip) {
   const done = new Set(user.completedLessons || []);
   const queue = [];
   for (const slug of s.courses) {
+    if (slug === skip) continue;
     const c = courseBySlug[slug];
-    if (!c || !inLibrary(user, c)) continue;
+    if (!c || c.blueprint || !inLibrary(user, c)) continue;
     for (const l of c.lessons) {
       if (!done.has(`${c.slug}/${l.slug}`) && canOpenLesson(user, c, l)) queue.push({ course: c, lesson: l });
     }
@@ -110,22 +118,36 @@ function buildEvents(user, s, { from, to, base = '', bookings = [] }) {
   const alarm = [s.alarm];
   const link = (p) => `${base}${p}`;
 
-  // Lessons: one per chosen lesson day, starting today, in order.
-  const queue = lessonQueue(user, s);
+  const prog = full ? enroll.activeProgram(user) : null;
+  const bpRun = full ? enroll.activeBlueprint(user) : null;
+  const bpActive = bpRun && bpRun.state !== 'completed' ? bpRun : null;
+  const lessonEvent = (course, lesson, day, extra = '') => ({
+    uid: `lesson-${course.slug}-${lesson.slug}`, type: 'lesson', icon: '🎓', date: day, time: s.lessonTime, minutes: lesson.minutes,
+    summary: `Lesson: ${lesson.title}`,
+    description: `${course.title} · ${lesson.minutes} min${extra}\n\nThis week’s action: ${lesson.action}\n\nOpen the lesson: ${link(`/app/courses/${course.slug}/${lesson.slug}`)}`,
+    url: link(`/app/courses/${course.slug}/${lesson.slug}`), alarms: alarm,
+  });
+
+  // Blueprint lessons: one a day from the blueprint's first day (catch-up starts today).
+  if (bpActive) {
+    const done = new Set(user.completedLessons || []);
+    let day = bpActive.startDate > today ? bpActive.startDate : today;
+    for (const lesson of bpActive.course.lessons.filter((l) => !done.has(`${bpActive.course.slug}/${l.slug}`))) {
+      if (day > to) break;
+      if (day >= from) events.push(lessonEvent(bpActive.course, lesson, day, ' · Blueprint'));
+      day = addDays(day, 1);
+    }
+  }
+
+  // Course lessons: one per chosen lesson day, in order, from today (or the paired start date).
+  const queue = lessonQueue(user, s, bpActive && bpActive.slug);
   if (s.lessonDays.length && queue.length) {
-    let day = today;
+    let day = s.lessonStart && s.lessonStart > today ? s.lessonStart : today;
     let guard = 0;
     while (queue.length && day <= to && guard++ < 400) {
       if (s.lessonDays.includes(weekday(day))) {
         const { course, lesson } = queue.shift();
-        if (day >= from) {
-          events.push({
-            uid: `lesson-${course.slug}-${lesson.slug}`, type: 'lesson', icon: '🎓', date: day, time: s.lessonTime, minutes: lesson.minutes,
-            summary: `Lesson: ${lesson.title}`,
-            description: `${course.title} · ${lesson.minutes} min\n\nThis week’s action: ${lesson.action}\n\nOpen the lesson: ${link(`/app/courses/${course.slug}/${lesson.slug}`)}`,
-            url: link(`/app/courses/${course.slug}/${lesson.slug}`), alarms: alarm,
-          });
-        }
+        if (day >= from) events.push(lessonEvent(course, lesson, day));
       }
       day = addDays(day, 1);
     }
@@ -140,37 +162,52 @@ function buildEvents(user, s, { from, to, base = '', bookings = [] }) {
         summary: 'Log your fasting reading', description: `Before breakfast. Log it here: ${link('/app/log')}`, url: link('/app/log'), alarms: [0] });
     }
 
-    const menu = content.nutritionPlan.week.find((d) => d.day === label);
-    if (full && menu && s.meals !== 'off') {
+    // Meal & Movement Plan: only inside the enrolled plan's start/end dates.
+    const info = prog && day >= prog.startDate && day <= prog.endDate ? plans.dayOf(prog.plan, prog.startDate, day) : null;
+    const planTag = info ? `${prog.plan.name} · Day ${info.dayNumber} · Week ${info.week}: ${info.phase.title}` : '';
+    const menu = info && info.meals;
+    if (menu && s.meals !== 'off') {
       if (s.meals === 'daily') {
-        events.push({ uid: `meals-${day}`, type: 'meal', icon: '🥗', date: day, time: s.mealTimes.breakfast, minutes: 15, summary: 'Today’s Steady Sugar meals',
-          description: `Breakfast: ${menu.breakfast}\nLunch: ${menu.lunch}\nDinner: ${menu.dinner}\nSnack: ${menu.snack}\n\nFull plan + grocery list: ${link('/app/plans/nutrition')}`,
-          url: link('/app/plans/nutrition'), alarms: [0] });
+        events.push({ uid: `meals-${day}`, type: 'meal', icon: '🥗', date: day, time: s.mealTimes.breakfast, minutes: 15, summary: 'Today’s meals',
+          description: `${planTag}\n\nBreakfast: ${menu.breakfast}\nLunch: ${menu.lunch}\nDinner: ${menu.dinner}\nSnack: ${menu.snack}\n\nYour plan + grocery list: ${link('/app/plans')}`,
+          url: link('/app/plans'), alarms: [0] });
       } else {
         const m = [['breakfast', 'Breakfast', menu.breakfast, ''], ['lunch', 'Lunch', menu.lunch, `\nSnack idea: ${menu.snack}`], ['dinner', 'Dinner', menu.dinner, '\n\nTake a 10-minute walk after dinner.']];
         for (const [key, name, food, extra] of m) {
           events.push({ uid: `meal-${key}-${day}`, type: 'meal', icon: '🥗', date: day, time: s.mealTimes[key], minutes: 30, summary: `${name}: ${food}`,
-            description: `${name}: ${food}${extra}\n\nSteady Plate: ½ veggies · ¼ protein · ¼ smart carbs.\nMeal plan: ${link('/app/plans/nutrition')}`,
-            url: link('/app/plans/nutrition'), alarms: [Math.min(s.alarm, 15)] });
+            description: `${name}: ${food}${extra}\n\n${planTag}\nSteady Plate: ½ veggies · ¼ protein · ¼ smart carbs.\nYour plan: ${link('/app/plans')}`,
+            url: link('/app/plans'), alarms: [Math.min(s.alarm, 15)] });
         }
       }
     }
 
-    const w = content.workoutPlan.week.find((d) => d.day === label);
-    if (full && s.workouts && w && w.focus !== 'Rest') {
-      const moves = content.workoutPlan.workouts[w.focus];
-      const isWalk = /walk/i.test(w.focus);
+    const w = info && info.workout;
+    if (w && s.workouts && !w.rest) {
       events.push({
-        uid: `workout-${day}`, type: 'workout', icon: isWalk ? '🚶' : '💪', date: day,
-        time: w.focus === 'Walk' ? shiftTime(s.mealTimes.lunch, 30) : s.workoutTime,
-        minutes: w.focus === 'Walk' ? 10 : w.focus === 'Long walk' ? 40 : 30,
-        summary: `${isWalk ? '' : 'Workout: '}${w.focus}`,
-        description: `${w.detail}${moves ? `\n\n${moves.map((x) => `• ${x.name} — ${x.sets} × ${x.reps}`).join('\n')}` : ''}\n\nWorkout plan: ${link('/app/plans/workout')}`,
-        url: link('/app/plans/workout'), alarms: alarm,
+        uid: `workout-${day}`, type: 'workout', icon: w.walk ? '🚶' : '💪', date: day,
+        time: w.walk && w.focus === 'Walk' ? shiftTime(s.mealTimes.lunch, 30) : s.workoutTime,
+        minutes: w.minutes || 20,
+        summary: w.walk ? w.focus : `Workout: ${w.focus}`,
+        description: `${w.detail}${w.moves ? `\n\n${w.moves.map(([n, sets, reps]) => `• ${n} — ${sets} × ${reps}`).join('\n')}` : ''}\n\n${planTag}\nPhase focus: ${info.phase.focus}\nYour plan: ${link('/app/plans')}`,
+        url: link('/app/plans'), alarms: alarm,
       });
     }
 
-    if (s.weeklyReview && wd === s.reviewDay) {
+    // Blueprint: daily checklist + weekly check-in (replaces the generic weekly review while running).
+    if (bpActive && day >= bpActive.startDate && day <= bpActive.endDate) {
+      const n = enroll.daysBetween(bpActive.startDate, day) + 1;
+      events.push({ uid: `blueprint-${bpActive.slug}-${day}`, type: 'blueprint', icon: '🧭', date: day, time: s.blueprintTime, minutes: 5,
+        summary: `${bpActive.course.title}: Day ${n} checklist`,
+        description: `Day ${n} of ${bpActive.bp.days}\n\n${bpActive.bp.daily.map((t) => `☐ ${t.label}`).join('\n')}\n\nCheck off today: ${link('/app/blueprint')}`,
+        url: link('/app/blueprint'), alarms: alarm });
+      if (n % 7 === 0 || day === bpActive.endDate) {
+        events.push({ uid: `bp-checkin-${bpActive.slug}-${day}`, type: 'blueprint', icon: '📋', date: day, time: s.reviewTime, minutes: 10,
+          summary: `Blueprint check-in · Week ${Math.ceil(n / 7)}`, description: `${bpActive.bp.checkin}\n\nSubmit your check-in: ${link('/app/blueprint')}`,
+          url: link('/app/blueprint'), alarms: alarm });
+      }
+    }
+
+    if (s.weeklyReview && wd === s.reviewDay && !(bpActive && day >= bpActive.startDate && day <= bpActive.endDate)) {
       events.push({ uid: `review-${day}`, type: 'habit', icon: '📋', date: day, time: s.reviewTime, minutes: 15, summary: 'Weekly check-in',
         description: `Review your readings, log your weight and pick one focus for next week.\n\nTracker: ${link('/app/log')}`, url: link('/app/log'), alarms: alarm });
     }

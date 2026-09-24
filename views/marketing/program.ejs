@@ -34,16 +34,14 @@
 </section>
 
 <section class="section section-soft">
-  <div class="container grid-2">
-    <div class="card">
-      <h3>🥗 Nutrition plans</h3>
-      <p class="muted">A repeatable weekly meal plan built on the Steady Plate: half veggies, a palm of protein, a fist of smart carbs.</p>
-      <ul class="check-list"><% c.nutritionPlan.targets.forEach((t) => { %><li><strong><%= t.label %>:</strong> <%= t.value %></li><% }) %></ul>
-    </div>
-    <div class="card">
-      <h3>🚶 Workout plans</h3>
-      <p class="muted">No gym required. Movement timed to when it helps your blood sugar most.</p>
-      <ul class="check-list"><% c.workoutPlan.phases.forEach((p) => { %><li><strong>Weeks <%= p.weeks %>:</strong> <%= p.body %></li><% }) %></ul>
+  <div class="container">
+    <h2 class="center">Meal &amp; Movement Plans</h2>
+    <p class="center muted narrow" style="margin:0 auto">Each plan pairs a weekly menu with a matching workout routine and runs on set dates. A 1-minute quiz matches you to the right one.</p>
+    <div class="grid-3 mt-3">
+      <% mealPlans.forEach((p) => { %>
+        <div class="card"><div class="row-between"><h3 class="mb-0"><%= p.name %></h3><span class="badge"><%= p.weeks %> weeks</span></div><p class="small muted mt-1"><%= p.tagline %></p></div>
+      <% }) %>
+      <div class="card"><h3>🧭 Blueprints</h3><p class="small muted">14–28 day action programs with daily checklists, streaks and weekly check-ins — run one alongside your plan.</p></div>
     </div>
   </div>
 </section>

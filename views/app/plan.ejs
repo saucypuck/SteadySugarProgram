@@ -1,0 +1,109 @@
+<%- include('../partials/header') %>
+
+<p class="crumbs"><a href="/app/plans?browse=1">Plans</a> / <%= plan.name %></p>
+
+<section class="plan-hero">
+  <div>
+    <div class="chip-row">
+      <span class="pill"><%= plan.weeks %> weeks</span>
+      <span class="pill"><%= plan.level %></span>
+      <% if (match) { %><span class="badge free-badge">Match score <%= Math.max(0, match.score) %></span><% } %>
+    </div>
+    <h1><%= plan.name %></h1>
+    <p class="lead"><%= plan.tagline %></p>
+    <p><%= plan.description %></p>
+    <% if (match && match.why.length) { %><div class="why"><% match.why.forEach((w) => { %><span>✓ <%= w %></span><% }) %></div><% } %>
+    <ul class="plan-facts mt-1">
+      <li>🥗 <%= plan.diet === 'plant' ? 'Vegetarian (eggs & dairy)' : 'Omnivore' %> · meals in ≤<%= plan.cookTime %> min</li>
+      <li>💪 <%= plan.workoutMinutes %>-min workouts · <%= { none: 'no equipment needed', basic: 'bands or dumbbells', gym: 'gym access' }[plan.equipment] %><%= plan.lowImpact ? ' · low impact' : '' %></li>
+    </ul>
+  </div>
+
+  <!-- Enroll -->
+  <div class="card enroll-card">
+    <% if (isCurrent) { %>
+      <h3>✓ You’re on this plan</h3>
+      <p class="small muted"><%= sched.formatDate(program.startDate) %> – <%= sched.formatDate(program.endDate) %></p>
+      <a href="/app/plans" class="btn btn-primary btn-block">Go to my plan</a>
+    <% } else if (!full) { %>
+      <h3>Start this plan</h3>
+      <p class="small muted">Meal &amp; Movement Plans are included with Core, along with every course and blueprint.</p>
+      <a href="/checkout?plan=core" class="btn btn-primary btn-block">Upgrade to enroll — <%= money(c.plans.core.price) %>/mo</a>
+    <% } else { %>
+      <h3>Enroll</h3>
+      <form method="post" action="/app/plans/<%= plan.id %>/enroll" class="stack" <%- program ? 'data-confirm="This replaces your current plan (' + program.plan.name + '). Continue?"' : '' %>>
+        <div class="field">
+          <label for="sd">Start date</label>
+          <input id="sd" type="date" name="startDate" value="<%= defaultStart %>" min="<%= today %>" data-plan-weeks="<%= plan.weeks %>">
+          <small class="muted" data-plan-end>Ends <%= sched.formatDate(defaultEnd) %> (<%= plan.weeks %> weeks)</small>
+        </div>
+        <div class="field">
+          <label for="pair">Line it up with</label>
+          <select id="pair" name="pair">
+            <option value="">Nothing — just the plan</option>
+            <% if (pair.blueprints.length) { %><optgroup label="Blueprints (start together)">
+              <% pair.blueprints.forEach((b) => { %><option value="blueprint:<%= b.slug %>" <%= pairing.blueprint === b.slug && !blueprint ? 'selected' : '' %>><%= b.title %> · <%= b.blueprint.days %> days</option><% }) %>
+            </optgroup><% } %>
+            <optgroup label="Courses (lessons start that day)">
+              <% pair.courses.forEach((co) => { %><option value="course:<%= co.slug %>" <%= pairing.course === co.slug && blueprint ? 'selected' : '' %>><%= co.title %></option><% }) %>
+            </optgroup>
+          </select>
+          <% if (blueprint && blueprint.state !== 'completed') { %>
+            <label class="check small mt-1"><input type="checkbox" name="replaceBlueprint"> Replace my current blueprint (<%= blueprint.course.title %>) if I pick a new one</label>
+          <% } %>
+        </div>
+        <% if (program) { %><p class="small tone-warn">You’re on <%= program.plan.name %> — enrolling here replaces it (one plan at a time).</p><% } %>
+        <button class="btn btn-primary btn-block">Enroll in <%= plan.name %></button>
+        <p class="micro center">Meals, workouts and reminders go straight onto your calendar.</p>
+      </form>
+    <% } %>
+  </div>
+</section>
+
+<div class="grid-2 mt-2">
+  <section class="card">
+    <h3>🎯 Daily targets</h3>
+    <div class="target-row"><% plan.targets.forEach((tg) => { %><div class="target"><small class="muted"><%= tg.label %></small><strong><%= tg.value %></strong></div><% }) %></div>
+  </section>
+  <section class="card">
+    <h3>📈 How it progresses</h3>
+    <ol class="phase-list"><% plan.phases.forEach((ph) => { %><li><strong>Weeks <%= ph.weeks[0] %>–<%= ph.weeks[1] %>: <%= ph.title %></strong><span><%= ph.focus %></span></li><% }) %></ol>
+  </section>
+</div>
+
+<section class="mt-2">
+  <h2 class="h3">A week on this plan</h2>
+  <div class="table-wrap card p-0 <%= full ? '' : 'locked-rows' %>">
+    <table class="table meal-table plan-week">
+      <thead><tr><th>Day</th><th>Breakfast</th><th>Lunch</th><th>Dinner</th><th>Snack</th><th>Movement</th></tr></thead>
+      <tbody>
+        <% sample.forEach((d, i) => { %>
+          <tr class="<%= !full && i > 0 ? 'blur' : '' %>">
+            <th data-label="Day"><%= d.dow %></th>
+            <td data-label="Breakfast"><%= d.meals.breakfast %></td><td data-label="Lunch"><%= d.meals.lunch %></td><td data-label="Dinner"><%= d.meals.dinner %></td><td data-label="Snack"><%= d.meals.snack %></td>
+            <td data-label="Movement"><strong><%= d.workout.focus %></strong><br><small class="muted"><%= d.workout.detail %></small></td>
+          </tr>
+        <% }) %>
+      </tbody>
+    </table>
+    <% if (!full) { %><div class="locked-overlay"><div class="card"><h3>🔒 See the full week</h3><p class="muted">Every day’s meals and workouts unlock with Core.</p><a href="/checkout?plan=core" class="btn btn-primary">Unlock — <%= money(c.plans.core.price) %>/mo</a></div></div><% } %>
+  </div>
+</section>
+
+<% if (full) { %>
+  <section class="mt-2">
+    <h2 class="h3">Workouts in this plan</h2>
+    <div class="grid-2">
+      <% [...new Set(Object.values(plan.schedule).filter((v) => typeof v === 'string' && v !== 'Rest'))].forEach((name) => { const w = WORKOUTS[name]; %>
+        <div class="card">
+          <h3><%= name %> <small class="muted">~<%= w.minutes %> min</small></h3>
+          <div class="table-wrap"><table class="traffic"><thead><tr><th>Exercise</th><th>Sets</th><th>Reps</th></tr></thead>
+            <tbody><% w.moves.forEach(([n, sets, reps]) => { %><tr><td><span class="demo-thumb">▶</span><%= n %></td><td><%= sets %></td><td><%= reps %></td></tr><% }) %></tbody></table></div>
+        </div>
+      <% }) %>
+    </div>
+  </section>
+<% } %>
+<p class="fine">Check with your doctor before starting a new eating or exercise plan. If you take insulin or sulfonylureas, check your blood sugar before and after exercise.</p>
+
+<%- include('../partials/footer') %>

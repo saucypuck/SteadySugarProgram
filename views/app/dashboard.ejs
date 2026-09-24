@@ -39,6 +39,37 @@
     <small class="muted"><%= totals.done %> of <%= totals.total %> lessons complete</small>
   </div>
 
+  <!-- Blueprint: today's checklist (accountability front and center) -->
+  <% if (blueprint && blueprint.state === 'active') { const b = blueprint; %>
+    <div class="card">
+      <div class="row-between"><p class="eyebrow mb-0">🧭 <%= b.course.title %> · Day <%= b.dayNumber %></p><span class="small">🔥 <%= b.streak %></span></div>
+      <ul class="checklist compact mt-1">
+        <% b.bp.daily.forEach((t) => { const on = b.todayChecks.includes(t.id); %>
+          <li><form method="post" action="/app/blueprint/check"><input type="hidden" name="task" value="<%= t.id %>"><input type="hidden" name="date" value="<%= sched.today() %>"><input type="hidden" name="back" value="dashboard"><button class="check-row <%= on ? 'on' : '' %>" aria-pressed="<%= on %>"><span class="box"><%= on ? '✓' : '' %></span><%= t.label %></button></form></li>
+        <% }) %>
+      </ul>
+      <% if (b.checkinDue) { %><a href="/app/blueprint#checkin" class="btn btn-primary btn-sm mt-1">📋 Weekly check-in due</a><% } else { %><a href="/app/blueprint" class="small">Open tracker →</a><% } %>
+    </div>
+  <% } %>
+
+  <!-- Meal & Movement Plan -->
+  <div class="card">
+    <% if (program && program.state === 'active') { const t = program.today; %>
+      <p class="eyebrow"><%= program.plan.name %> · Week <%= t.week %></p>
+      <p class="mb-0"><strong><%= t.workout.rest ? '😌 Rest day' : (t.workout.walk ? '🚶 ' : '💪 ') + t.workout.focus %></strong> <small class="muted"><%= t.workout.detail %></small></p>
+      <p class="small mt-1 mb-0">🥗 Dinner: <%= t.meals.dinner %></p>
+      <a href="/app/plans" class="small">Today’s full plan →</a>
+    <% } else if (program && program.state === 'upcoming') { %>
+      <p class="eyebrow">Your plan</p>
+      <p><strong><%= program.plan.name %></strong> starts <%= sched.formatDate(program.startDate) %>.</p>
+      <a href="/app/plans" class="small">Preview week 1 →</a>
+    <% } else { %>
+      <p class="eyebrow">Meal &amp; movement plan</p>
+      <p class="small muted">Get a menu and workout routine matched to your food, time and fitness.</p>
+      <a href="/app/plans/quiz" class="btn btn-secondary btn-sm">🎯 Find my plan (1 min)</a>
+    <% } %>
+  </div>
+
   <!-- Next call -->
   <div class="card">
     <p class="eyebrow">Next call</p>
@@ -108,8 +139,8 @@
   <% } %>
 
   <div class="card span-2 quick-links">
-    <a href="/app/plans/nutrition">🥗 This week’s meal plan</a>
-    <a href="/app/plans/workout">🚶 This week’s workouts</a>
+    <a href="/app/plans">🥗 My meal &amp; movement plan</a>
+    <a href="/app/blueprint">🧭 My blueprint</a>
     <a href="/app/courses">🎓 All courses</a>
     <a href="mailto:<%= c.brand.supportEmail %>">💬 Message my coach</a>
   </div>

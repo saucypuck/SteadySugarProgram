@@ -6,10 +6,12 @@
 //   tags       used for filtering + bundles   weeks    where it sits in the 12-week roadmap (optional)
 //   trailer    { url, poster, duration } — url may be a YouTube/Vimeo embed URL or an .mp4; blank shows a placeholder
 //   modules    [{ title, lessons: [...] }]   lesson: { slug, title, minutes, type: video|reading|worksheet, free?, action }
+//   blueprint  (Blueprints only) { days, daily: [{ id, label }], weeks: [{ title, goal, tasks: [] }], checkin } —
+//              turns a course into a dated action program with a daily checklist, streaks and weekly check-ins.
 
 const CATEGORIES = [
   { id: 'education', name: 'Blood Sugar Education', icon: '🩸', blurb: 'Understand what’s happening in your body and what your numbers mean.' },
-  { id: 'frameworks', name: 'Frameworks & Habits', icon: '🧭', blurb: 'Simple systems that make healthy choices automatic.' },
+  { id: 'frameworks', name: 'Blueprints', icon: '🧭', blurb: 'Step-by-step action plans with daily tasks, streaks and weekly check-ins — built to deliver results, not just information.' },
   { id: 'nutrition', name: 'Nutrition', icon: '🥗', blurb: 'What, when and how to eat for steadier blood sugar.' },
   { id: 'gut', name: 'Gut Health', icon: '🦠', blurb: 'How your gut shapes cravings, inflammation and glucose response.' },
   { id: 'exercise', name: 'Exercise & Movement', icon: '🚶', blurb: 'Movement that improves insulin sensitivity — no gym required.' },
@@ -57,17 +59,33 @@ const COURSES = [
   },
   {
     slug: 'steady-5',
-    title: 'The Steady 5 Framework',
+    title: 'The Steady 5 Blueprint',
     category: 'frameworks',
     tier: 'core',
     level: 'Beginner',
     tags: ['start-here', 'quick-wins', 'habits'],
-    summary: 'Five daily non-negotiables that keep your numbers steady on busy days.',
+    summary: 'A 21-day blueprint: five daily non-negotiables that keep your numbers steady on busy days.',
     description: 'When life gets busy, you don’t need a perfect plan — you need a minimum. The Steady 5 is a one-page daily framework (protein, plate, walk, water, wind-down) you can run on autopilot, with a scorecard to keep you honest.',
     outcomes: ['Know your five daily non-negotiables', 'Use the Steady 5 scorecard in under a minute a day', 'Adapt the framework for travel, holidays and sick days'],
     audience: 'Busy people who want a simple rule set instead of a meal plan.',
     resources: ['Steady 5 daily scorecard', 'Travel & holiday version'],
     trailer: { url: '', poster: '', duration: '0:58' },
+    blueprint: {
+      days: 21,
+      daily: [
+        { id: 'protein', label: '25g+ protein at breakfast' },
+        { id: 'plate', label: 'At least one Steady Plate' },
+        { id: 'walk', label: '10-minute walk after your biggest meal' },
+        { id: 'water', label: '8 cups of water' },
+        { id: 'winddown', label: 'Wind-down and lights out on time' },
+      ],
+      weeks: [
+        { title: 'Learn & baseline', goal: 'Hit at least 3 of 5 every day', tasks: ['Watch the 4 short lessons', 'Print your scorecard', 'Log 3 fasting readings'] },
+        { title: 'Consistency', goal: 'All 5 on at least 5 days', tasks: ['Write your busy-day minimum', 'Tell one person your goal'] },
+        { title: 'Own it', goal: 'All 5 on 6+ days', tasks: ['Compare week-1 vs week-3 readings', 'Decide which habits stay for good'] },
+      ],
+      checkin: 'How consistent were you with the Steady 5 this week?',
+    },
     modules: [
       { title: 'The framework', lessons: [
         { slug: 'why-a-minimum', title: 'Why a daily minimum beats a perfect plan', minutes: 6, type: 'video', action: 'Rate your last 3 days: how many were “all or nothing”?' },
@@ -76,6 +94,42 @@ const COURSES = [
       ] },
       { title: 'Real life', lessons: [
         { slug: 'off-days', title: 'Travel, holidays & sick days', minutes: 8, type: 'video', action: 'Write your “minimum Steady 5” for your next trip or event.' },
+      ] },
+    ],
+  },
+  {
+    slug: 'craving-reset',
+    title: 'Craving Reset',
+    category: 'frameworks',
+    tier: 'core',
+    level: 'Beginner',
+    tags: ['cravings', 'quick-wins', 'kitchen', 'root-causes'],
+    summary: 'A 14-day blueprint to break the spike–crash–crave cycle.',
+    description: 'Two focused weeks of daily actions that cut sugar cravings at the source: protein-first mornings, no liquid sugar, pairing every carb, and closing the kitchen at night — with a craving log so you can see the change.',
+    outcomes: ['Cut evening cravings by closing the kitchen', 'Pair every carb so it doesn’t spike', 'Replace liquid sugar for good', 'See your cravings trend in your log'],
+    audience: 'Anyone fighting afternoon or late-night sugar cravings.',
+    resources: ['Craving log', 'Swap list for sweet drinks'],
+    trailer: { url: '', poster: '', duration: '0:50' },
+    blueprint: {
+      days: 14,
+      daily: [
+        { id: 'protein', label: 'Protein-first breakfast (25g+)' },
+        { id: 'drinks', label: 'No liquid sugar (soda, juice, sweet coffee)' },
+        { id: 'pair', label: 'Pair every carb with protein, fat or fiber' },
+        { id: 'kitchen', label: 'Kitchen closed 2 hours before bed' },
+        { id: 'log', label: 'Rate today’s cravings (1–5) in your log' },
+      ],
+      weeks: [
+        { title: 'Break the cycle', goal: '4 of 5 actions every day', tasks: ['Watch the 3 lessons', 'Clear sweet drinks from the house'] },
+        { title: 'Lock it in', goal: 'All 5 actions on 5+ days', tasks: ['Compare craving scores: week 1 vs week 2', 'Pick your 2 forever habits'] },
+      ],
+      checkin: 'How were your cravings this week compared to before?',
+    },
+    modules: [
+      { title: 'The reset', lessons: [
+        { slug: 'why-cravings', title: 'Why cravings happen (it’s not willpower)', minutes: 7, type: 'video', action: 'Notice when cravings hit and what you ate 2–3 hours before.' },
+        { slug: 'pairing', title: 'Pairing: the anti-spike move', minutes: 6, type: 'video', action: 'Pair every carb today.' },
+        { slug: 'kitchen-close', title: 'Closing the kitchen', minutes: 5, type: 'video', action: 'Set a “kitchen closed” time and a replacement ritual.' },
       ] },
     ],
   },
@@ -209,12 +263,27 @@ const COURSES = [
     weeks: '11–12',
     level: 'Intermediate',
     tags: ['core-program', 'habits', 'maintenance'],
-    summary: 'Make the changes automatic and build your maintenance plan.',
+    summary: 'A 28-day blueprint to make your changes automatic and build your maintenance plan.',
     description: 'The final stretch of the program: turn what’s working into habits that survive busy seasons, learn to track without obsessing, bounce back fast from bad weeks, and leave with a written maintenance plan.',
     outcomes: ['Stack new habits onto existing routines', 'Choose a sustainable long-term tracking cadence', 'Recover from setbacks within 48 hours', 'Write your personal maintenance plan'],
     audience: 'Members finishing the 12-week program — or anyone who keeps restarting.',
     resources: ['Habit stacking planner', '“Bad week” reset plan', 'Maintenance worksheet'],
     trailer: { url: '', poster: '', duration: '1:02' },
+    blueprint: {
+      days: 28,
+      daily: [
+        { id: 'stack', label: 'Do your stacked habit (after your anchor routine)' },
+        { id: 'track', label: 'Log one reading or quick check-in' },
+        { id: 'reflect', label: 'One-line reflection: what worked today?' },
+      ],
+      weeks: [
+        { title: 'Stack it', goal: 'Stacked habit on 5+ days', tasks: ['Pick your anchor routine', 'Watch “Tiny habits, big results”'] },
+        { title: 'Track wisely', goal: 'Choose a tracking rhythm you can keep', tasks: ['Watch “Tracking without obsessing”', 'Set your long-term tracking cadence'] },
+        { title: 'Bounce back', goal: 'No two missed days in a row', tasks: ['Write your “bad week” reset plan'] },
+        { title: 'Maintenance', goal: 'Leave with a written plan', tasks: ['Complete the maintenance worksheet', 'Review it with your coach'] },
+      ],
+      checkin: 'How automatic did your habits feel this week?',
+    },
     modules: [
       { title: 'Make it automatic', lessons: [
         { slug: 'tiny-habits', title: 'Tiny habits, big results', minutes: 8, type: 'video', action: 'Stack one new habit onto an existing routine.' },

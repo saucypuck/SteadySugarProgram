@@ -10,6 +10,7 @@ const { loadUser } = require('./src/auth');
 const { captureUtm } = require('./src/track');
 const { seedDemo } = require('./src/seed');
 const sched = require('./src/scheduling');
+const mealPlans = require('./src/plans').PLANS;
 
 const app = express();
 const PORT = process.env.PORT || 3000;
@@ -47,6 +48,7 @@ app.use('/', require('./src/routes/feed')); // calendar feed: no session/user lo
 app.use((req, res, next) => {
   res.locals.c = content;
   res.locals.sched = sched;
+  res.locals.mealPlans = mealPlans;
   res.locals.path = req.path;
   res.locals.variant = 'marketing';
   res.locals.assetVersion = assetVersion;

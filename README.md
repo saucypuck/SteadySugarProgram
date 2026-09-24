@@ -51,6 +51,17 @@ Results /quiz/results  → persona + recommended plan (Free / Core / VIP)
 - **Course landing pages:** a trailer (YouTube, Vimeo or .mp4, with a placeholder until one is added), description, outcomes, who it's for, tags, bundles, a sectioned lesson menu with done / free / locked / up-next states, what's included and downloads, the coach, and related courses.
 - All course content lives in `src/courses.js`. Keep slugs stable, because member progress is keyed on them.
 
+**Plans** `/app/plans` + `/app/blueprint` (Core and above):
+- **Meal & Movement Plans:** 5 plans, each pairing a weekly menu with a matching workout routine, in `src/plans.js`: Steady Start (4 weeks), Steady Core 12 (12 weeks), Plant-Forward (8 weeks), Busy Fast-Track (6 weeks) and Strength & Steady (8 weeks).
+  - A 7-question **plan finder quiz** scores every plan and suggests a course and blueprint to pair with it.
+  - Members run **one plan at a time** with set start and end dates. They can pair it with a course (its lessons start the same day) or a blueprint (starts together).
+  - Past plans are kept in a history.
+- **Blueprints** (the Blueprints category, set with the `blueprint` field in `src/courses.js`): Steady 5 (21 days), Craving Reset (14 days) and Habits That Stick (28 days).
+  - Each has a daily checklist with a streak, weekly milestones, a progress heatmap and a weekly check-in.
+  - Coached members who score 2/5 or less, finish under half their tasks, or ask for help get an automatic follow-up task for the coach in the CRM.
+  - One blueprint runs at a time.
+- Plan meals and workouts, and the blueprint's daily checklist and check-ins, go onto the member calendar only inside their dates.
+
 **Calendar** `/app/schedule`:
 - **My Plan:** the courses a member follows (recommended from their quiz answers and plan), lesson days and time, meal reminders (per meal, a daily summary, or off), their weekly workout routine, a fasting-reading reminder, a weekly check-in, and how early alerts fire.
 - **Week view** in the app, plus a **private calendar feed** at `/cal/<token>.ics` for Apple, Google or Outlook Calendar. Members subscribe once and get every event with alerts on their phone, no login needed.
@@ -89,7 +100,9 @@ Results /quiz/results  → persona + recommended plan (Free / Core / VIP)
 | What | File |
 |------|------|
 | Pricing, plans, meal and workout plans, quiz questions, FAQs, testimonials | `src/content.js` |
-| Courses, categories, bundles, trailers | `src/courses.js` |
+| Courses, categories, bundles, trailers, blueprint definitions | `src/courses.js` |
+| Meal & Movement Plans, workout library, plan finder quiz | `src/plans.js` |
+| Plan / blueprint enrollment state, streaks, check-ins | `src/enroll.js` |
 | Quiz scoring (persona, recommended plan, lead temperature) | `src/quiz.js` |
 | Availability, call types | `src/scheduling.js` |
 | **Payments (Stripe goes here)** | `src/integrations/payments.js` |

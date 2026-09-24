@@ -1,0 +1,30 @@
+<%- include('../partials/header') %>
+<%- include('_plan-tabs') %>
+
+<div class="quiz-container quiz-inline">
+  <div class="quiz-progress" aria-hidden="true"><span data-quiz-bar></span></div>
+  <p class="muted small center">Plan finder · about 1 minute</p>
+  <form method="post" action="/app/plans/quiz" class="quiz" data-quiz>
+    <% quiz.forEach((q, i) => { %>
+      <fieldset class="quiz-step" data-step>
+        <legend><span class="q-num">Question <%= i + 1 %> of <%= quiz.length %></span><%= q.question %></legend>
+        <div class="options">
+          <% q.options.forEach(([value, label]) => { %>
+            <label class="option"><input type="radio" name="<%= q.id %>" value="<%= value %>" <%= prev[q.id] === value ? 'checked' : '' %> required><span><%= label %></span></label>
+          <% }) %>
+        </div>
+      </fieldset>
+    <% }) %>
+    <fieldset class="quiz-step" data-step>
+      <legend><span class="q-num">All set</span>Ready to see your match?</legend>
+      <p class="muted">We’ll recommend the plan that fits your food, time and fitness — plus a course and blueprint to pair with it.</p>
+      <button class="btn btn-primary btn-lg btn-block">Show my plan →</button>
+    </fieldset>
+    <div class="quiz-nav" data-quiz-nav>
+      <button type="button" class="btn btn-ghost" data-quiz-back>← Back</button>
+      <button type="button" class="btn btn-secondary" data-quiz-next>Next →</button>
+    </div>
+  </form>
+</div>
+
+<%- include('../partials/footer') %>

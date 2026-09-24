@@ -4,6 +4,25 @@ const db = require('./db');
 const { createUser } = require('./auth');
 const sched = require('./scheduling');
 const { seedMarketing } = require('./seed-marketing');
+const plans = require('./plans');
+const enroll = require('./enroll');
+
+// Demo member follows Steady Core 12 and is 6 days into the Steady 5 blueprint. Runs once.
+async function seedPrograms() {
+  const member = await db.findOneBy('users', 'email', DEMO_MEMBER.email);
+  if (!member || member.program || member.programHistory) return;
+  const today = sched.today();
+  const start = enroll.addDays(today, -23);
+  const bpStart = enroll.addDays(today, -5);
+  const all = ['protein', 'plate', 'walk', 'water', 'winddown'];
+  const checks = {};
+  [all.slice(0, 3), all.slice(0, 4), all, all, all].forEach((c, i) => { checks[enroll.addDays(bpStart, i)] = c; });
+  await db.update('users', member.id, {
+    program: { planId: 'steady-core-12', startDate: start, endDate: plans.endDate(plans.planById['steady-core-12'], start), pairedWith: 'course:foundations', status: 'active', enrolledAt: new Date().toISOString() },
+    blueprint: { slug: 'steady-5', startDate: bpStart, endDate: enroll.addDays(bpStart, 20), checks, checkins: [], status: 'active', enrolledAt: new Date().toISOString() },
+    planQuiz: { answers: { goal: 'a1c', diet: 'omnivore', cook: '30', activity: 'some', time: '30', equipment: 'basic', joints: 'no' }, at: new Date().toISOString() },
+  });
+}
 
 // Demo CRM data: pipeline stages, a few notes and follow-ups. Runs once.
 async function seedCrm() {
@@ -47,6 +66,7 @@ async function seedDemo() {
   }
   if (await db.findOneBy('users', 'email', DEMO_MEMBER.email)) {
     await seedCrm();
+    await seedPrograms();
     console.log('[seed] Demo accounts present.');
     return;
   }
@@ -90,6 +110,7 @@ async function seedDemo() {
     for (let i = 0; i < n; i++) await db.insert('events', { name, seeded: true });
   }
   await seedCrm();
+  await seedPrograms();
   console.log(`[seed] Demo member ${DEMO_MEMBER.email} / ${DEMO_MEMBER.password} · free ${DEMO_FREE.email} / ${DEMO_FREE.password} · admin ${DEMO_ADMIN.email} / ${DEMO_ADMIN.password}`);
 }
 

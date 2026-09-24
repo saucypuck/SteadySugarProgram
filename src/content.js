@@ -42,8 +42,8 @@ const plans = {
     features: [
       'Everything in Free',
       'All 8 courses unlocked (nutrition, gut health, exercise & more)',
-      'Full weekly meal plans + grocery lists',
-      'Full walk & strength workout plans',
+      '5 meal & movement plans matched to you',
+      'Blueprints: daily tasks, streaks & check-ins',
       '2 × 30-min coaching calls / month',
     ],
   },

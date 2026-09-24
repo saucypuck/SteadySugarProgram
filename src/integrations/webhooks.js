@@ -14,6 +14,9 @@ const EVENTS = {
   purchase: 'Purchase',
   subscription_canceled: 'Subscription canceled',
   plan_changed: 'Plan changed by admin',
+  plan_enrolled: 'Enrolled in a meal & movement plan',
+  blueprint_started: 'Blueprint started',
+  blueprint_checkin: 'Blueprint weekly check-in',
 };
 
 const validUrl = (u) => /^https:\/\/[^\s]+$/i.test(u) || (process.env.NODE_ENV !== 'production' && /^http:\/\/(localhost|127\.0\.0\.1)(:\d+)?\//.test(u));

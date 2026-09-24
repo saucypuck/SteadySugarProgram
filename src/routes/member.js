@@ -9,6 +9,9 @@ const { requireAuth, planOf, tierAllows, canOpenLesson } = require('../auth');
 const { track } = require('../track');
 const crypto = require('crypto');
 const schedule = require('../schedule');
+const plans = require('../plans');
+const enroll = require('../enroll');
+const crm = require('../crm');
 const ics = require('../ics');
 
 const router = express.Router();
@@ -80,6 +83,8 @@ router.get('/', h(async (req, res) => {
   const todays = schedule.buildEvents(user, schedule.getSchedule(user, lead), { from: today, to: today, bookings: quota.mine });
   res.render('app/dashboard', {
     todays,
+    program: tierAllows(user, 'core') ? enroll.activeProgram(user) : null,
+    blueprint: tierAllows(user, 'core') ? enroll.activeBlueprint(user) : null,
     title: 'Dashboard',
     week: programWeek(user),
     next: nextLesson(user),
@@ -184,6 +189,8 @@ router.get('/courses/:course', h(async (req, res, next) => {
     inBundles: content.bundles.filter((b) => raw.tags.includes(b.tag)),
     trailer: trailerEmbed(raw.trailer && raw.trailer.url),
     inPlan: schedule.getSchedule(req.user, lead).courses.includes(raw.slug),
+    activeBp: enroll.activeBlueprint(req.user),
+    activeProg: enroll.activeProgram(req.user),
     counts: { videos: course.lessons.filter((l) => l.type === 'video').length, worksheets: course.lessons.filter((l) => l.type === 'worksheet').length, readings: course.lessons.filter((l) => l.type === 'reading').length },
   });
 }));
@@ -220,11 +227,186 @@ router.post('/courses/:course/:lesson/complete', h(async (req, res, next) => {
   res.redirect(`/app/courses/${course.slug}`);
 }));
 
-// ---- Plans -------------------------------------------------------------------
-router.get('/plans', (req, res) => res.redirect('/app/plans/nutrition'));
-// Free tier sees a sample; the full plans unlock with Core.
-router.get('/plans/nutrition', (req, res) => res.render('app/nutrition', { title: 'Nutrition plan', plan: content.nutritionPlan, full: tierAllows(req.user, 'core') }));
-router.get('/plans/workout', (req, res) => res.render('app/workout', { title: 'Workout plan', plan: content.workoutPlan, week: programWeek(req.user), full: tierAllows(req.user, 'core') }));
+// ---- Meal & Movement Plans --------------------------------------------------------
+// One plan at a time with fixed start/end dates. Free members can browse, take the
+// finder quiz and see a sample day; enrolling requires Core.
+const planCtx = (req) => ({ full: tierAllows(req.user, 'core'), program: enroll.activeProgram(req.user), blueprint: enroll.activeBlueprint(req.user) });
+
+router.get('/plans', (req, res) => {
+  const ctx = planCtx(req);
+  const browse = req.query.browse === '1' || !ctx.program;
+  const quiz = req.user.planQuiz || null;
+  const ranked = quiz ? plans.scorePlans(quiz.answers) : null;
+  let week = null;
+  if (ctx.program && !browse) {
+    const start = ctx.program.state === 'upcoming' ? ctx.program.startDate : sched.today();
+    week = [];
+    for (let i = 0; i < 7; i++) {
+      const date = enroll.addDays(start, i);
+      const info = plans.dayOf(ctx.program.plan, ctx.program.startDate, date);
+      if (info) week.push({ date, label: sched.formatDate(date), isToday: date === sched.today(), ...info });
+    }
+  }
+  res.render('app/plans', { title: 'Plans', tab: 'plans', ...ctx, browse, week, plans: plans.PLANS, recommendedId: ranked ? ranked[0].plan.id : null, history: req.user.programHistory || [] });
+});
+
+router.get('/plans/nutrition', (req, res) => res.redirect('/app/plans'));
+router.get('/plans/workout', (req, res) => res.redirect('/app/plans'));
+
+router.get('/plans/quiz', (req, res) => res.render('app/plan-quiz', { title: 'Find your plan', tab: 'plans', quiz: plans.PLAN_QUIZ, prev: (req.user.planQuiz || {}).answers || {} }));
+
+router.post('/plans/quiz', h(async (req, res) => {
+  const answers = {};
+  for (const q of plans.PLAN_QUIZ) answers[q.id] = q.options.some(([v]) => v === req.body[q.id]) ? req.body[q.id] : q.options[0][0];
+  await db.update('users', req.user.id, { planQuiz: { answers, at: new Date().toISOString() } });
+  res.redirect('/app/plans/match');
+}));
+
+router.get('/plans/match', (req, res) => {
+  const quiz = req.user.planQuiz;
+  if (!quiz) return res.redirect('/app/plans/quiz');
+  const ranked = plans.scorePlans(quiz.answers);
+  const pairing = plans.suggestPairing(quiz.answers);
+  const bySlug = (slug) => content.courses.find((c) => c.slug === slug);
+  res.render('app/plan-match', { title: 'Your plan match', tab: 'plans', ...planCtx(req), top: ranked[0], others: ranked.slice(1, 3), pairCourse: bySlug(pairing.course), pairBlueprint: bySlug(pairing.blueprint) });
+});
+
+function pairOptions(user) {
+  return {
+    courses: content.courses.filter((c) => !c.blueprint && inLibrary(user, c) && c.lessons.some((l) => canOpenLesson(user, c, l))),
+    blueprints: content.courses.filter((c) => c.blueprint && tierAllows(user, c.tier)),
+  };
+}
+
+router.get('/plans/:id', (req, res, next) => {
+  const plan = plans.planById[req.params.id];
+  if (!plan) return next();
+  const ctx = planCtx(req);
+  const quiz = req.user.planQuiz;
+  const match = quiz ? plans.scorePlans(quiz.answers).find((r) => r.plan.id === plan.id) : null;
+  const pairing = quiz ? plans.suggestPairing(quiz.answers) : { course: 'foundations', blueprint: 'steady-5' };
+  const sample = [];
+  for (let i = 0; i < 7; i++) sample.push(plans.dayOf(plan, '2026-01-05', enroll.addDays('2026-01-05', i))); // Mon–Sun
+  res.render('app/plan', { title: plan.name, tab: 'plans', ...ctx, plan, match, sample, WORKOUTS: plans.WORKOUTS, defaultStart: enroll.nextMonday(), defaultEnd: plans.endDate(plan, enroll.nextMonday()), today: sched.today(), pair: pairOptions(req.user), pairing, isCurrent: ctx.program && ctx.program.planId === plan.id });
+});
+
+router.post('/plans/:id/enroll', h(async (req, res, next) => {
+  const plan = plans.planById[req.params.id];
+  if (!plan) return next();
+  if (!tierAllows(req.user, 'core')) {
+    req.session.flash = { type: 'info', msg: 'Meal & Movement Plans are included with Core. Upgrade to enroll.' };
+    return res.redirect('/checkout?plan=core');
+  }
+  const u = req.user;
+  const startDate = enroll.cleanStart(req.body.startDate);
+  const patch = {
+    program: { planId: plan.id, startDate, endDate: plans.endDate(plan, startDate), pairedWith: req.body.pair || null, status: 'active', enrolledAt: new Date().toISOString() },
+  };
+  const current = enroll.activeProgram(u);
+  if (current) patch.programHistory = [...(u.programHistory || []), { ...u.program, status: current.state === 'completed' ? 'completed' : 'switched', endedAt: sched.today() }];
+
+  // Line up a course or blueprint with the plan's start date.
+  const [kind, slug] = String(req.body.pair || '').split(':');
+  const paired = content.courses.find((c) => c.slug === slug);
+  let note = '';
+  if (kind === 'course' && paired && !paired.blueprint) {
+    const lead = u.leadId ? await db.get('leads', u.leadId) : null;
+    const sc = schedule.getSchedule(u, lead);
+    const { recommended, isSetUp, ...saved } = sc;
+    patch.schedule = { ...saved, courses: [paired.slug, ...sc.courses.filter((x) => x !== paired.slug)], lessonStart: startDate, updatedAt: new Date().toISOString() };
+    note = ` ${paired.title} lessons start the same day.`;
+  }
+  if (kind === 'blueprint' && paired && paired.blueprint && tierAllows(u, paired.tier)) {
+    const bpNow = enroll.activeBlueprint(u);
+    if (!bpNow || bpNow.state === 'completed' || req.body.replaceBlueprint === 'on') {
+      if (bpNow) patch.blueprintHistory = [...(u.blueprintHistory || []), { ...u.blueprint, status: bpNow.state === 'completed' ? 'completed' : 'switched' }];
+      patch.blueprint = { slug: paired.slug, startDate, endDate: enroll.addDays(startDate, paired.blueprint.days - 1), checks: {}, checkins: [], status: 'active', enrolledAt: new Date().toISOString() };
+      note = ` ${paired.title} starts the same day.`;
+    } else note = ` (You already have ${bpNow.course.title} running, so it wasn’t changed.)`;
+  }
+  await db.update('users', u.id, patch);
+  await crm.logActivity({ userId: u.id, text: `Enrolled in ${plan.name} (${startDate} → ${patch.program.endDate})${paired ? ` paired with ${paired.title}` : ''}` });
+  await track(req, 'plan_enrolled', { planId: plan.id, startDate, pairedWith: req.body.pair || null });
+  req.session.flash = { type: 'success', msg: `You’re enrolled in ${plan.name}, ${sched.formatDate(startDate)} – ${sched.formatDate(patch.program.endDate)}.${note} It’s on your calendar.` };
+  res.redirect('/app/plans');
+}));
+
+router.post('/plans/end', h(async (req, res) => {
+  const current = enroll.activeProgram(req.user);
+  if (current) {
+    await db.update('users', req.user.id, { program: null, programHistory: [...(req.user.programHistory || []), { ...req.user.program, status: current.state === 'completed' ? 'completed' : 'ended', endedAt: sched.today() }] });
+    await crm.logActivity({ userId: req.user.id, text: `Ended ${current.plan.name} early` });
+  }
+  req.session.flash = { type: 'info', msg: 'Plan ended. Pick a new one whenever you’re ready.' };
+  res.redirect('/app/plans?browse=1');
+}));
+
+// ---- Blueprints: daily checklist, streaks, weekly check-ins ------------------------
+router.get('/blueprint', (req, res) => {
+  const ctx = planCtx(req);
+  const list = content.courses.filter((c) => c.blueprint).map((c) => ({ ...c, unlocked: tierAllows(req.user, c.tier), cat: content.categoryById[c.category] }));
+  res.render('app/blueprint', { title: 'Blueprint', tab: 'blueprint', ...ctx, list, today: sched.today(), history: req.user.blueprintHistory || [], hasCoach: content.plans[planOf(req.user)].callsPerMonth > 0 });
+});
+
+router.post('/blueprints/:slug/start', h(async (req, res, next) => {
+  const course = content.courses.find((c) => c.slug === req.params.slug && c.blueprint);
+  if (!course) return next();
+  if (!tierAllows(req.user, course.tier)) return res.redirect(`/app/courses/${course.slug}`);
+  const u = req.user;
+  const prog = enroll.activeProgram(u);
+  const startDate = req.body.align === 'plan' && prog ? (prog.startDate > sched.today() ? prog.startDate : sched.today()) : enroll.cleanStart(req.body.startDate || sched.today());
+  const current = enroll.activeBlueprint(u);
+  const patch = { blueprint: { slug: course.slug, startDate, endDate: enroll.addDays(startDate, course.blueprint.days - 1), checks: {}, checkins: [], status: 'active', enrolledAt: new Date().toISOString() } };
+  if (current) patch.blueprintHistory = [...(u.blueprintHistory || []), { ...u.blueprint, status: current.state === 'completed' ? 'completed' : 'switched' }];
+  await db.update('users', u.id, patch);
+  await crm.logActivity({ userId: u.id, text: `Started blueprint: ${course.title} (${startDate})` });
+  await track(req, 'blueprint_started', { blueprint: course.slug, startDate });
+  req.session.flash = { type: 'success', msg: `${course.title} ${startDate > sched.today() ? `starts ${sched.formatDate(startDate)}` : 'starts today'} — your daily checklist is on your calendar.` };
+  res.redirect('/app/blueprint');
+}));
+
+// Toggle a task. Today and yesterday only (grace for late-night check-offs).
+router.post('/blueprint/check', h(async (req, res) => {
+  const bp = enroll.activeBlueprint(req.user);
+  const today = sched.today();
+  const date = [today, enroll.addDays(today, -1)].includes(req.body.date) ? req.body.date : today;
+  if (bp && bp.state === 'active' && date >= bp.startDate && bp.bp.daily.some((t) => t.id === req.body.task)) {
+    const checks = { ...(req.user.blueprint.checks || {}) };
+    const set = new Set(checks[date] || []);
+    set.has(req.body.task) ? set.delete(req.body.task) : set.add(req.body.task);
+    checks[date] = [...set];
+    await db.update('users', req.user.id, { blueprint: { ...req.user.blueprint, checks } });
+    if (set.size === bp.bp.daily.length && date === today) req.session.flash = { type: 'success', msg: `Day ${bp.dayNumber} complete! 🔥 ${bp.streak + (bp.days.find((d) => d.today && d.complete) ? 0 : 1)}-day streak.` };
+  }
+  res.redirect(req.body.back === 'dashboard' ? '/app' : '/app/blueprint');
+}));
+
+router.post('/blueprint/checkin', h(async (req, res) => {
+  const bp = enroll.activeBlueprint(req.user);
+  if (bp && !bp.checkinDone) {
+    const score = Math.max(1, Math.min(5, parseInt(req.body.score, 10) || 3));
+    const entry = { week: bp.week, date: sched.today(), score, wins: String(req.body.wins || '').slice(0, 500), blockers: String(req.body.blockers || '').slice(0, 500), help: req.body.help === 'on' };
+    await db.update('users', req.user.id, { blueprint: { ...req.user.blueprint, checkins: [...bp.checkins, entry] } });
+    await crm.logActivity({ userId: req.user.id, text: `Blueprint check-in (${bp.course.title}, week ${bp.week}): ${score}/5 · ${bp.completion}% of tasks done${entry.blockers ? ` · Blocker: ${entry.blockers}` : ''}` });
+    // Accountability: coached members who are struggling (or ask for help) get a coach follow-up.
+    const coached = content.plans[planOf(req.user)].callsPerMonth > 0;
+    if (coached && (score <= 2 || entry.help || bp.completion < 50)) {
+      await db.insert('tasks', { subjectType: 'user', subjectId: req.user.id, title: `Reach out: ${req.user.name} ${entry.help ? 'asked for help' : 'is struggling'} with ${bp.course.title} (week ${bp.week}, ${score}/5)`, due: sched.today(), done: false, by: 'system' });
+    }
+    await track(req, 'blueprint_checkin', { blueprint: bp.slug, week: bp.week, score, completion: bp.completion });
+    req.session.flash = { type: 'success', msg: coached ? 'Check-in sent — your coach will see it.' : 'Check-in saved. Nice work reflecting.' };
+  }
+  res.redirect('/app/blueprint');
+}));
+
+router.post('/blueprint/end', h(async (req, res) => {
+  const bp = enroll.activeBlueprint(req.user);
+  if (bp) {
+    await db.update('users', req.user.id, { blueprint: null, blueprintHistory: [...(req.user.blueprintHistory || []), { ...req.user.blueprint, status: bp.state === 'completed' ? 'completed' : 'ended', endedAt: sched.today(), completion: bp.completion }] });
+    await crm.logActivity({ userId: req.user.id, text: `${bp.state === 'completed' ? 'Finished' : 'Ended'} blueprint ${bp.course.title} (${bp.completion}% of tasks)` });
+  }
+  res.redirect('/app/blueprint');
+}));
 
 // ---- Calendar / call scheduling ------------------------------------------------
 router.get('/calendar', h(async (req, res) => {
@@ -324,8 +506,10 @@ router.get('/schedule', h(async (req, res) => {
       outlook: `https://outlook.live.com/calendar/0/addfromweb?url=${encodeURIComponent(httpsUrl)}&name=${encodeURIComponent('Steady Sugar')}`,
     },
     synced: user.calendarFetchedAt || null,
+    program: enroll.activeProgram(user),
+    blueprintRun: enroll.activeBlueprint(user),
     full: tierAllows(user, 'core'),
-    courseOptions: content.courses.filter((c) => inLibrary(user, c)).map((c) => ({
+    courseOptions: content.courses.filter((c) => !c.blueprint && inLibrary(user, c)).map((c) => ({
       slug: c.slug, title: c.title, cat: content.categoryById[c.category], recommended: s.recommended.includes(c.slug),
       openLessons: c.lessons.filter((l) => canOpenLesson(user, c, l)).length, total: c.lessons.length,
     })),

@@ -1,0 +1,38 @@
+<%- include('../partials/header') %>
+<%- include('_plan-tabs') %>
+
+<section class="match-hero">
+  <p class="eyebrow">Your best match</p>
+  <h1><%= top.plan.name %></h1>
+  <p class="lead"><%= top.plan.tagline %></p>
+  <% if (top.why.length) { %><div class="why center-why"><% top.why.forEach((w) => { %><span>✓ <%= w %></span><% }) %></div><% } %>
+  <div class="cta-row center-row">
+    <a href="/app/plans/<%= top.plan.id %>" class="btn btn-primary btn-lg"><%= full ? 'Review & enroll →' : 'See the plan →' %></a>
+    <a href="/app/plans/quiz" class="btn btn-ghost">Retake quiz</a>
+  </div>
+</section>
+
+<section class="mt-3">
+  <h2 class="h3">Line it up for faster results</h2>
+  <p class="muted small">Plans work best alongside a blueprint (daily actions + accountability) or a course (the “why”). You can start them on the same day when you enroll.</p>
+  <div class="grid-2">
+    <% [[pairBlueprint, '🧭 Suggested blueprint'], [pairCourse, '🎓 Suggested course']].forEach(([co, label]) => { if (!co) return; %>
+      <a href="/app/courses/<%= co.slug %>" class="card pair-card cat-<%= co.category %>">
+        <small class="eyebrow"><%= label %></small>
+        <strong><%= co.title %></strong>
+        <span class="small muted"><%= co.summary %></span>
+        <span class="small"><%= co.blueprint ? co.blueprint.days + ' days · daily checklist + weekly check-ins' : co.lessons.length + ' lessons · ' + co.totalMinutes + ' min' %></span>
+      </a>
+    <% }) %>
+  </div>
+</section>
+
+<section class="mt-3">
+  <h2 class="h3">Also a good fit</h2>
+  <div class="plan-grid-cards">
+    <% others.forEach((o) => { %><%- include('_plan-card', { p: o.plan, badge: null, why: o.why }) %><% }) %>
+  </div>
+  <p class="small mt-1"><a href="/app/plans?browse=1">See all plans →</a></p>
+</section>
+
+<%- include('../partials/footer') %>

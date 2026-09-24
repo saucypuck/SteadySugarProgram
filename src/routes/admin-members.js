@@ -7,6 +7,7 @@ const crm = require('../crm');
 const email = require('../integrations/email');
 const webhooks = require('../integrations/webhooks');
 const { planOf, isAdmin } = require('../auth');
+const enroll = require('../enroll');
 
 const router = express.Router();
 const h = (fn) => (req, res, next) => Promise.resolve(fn(req, res, next)).catch(next);
@@ -131,6 +132,8 @@ router.get('/:id', h(loadMember), h(async (req, res) => {
     tasks,
     timeline,
     today: sched.today(),
+    program: enroll.activeProgram(u),
+    bpRun: enroll.activeBlueprint(u),
   });
 }));
 

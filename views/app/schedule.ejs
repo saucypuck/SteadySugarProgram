@@ -52,7 +52,7 @@
     <a href="/app/schedule?week=<%= week + 1 %>" class="btn btn-ghost btn-sm" aria-label="Next week">Next ›</a>
   </div>
   <div class="legend-row">
-    <% [['lesson', '🎓 Lessons'], ['meal', '🥗 Meals'], ['workout', '💪 Movement'], ['habit', '🩸 Habits'], ['call', '📞 Calls']].forEach(([t, label]) => { if (!counts[t]) return; %>
+    <% [['lesson', '🎓 Lessons'], ['blueprint', '🧭 Blueprint'], ['meal', '🥗 Meals'], ['workout', '💪 Movement'], ['habit', '🩸 Habits'], ['call', '📞 Calls']].forEach(([t, label]) => { if (!counts[t]) return; %>
       <span class="ev-chip ev-<%= t %>"><%= label %> <b><%= counts[t] %></b></span>
     <% }) %>
   </div>
@@ -103,8 +103,9 @@
       </fieldset>
 
       <fieldset class="card <%= full ? '' : 'is-locked' %>">
-        <legend>🥗 Meal plan</legend>
+        <legend>🥗 Meals</legend>
         <% if (full) { %>
+          <p class="small muted"><%- program ? 'From <a href="/app/plans">' + program.plan.name + '</a> · ' + sched.formatDate(program.startDate) + ' – ' + sched.formatDate(program.endDate) : 'No meal &amp; movement plan yet — <a href="/app/plans/quiz">find one</a>. Meal reminders start when you enroll.' %></p>
           <div class="seg">
             <% [['each', 'Each meal'], ['daily', 'Daily summary'], ['off', 'Off']].forEach(([v, l]) => { %><label><input type="radio" name="meals" value="<%= v %>" <%= s.meals === v ? 'checked' : '' %>><span><%= l %></span></label><% }) %>
           </div>
@@ -122,7 +123,7 @@
       <fieldset class="card <%= full ? '' : 'is-locked' %>">
         <legend>💪 Workouts</legend>
         <% if (full) { %>
-          <label class="check"><input type="checkbox" name="workouts" <%= s.workouts ? 'checked' : '' %>> Add my weekly workout routine (strength days, walks, rest)</label>
+          <label class="check"><input type="checkbox" name="workouts" <%= s.workouts ? 'checked' : '' %>> Add my plan’s workouts &amp; walks</label>
           <div class="field mt-1"><label for="wt">Strength workout time</label><input id="wt" type="time" name="workoutTime" value="<%= s.workoutTime %>"><small class="muted">Walk reminders go 30 min after lunch.</small></div>
         <% } else { %>
           <p class="small muted">Your weekly workout routine with exercises is included with Core.</p>
@@ -140,6 +141,12 @@
           <div class="field"><label for="rd">Day</label><select id="rd" name="reviewDay"><% ['mon', 'tue', 'wed', 'thu', 'fri', 'sat', 'sun'].forEach((d) => { %><option value="<%= d %>" <%= s.reviewDay === d ? 'selected' : '' %>><%= DAY_NAMES[d] %></option><% }) %></select></div>
           <div class="field"><label for="rvt">Time</label><input id="rvt" type="time" name="reviewTime" value="<%= s.reviewTime %>"></div>
         </div>
+      </fieldset>
+
+      <fieldset class="card">
+        <legend>🧭 Blueprint</legend>
+        <p class="small muted"><%- blueprintRun ? '<a href="/app/blueprint">' + blueprintRun.course.title + '</a> · daily checklist reminder' : 'No blueprint running — <a href="/app/blueprint">start one</a>.' %></p>
+        <div class="field"><label for="bt">Checklist reminder time</label><input id="bt" type="time" name="blueprintTime" value="<%= s.blueprintTime %>"></div>
       </fieldset>
 
       <fieldset class="card">

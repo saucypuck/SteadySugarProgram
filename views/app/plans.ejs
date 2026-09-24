@@ -3,7 +3,7 @@
 <div class="page-head">
   <div><p class="eyebrow">Plans</p><h1><%= program && !browse ? 'My plan' : 'Meal & Movement Plans' %></h1></div>
   <div class="cta-row mt-0">
-    <a href="/app/plans/quiz" class="btn btn-secondary btn-sm">🎯 Plan finder quiz</a>
+    <a href="/app/plans/quiz" class="btn btn-secondary btn-sm">Plan finder</a>
     <% if (program && browse) { %><a href="/app/plans" class="btn btn-primary btn-sm">Back to my plan</a><% } %>
   </div>
 </div>
@@ -17,7 +17,7 @@
       <h2 class="mt-1 mb-0"><%= p.name %></h2>
       <p class="muted mb-0"><%= sched.formatDate(program.startDate) %> – <%= sched.formatDate(program.endDate) %> · <%= program.state === 'upcoming' ? program.startsIn + ' day' + (program.startsIn === 1 ? '' : 's') + ' to go' : program.daysLeft + ' days left' %></p>
       <% if (program.pairedWith) { const [k, slug] = program.pairedWith.split(':'); const pc = c.courses.find((x) => x.slug === slug); if (pc) { %>
-        <p class="small mt-1 mb-0">🔗 Paired with <a href="/app/courses/<%= pc.slug %>"><%= pc.title %></a> (<%= k === 'blueprint' ? 'blueprint' : 'course' %>)</p>
+        <p class="small mt-1 mb-0">Paired with <a href="/app/courses/<%= pc.slug %>"><%= pc.title %></a> (<%= k === 'blueprint' ? 'blueprint' : 'course' %>)</p>
       <% } } %>
     </div>
     <div class="prog-progress">
@@ -31,7 +31,7 @@
     <div class="grid-2 mt-2">
       <section class="card">
         <p class="eyebrow">Today · Day <%= t.dayNumber %></p>
-        <h3>🥗 What to eat</h3>
+        <h3>What to eat</h3>
         <dl class="meal-dl">
           <dt>Breakfast</dt><dd><%= t.meals.breakfast %></dd>
           <dt>Lunch</dt><dd><%= t.meals.lunch %></dd>
@@ -41,11 +41,11 @@
       </section>
       <section class="card">
         <p class="eyebrow">Phase: <%= t.phase.title %></p>
-        <h3><%= t.workout.rest ? '😌 Rest day' : (t.workout.walk ? '🚶 ' : '💪 ') + t.workout.focus %></h3>
+        <h3><%= t.workout.rest ? 'Rest day' : (t.workout.walk ? '' : '') + t.workout.focus %></h3>
         <p class="small muted"><%= t.workout.detail %></p>
         <% if (t.workout.moves) { %>
           <div class="table-wrap"><table class="traffic"><thead><tr><th>Exercise</th><th>Sets</th><th>Reps</th></tr></thead>
-            <tbody><% t.workout.moves.forEach(([n, sets, reps]) => { %><tr><td><span class="demo-thumb">▶</span><%= n %></td><td><%= sets %></td><td><%= reps %></td></tr><% }) %></tbody></table></div>
+            <tbody><% t.workout.moves.forEach(([n, sets, reps]) => { %><tr><td><span class="demo-thumb" title="Demo video"><%- icon('play') %></span><%= n %></td><td><%= sets %></td><td><%= reps %></td></tr><% }) %></tbody></table></div>
         <% } %>
         <p class="small mt-1 mb-0"><strong>This phase:</strong> <%= t.phase.focus %></p>
       </section>
@@ -72,14 +72,14 @@
 
   <div class="grid-2 mt-2">
     <section class="card">
-      <h3>🛒 Grocery list</h3>
+      <h3>Grocery list</h3>
       <div class="grocery-cols">
         <% Object.entries(p.grocery).forEach(([g, items]) => { %><div><strong><%= g %></strong><ul class="grocery"><% items.forEach((i) => { %><li><label><input type="checkbox"> <%= i %></label></li><% }) %></ul></div><% }) %>
       </div>
       <button class="btn btn-ghost btn-sm" onclick="window.print()">Print week + list</button>
     </section>
     <section class="card">
-      <h3>🎯 Daily targets</h3>
+      <h3>Daily targets</h3>
       <div class="target-row"><% p.targets.forEach((tg) => { %><div class="target"><small class="muted"><%= tg.label %></small><strong><%= tg.value %></strong></div><% }) %></div>
       <h3 class="mt-2">Phases</h3>
       <ol class="phase-list">
@@ -91,7 +91,7 @@
   </div>
 
   <div class="cta-row mt-2">
-    <a href="/app/schedule" class="btn btn-secondary btn-sm">📅 See it on my calendar</a>
+    <a href="/app/schedule" class="btn btn-secondary btn-sm">See it on my calendar</a>
     <a href="/app/plans?browse=1" class="btn btn-ghost btn-sm">Browse other plans</a>
     <form method="post" action="/app/plans/end" data-confirm="End <%= p.name %> now? It will be removed from your calendar."><button class="btn btn-ghost btn-sm danger">End plan</button></form>
   </div>

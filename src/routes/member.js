@@ -223,7 +223,7 @@ router.post('/courses/:course/:lesson/complete', h(async (req, res, next) => {
   await db.update('users', req.user.id, { completedLessons: [...done] });
   const nxt = course.lessons[idx + 1];
   if (nxt) return res.redirect(`/app/courses/${course.slug}/${nxt.slug}`);
-  req.session.flash = { type: 'success', msg: `Course complete: ${course.title}! 🎉` };
+  req.session.flash = { type: 'success', msg: `Course complete: ${course.title}. Well done.` };
   res.redirect(`/app/courses/${course.slug}`);
 }));
 
@@ -376,7 +376,7 @@ router.post('/blueprint/check', h(async (req, res) => {
     set.has(req.body.task) ? set.delete(req.body.task) : set.add(req.body.task);
     checks[date] = [...set];
     await db.update('users', req.user.id, { blueprint: { ...req.user.blueprint, checks } });
-    if (set.size === bp.bp.daily.length && date === today) req.session.flash = { type: 'success', msg: `Day ${bp.dayNumber} complete! 🔥 ${bp.streak + (bp.days.find((d) => d.today && d.complete) ? 0 : 1)}-day streak.` };
+    if (set.size === bp.bp.daily.length && date === today) req.session.flash = { type: 'success', msg: `Day ${bp.dayNumber} complete. Current streak: ${bp.streak + (bp.days.find((d) => d.today && d.complete) ? 0 : 1)} days.` };
   }
   res.redirect(req.body.back === 'dashboard' ? '/app' : '/app/blueprint');
 }));
@@ -394,7 +394,7 @@ router.post('/blueprint/checkin', h(async (req, res) => {
       await db.insert('tasks', { subjectType: 'user', subjectId: req.user.id, title: `Reach out: ${req.user.name} ${entry.help ? 'asked for help' : 'is struggling'} with ${bp.course.title} (week ${bp.week}, ${score}/5)`, due: sched.today(), done: false, by: 'system' });
     }
     await track(req, 'blueprint_checkin', { blueprint: bp.slug, week: bp.week, score, completion: bp.completion });
-    req.session.flash = { type: 'success', msg: coached ? 'Check-in sent — your coach will see it.' : 'Check-in saved. Nice work reflecting.' };
+    req.session.flash = { type: 'success', msg: coached ? 'Check-in sent — your coach will see it.' : 'Check-in saved. Thank you for reflecting on your week.' };
   }
   res.redirect('/app/blueprint');
 }));
@@ -580,7 +580,7 @@ router.post('/log', h(async (req, res) => {
     steps: num(req.body.steps),
     notes: String(req.body.notes || '').slice(0, 500),
   });
-  req.session.flash = { type: 'success', msg: 'Entry saved. Nice work staying consistent.' };
+  req.session.flash = { type: 'success', msg: 'Entry saved.' };
   res.redirect(req.body.from === 'dashboard' ? '/app' : '/app/log');
 }));
 

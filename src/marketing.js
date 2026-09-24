@@ -11,7 +11,7 @@ const { isoDate } = require('./scheduling');
 
 const CHANNELS = ['meta', 'google', 'tiktok', 'youtube', 'email', 'influencer', 'organic', 'other'];
 const CTA_TARGETS = {
-  quiz: { label: 'Take the quiz', href: '/quiz' },
+  quiz: { label: 'Take the free assessment', href: '/quiz' },
   signup: { label: 'Create free account', href: '/signup' },
   'checkout-core': { label: 'Checkout — Core', href: '/checkout?plan=core' },
   'checkout-vip': { label: 'Checkout — VIP', href: '/checkout?plan=vip' },

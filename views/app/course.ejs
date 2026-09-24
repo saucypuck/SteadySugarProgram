@@ -1,5 +1,5 @@
 <%- include('../partials/header') %>
-<% const typeIcon = { video: '▶', reading: '📄', worksheet: '✍️' }; const typeLabel = { video: 'Video', reading: 'Reading', worksheet: 'Worksheet' }; %>
+<% const typeIcon = { video: 'play', reading: 'file', worksheet: 'pen' }; const typeLabel = { video: 'Video', reading: 'Reading', worksheet: 'Worksheet' }; %>
 
 <p class="crumbs"><a href="/app/courses">Courses</a> / <a href="/app/courses?cat=<%= course.category %>"><%= course.cat.name %></a></p>
 
@@ -12,7 +12,7 @@
       <video src="<%= trailer.src %>" controls preload="metadata" <%- course.trailer.poster ? 'poster="' + course.trailer.poster + '"' : '' %>></video>
     <% } else { %>
       <div class="trailer-placeholder">
-        <span class="play">▶</span>
+        <span class="play"><%- icon('play') %></span>
         <strong>Course trailer</strong>
         <small><%= course.trailer.duration %> · add a YouTube, Vimeo or .mp4 URL in src/courses.js</small>
       </div>
@@ -21,12 +21,13 @@
 
   <div class="course-info">
     <div class="chip-row">
-      <a href="/app/courses?cat=<%= course.category %>" class="cat-chip"><%= course.cat.icon %> <%= course.cat.name %></a>
+      <a href="/app/courses?cat=<%= course.category %>" class="cat-chip"><%- icon(course.cat.icon) %><%= course.cat.name %></a>
       <% if (course.tier === 'vip') { %><span class="tier tier-vip">VIP course</span><% } %>
       <% if (course.state === 'preview') { %><span class="badge free-badge"><%= course.freeCount %> free preview lesson<%= course.freeCount > 1 ? 's' : '' %></span><% } %>
     </div>
     <h1><%= course.title %></h1>
     <p class="lead"><%= course.summary %></p>
+    <p class="review-line"><span><%- icon('stethoscope') %> Clinically reviewed by <%= c.brand.reviewer %></span><span><%- icon('clock') %> Last reviewed <%= c.brand.lastReviewed %></span></p>
     <ul class="course-meta">
       <li><strong><%= course.lessons.length %></strong> lessons</li>
       <li><strong><%= course.totalMinutes %></strong> min</li>
@@ -41,7 +42,7 @@
 
     <div class="cta-row">
       <% if (course.state === 'locked') { %>
-        <a href="/checkout?plan=<%= course.needPlan.id %>" class="btn btn-primary btn-lg">🔒 Unlock with <%= course.needPlan.name %> — <%= money(course.needPlan.price) %>/mo</a>
+        <a href="/checkout?plan=<%= course.needPlan.id %>" class="btn btn-primary btn-lg">Unlock with <%= course.needPlan.name %> — <%= money(course.needPlan.price) %>/mo</a>
       <% } else if (course.next) { %>
         <a href="/app/courses/<%= course.slug %>/<%= course.next.slug %>" class="btn btn-primary btn-lg"><%= course.progress.done ? 'Continue' : (course.state === 'preview' ? 'Start free preview' : 'Start course') %> →</a>
         <% if (course.state === 'preview') { %><a href="/checkout?plan=<%= course.needPlan.id %>" class="btn btn-secondary btn-lg">Unlock full course</a><% } %>
@@ -53,19 +54,19 @@
     </div>
     <% if (course.blueprint && course.state !== 'locked') { %>
       <% if (activeBp && activeBp.slug === course.slug) { %>
-        <a href="/app/blueprint" class="btn btn-secondary btn-sm mt-1">🧭 Open my blueprint tracker</a>
+        <a href="/app/blueprint" class="btn btn-secondary btn-sm mt-1">Open my blueprint tracker</a>
       <% } else { %>
         <form method="post" action="/app/blueprints/<%= course.slug %>/start" class="inline-add mt-1" <%- activeBp && activeBp.state !== 'completed' ? 'data-confirm="This replaces your current blueprint (' + activeBp.course.title + '). Continue?"' : '' %>>
           <% if (activeProg && activeProg.state !== 'completed') { %>
             <select name="align" aria-label="Start date"><option value="plan">Start with my plan (<%= sched.formatDate(activeProg.startDate > sched.today() ? activeProg.startDate : sched.today()) %>)</option><option value="today">Start today</option></select>
           <% } else { %><input type="date" name="startDate" value="<%= sched.today() %>" min="<%= sched.today() %>" aria-label="Start date"><% } %>
-          <button class="btn btn-primary btn-sm">🧭 Start this <%= course.blueprint.days %>-day blueprint</button>
+          <button class="btn btn-primary btn-sm">Start this <%= course.blueprint.days %>-day blueprint</button>
         </form>
       <% } %>
     <% } else if (course.state !== 'locked') { %>
       <form method="post" action="/app/schedule/enroll" class="mt-1">
         <input type="hidden" name="course" value="<%= course.slug %>"><input type="hidden" name="on" value="<%= inPlan ? '0' : '1' %>">
-        <button class="btn btn-ghost btn-sm"><%= inPlan ? '✓ In my calendar — remove' : '📅 Add lessons to my calendar' %></button>
+        <button class="btn btn-ghost btn-sm"><%= inPlan ? '✓ In my calendar — remove' : 'Add lessons to my calendar' %></button>
       </form>
     <% } %>
     <% if (course.next && course.progress.done) { %><p class="small muted mt-1">Up next: <strong><%= course.next.title %></strong> · <%= course.next.minutes %> min</p><% } %>
@@ -85,12 +86,17 @@
       <ul class="check-list two-col">
         <% course.outcomes.forEach((o) => { %><li><%= o %></li><% }) %>
       </ul>
-      <p class="small muted mb-0"><strong>Who it’s for:</strong> <%= course.audience %></p>
+      <p class="small muted"><strong>Who it’s for:</strong> <%= course.audience %></p>
+      <details class="more">
+        <summary>Sources &amp; references</summary>
+        <ol class="references"><% (course.references || c.brand.references).forEach((r) => { %><li><%= r %></li><% }) %></ol>
+        <p class="small muted mb-0">This course is educational and doesn’t replace advice from your doctor.</p>
+      </details>
     </section>
 
     <% if (course.blueprint) { const bpd = course.blueprint; %>
       <section class="card bp-panel">
-        <h2 class="h3">🧭 How this blueprint works</h2>
+        <h2 class="h3">How this blueprint works</h2>
         <p class="small muted"><%= bpd.days %> days · a daily checklist, a streak to protect, weekly milestones and a check-in at the end of each week<%= tier !== 'free' && c.plans[tier].callsPerMonth ? ' that your coach reviews' : '' %>.</p>
         <div class="grid-2">
           <div><h3 class="h4">Every day</h3><ul class="check-list"><% bpd.daily.forEach((t) => { %><li><%= t.label %></li><% }) %></ul></div>
@@ -117,11 +123,11 @@
                 <a href="/app/courses/<%= course.slug %>/<%= l.slug %>">
                   <span class="toc-num"><%= l.done ? '✓' : l.index + 1 %></span>
                   <span class="toc-title"><%= l.title %>
-                    <small><%= typeIcon[l.type] %> <%= typeLabel[l.type] %> · <%= l.minutes %> min</small>
+                    <small><%= typeLabel[l.type] %> · <%= l.minutes %> min</small>
                   </span>
                   <span class="toc-state">
                     <% if (isNext) { %><span class="badge">Up next</span>
-                    <% } else if (!l.open) { %>🔒
+                    <% } else if (!l.open) { %><%- icon('lock') %><span class="sr-only">Locked</span>
                     <% } else if (l.free && !course.unlocked) { %><span class="badge free-badge">Free</span><% } %>
                   </span>
                 </a>
@@ -146,17 +152,17 @@
     <section class="card">
       <h3>This course includes</h3>
       <ul class="includes">
-        <% if (counts.videos) { %><li>▶ <%= counts.videos %> video lesson<%= counts.videos > 1 ? 's' : '' %></li><% } %>
-        <% if (counts.readings) { %><li>📄 <%= counts.readings %> reading<%= counts.readings > 1 ? 's' : '' %></li><% } %>
-        <% if (counts.worksheets) { %><li>✍️ <%= counts.worksheets %> worksheet<%= counts.worksheets > 1 ? 's' : '' %></li><% } %>
-        <li>⏱ <%= course.totalMinutes %> minutes total</li>
-        <li>✅ An action step with every lesson</li>
-        <li>📱 Works on phone, tablet &amp; desktop</li>
+        <% if (counts.videos) { %><li><%- icon('play') %> <%= counts.videos %> video lesson<%= counts.videos > 1 ? 's' : '' %></li><% } %>
+        <% if (counts.readings) { %><li><%= counts.readings %> reading<%= counts.readings > 1 ? 's' : '' %></li><% } %>
+        <% if (counts.worksheets) { %><li><%= counts.worksheets %> worksheet<%= counts.worksheets > 1 ? 's' : '' %></li><% } %>
+        <li><%= course.totalMinutes %> minutes total</li>
+        <li>An action step with every lesson</li>
+        <li>Works on phone, tablet &amp; desktop</li>
       </ul>
       <% if (course.resources && course.resources.length) { %>
         <h4 class="mt-2">Downloads</h4>
         <ul class="resource-list">
-          <% course.resources.forEach((r) => { %><li><span>📎 <%= r %></span><% if (course.state === 'locked') { %><small class="muted">🔒</small><% } else { %><a href="#" class="small">PDF</a><% } %></li><% }) %>
+          <% course.resources.forEach((r) => { %><li><span><%= r %></span><% if (course.state === 'locked') { %><small class="muted">Locked</small><% } else { %><a href="#" class="small">PDF</a><% } %></li><% }) %>
         </ul>
       <% } %>
     </section>

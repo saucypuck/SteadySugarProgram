@@ -1,7 +1,7 @@
 <%- include('../partials/header') %>
 <% const need = c.plans[course.tier]; %>
 <div class="card upsell narrow-card center">
-  <div class="big-emoji">🔒</div>
+  <div class="big-emoji"><%- icon('lock') %></div>
   <p class="eyebrow"><%= course.title %></p>
   <h1><%= lesson ? lesson.title : course.title %></h1>
   <p class="lead"><%= lesson ? 'This lesson is part of the ' + need.name + '.' : course.summary %></p>

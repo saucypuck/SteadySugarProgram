@@ -128,13 +128,20 @@ Environment variables:
 - `SEED_DEMO`: demo accounts are created unless this is `false`. **Set it to `false` before launch.**
 - `ADMIN_EMAILS`: comma-separated list of emails that get admin access
 
+## Design & trust
+
+- **Audience:** adults 45–70. The site uses a 17px base size, with a "Text size" toggle in the member area that switches to 19px and is remembered per device. Serif headings, high-contrast text, 48px minimum tap targets and a calm teal palette.
+- **No emojis.** Icons are simple line icons from `src/icons.js`, always paired with a text label. Use `<%- icon('name') %>` in templates.
+- **Trust details** live in `src/content.js` → `brand`: `reviewer`, `lastReviewed`, `guidelines` and `references`. They appear on the homepage, the Our team page, every course and lesson, and in the footer. **Replace the bracketed placeholders with real, verifiable details before launch.**
+
 ## Before launch checklist
 
 - [ ] Stripe: Checkout/Subscriptions + webhook to confirm orders, customer portal for billing
 - [ ] Email provider + nurture sequences (quiz leads, guide leads, abandoned checkout)
 - [ ] Zoom/Google Calendar: real availability, meeting links, reminders (email/SMS)
 - [ ] Video hosting for lessons (Vimeo/Mux) and the PDF guide
-- [ ] Real testimonials, stats and coach bio (placeholders are in `[brackets]`)
+- [ ] Real testimonials (with written permission), stats, coach bio and professional photos (placeholders are in `[brackets]`)
+- [ ] Name the content reviewer and their credentials, set the last-reviewed date, and add real citations for each course
 - [ ] Terms, privacy and medical disclaimer drafted by a lawyer; confirm refund and guarantee terms
 - [ ] Password reset tokens, rate limiting, CSRF protection
 - [ ] Analytics pixels / server-side conversions (GA4, Meta CAPI, Google Ads) from `src/track.js`

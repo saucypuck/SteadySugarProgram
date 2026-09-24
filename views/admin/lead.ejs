@@ -48,7 +48,7 @@
 
     <% if (lead.answers) { %>
       <section class="card">
-        <h3>Quiz answers</h3>
+        <h3>Assessment answers</h3>
         <dl class="kv"><% quiz.forEach((q) => { const o = q.options.find((x) => x.value === lead.answers[q.id]); %><dt><%= q.question.replace(/\?$/, '') %></dt><dd><%= o ? o.label : '—' %></dd><% }) %></dl>
       </section>
     <% } %>
@@ -64,7 +64,7 @@
     <%- include('_crm-panel', { subjectType: 'lead', subjectId: lead.id, back: '/admin/crm/leads/' + lead.id }) %>
     <% if (activity.length) { %>
       <section class="card"><h3>Activity</h3>
-        <ul class="timeline"><% activity.forEach((a) => { %><li><span class="t-ico">⚙️</span><div><p><%= a.text %></p><small class="muted"><%= new Date(a.createdAt).toLocaleString() %> · <%= a.by %></small></div></li><% }) %></ul>
+        <ul class="timeline"><% activity.forEach((a) => { %><li><span class="t-ico"></span><div><p><%= a.text %></p><small class="muted"><%= new Date(a.createdAt).toLocaleString() %> · <%= a.by %></small></div></li><% }) %></ul>
       </section>
     <% } %>
   </div>

@@ -18,7 +18,7 @@
       <table class="table compare">
         <thead><tr><th></th><% Object.values(c.plans).forEach((p) => { %><th><%= p.name %></th><% }) %></tr></thead>
         <tbody>
-          <tr><td>Blood Sugar Profile quiz</td><td>✓</td><td>✓</td><td>✓</td></tr>
+          <tr><td>Blood Sugar Profile assessment</td><td>✓</td><td>✓</td><td>✓</td></tr>
           <tr><td>Glucose & habit tracker</td><td>✓</td><td>✓</td><td>✓</td></tr>
           <tr><td>Course library</td><td>4 preview lessons</td><td>✓ 8 courses</td><td>✓ 9 courses (incl. CGM Deep Dive)</td></tr>
           <tr><td>Meal &amp; movement plans</td><td>Plan finder + sample day</td><td>✓ All 5 plans</td><td>✓ Customized with your coach</td></tr>
@@ -38,7 +38,7 @@
 <section class="section">
   <div class="container narrow">
     <div class="guarantee">
-      <div class="seal">30<br><small>DAY</small></div>
+      <div class="seal"><%- icon('shield') %></div>
       <div><h3><%= c.guarantee.title %></h3><p><%= c.guarantee.body %></p></div>
     </div>
     <div class="faq mt-3">

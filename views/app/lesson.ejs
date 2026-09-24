@@ -4,9 +4,10 @@
 
 <div class="lesson-layout">
   <article>
-    <div class="wire video"><%= { video: '▶ Lesson video', reading: '📄 Reading', worksheet: '✍️ Worksheet' }[lesson.type] || '▶ Lesson video' %> (<%= lesson.minutes %> min)<br><small><%= lesson.type === 'video' ? 'Embed Vimeo / Mux / YouTube unlisted' : 'Content / downloadable PDF goes here' %></small></div>
+    <div class="wire video"><%- icon(lesson.type === 'reading' ? 'file' : lesson.type === 'worksheet' ? 'pen' : 'play', 'ico-lg') %><%= { video: 'Lesson video', reading: 'Reading', worksheet: 'Worksheet' }[lesson.type] || 'Lesson video' %> (<%= lesson.minutes %> min)<br><small><%= lesson.type === 'video' ? 'Embed Vimeo / Mux / YouTube unlisted' : 'Content / downloadable PDF goes here' %></small></div>
     <h1 class="mt-2"><%= lesson.title %></h1>
-    <p class="muted"><%= cat.icon %> <%= cat.name %> · Lesson <%= idx + 1 %> of <%= course.lessons.length %> · <%= lesson.minutes %> min</p>
+    <p class="muted"><%= cat.name %> · Lesson <%= idx + 1 %> of <%= course.lessons.length %> · <%= lesson.minutes %> min</p>
+    <p class="review-line"><span><%- icon('stethoscope') %> Reviewed by <%= c.brand.reviewer %></span><span>Last reviewed <%= c.brand.lastReviewed %></span></p>
     <div class="prose">
       <p>[Lesson notes / transcript summary. Keep it skimmable: 3 key ideas, a simple visual, and one takeaway.]</p>
     </div>
@@ -14,7 +15,7 @@
       <p class="eyebrow">Your action step</p>
       <p><strong><%= lesson.action %></strong></p>
     </div>
-    <div class="wire mt-2" style="min-height:80px">📄 Downloadable worksheet (PDF)</div>
+    <div class="wire mt-2" style="min-height:80px">Downloadable worksheet (PDF)</div>
     <div class="lesson-nav">
       <% if (prev) { %><a href="/app/courses/<%= course.slug %>/<%= prev.slug %>" class="btn btn-ghost">← Previous</a><% } else { %><span></span><% } %>
       <form method="post" action="/app/courses/<%= course.slug %>/<%= lesson.slug %>/complete">
@@ -30,7 +31,7 @@
     <ol>
       <% course.lessons.forEach((l) => { %>
         <li class="<%= l.slug === lesson.slug ? 'current' : '' %> <%= isDone(l) ? 'done' : '' %> <%= canOpen(l) ? '' : 'locked' %>">
-          <a href="/app/courses/<%= course.slug %>/<%= l.slug %>"><span class="tick"><%= isDone(l) ? '✓' : (canOpen(l) ? '' : '🔒') %></span><%= l.title %><% if (l.free && tier === 'free') { %> <span class="badge free-badge">Free</span><% } %></a>
+          <a href="/app/courses/<%= course.slug %>/<%= l.slug %>"><span class="tick"><%- isDone(l) ? '✓' : (canOpen(l) ? '' : icon('lock')) %></span><%= l.title %><% if (l.free && tier === 'free') { %> <span class="badge free-badge">Free</span><% } %></a>
         </li>
       <% }) %>
     </ol>

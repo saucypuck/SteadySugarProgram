@@ -2,11 +2,11 @@
 // (used by admin to prioritize sales follow-up).
 
 const PROFILES = {
-  cravings: { name: 'The Craving Cycle', body: 'Spikes drive crashes, crashes drive cravings. Breaking the loop starts with protein-forward meals and smarter carb pairing.' },
-  energy: { name: 'The Energy Rollercoaster', body: 'Your 3pm slump is likely a post-lunch spike and drop. Food order and a 10-minute walk can flatten it fast.' },
-  food: { name: 'The Overwhelmed Eater', body: 'Too much conflicting advice. You need a simple plate template and a meal plan you can repeat.' },
-  time: { name: 'The Busy Achiever', body: 'You don’t need more time — you need habits that fit into the time you already have.' },
-  consistency: { name: 'The Restart Regular', body: 'Motivation isn’t your problem; structure and accountability are. That’s exactly what coaching fixes.' },
+  cravings: { name: 'Craving-driven pattern', body: 'Blood sugar spikes are often followed by dips that trigger cravings. Breaking the cycle starts with protein-forward meals and smarter carb pairing.' },
+  energy: { name: 'Afternoon energy-dip pattern', body: 'An afternoon slump is often a rise and fall in blood sugar after lunch. Food order and a 10-minute walk can flatten it fast.' },
+  food: { name: 'Information-overload pattern', body: 'Conflicting advice makes it hard to know what to eat. You need a simple plate template and a meal plan you can repeat.' },
+  time: { name: 'Time-pressed pattern', body: 'The answer isn’t more time — it’s habits that fit into the time you already have.' },
+  consistency: { name: 'Stop-start pattern', body: 'Motivation isn’t the problem; structure and accountability are. That’s exactly what coaching fixes.' },
 };
 
 const FOCUS = {

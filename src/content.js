@@ -10,6 +10,15 @@ const brand = {
   programWeeks: 12,
   timezoneLabel: 'ET',
   timezone: 'America/New_York', // coaching call times are in this zone
+  // Trust & credibility — replace every bracketed value with real, verifiable details before launch.
+  reviewer: '[Reviewer Name, RDN, CDCES]',
+  lastReviewed: '[Month YYYY]',
+  guidelines: '[published clinical guidelines, e.g. the ADA Standards of Care — confirm and cite]',
+  references: [
+    '[Citation 1 — e.g. American Diabetes Association. Standards of Care in Diabetes. Diabetes Care, current year.]',
+    '[Citation 2 — e.g. CDC National Diabetes Prevention Program curriculum.]',
+    '[Add peer-reviewed sources for this course’s specific claims.]',
+  ],
 };
 
 // Tiers, lowest to highest. `rank` drives content gating (see tierAllows).
@@ -23,7 +32,7 @@ const plans = {
     tagline: 'Explore the program and start building habits.',
     callsPerMonth: 0,
     features: [
-      'Blood Sugar Profile quiz + results',
+      'Blood Sugar Profile assessment + results',
       '4 free preview lessons (Foundations + Gut Health)',
       'Sample day from the meal plan',
       'Glucose & habit tracker',
@@ -87,7 +96,7 @@ const faqs = [
   { q: 'Who is this for?', a: 'Adults with prediabetes, type 2 diabetes, or a family history who want practical food, movement and habit changes. It is not designed for type 1 diabetes or pregnancy.' },
   { q: 'Do I need a continuous glucose monitor (CGM)?', a: 'No. A basic finger-stick meter works great. If you have a CGM, VIP members get weekly data reviews.' },
   { q: 'How much time does it take?', a: 'About 20 minutes of lessons per week plus small daily habits. Coaching calls are 30 minutes.' },
-  { q: 'Is there really a free plan?', a: 'Yes. Create a free account to take the quiz, use the tracker, try 4 preview lessons and a sample meal plan day. No credit card needed.' },
+  { q: 'Is there really a free plan?', a: 'Yes. Create a free account to take the assessment, use the tracker, try 4 preview lessons and see a sample day of a meal plan. No credit card needed.' },
   { q: 'Can I switch or cancel my plan?', a: 'Yes — upgrade, downgrade or cancel anytime from your account page.' },
 ];
 

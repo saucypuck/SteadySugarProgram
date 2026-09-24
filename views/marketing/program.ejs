@@ -19,13 +19,13 @@
       <% c.courses.forEach((course) => { %>
         <div class="card">
           <div class="row-between">
-            <span class="badge"><%= c.categoryById[course.category].icon %> <%= c.categoryById[course.category].name %><%= course.weeks ? ' · Weeks ' + course.weeks : '' %><%= course.tier === 'vip' ? ' · VIP' : '' %></span>
+            <span class="badge"><%= c.categoryById[course.category].name %><%= course.weeks ? ' · Weeks ' + course.weeks : '' %><%= course.tier === 'vip' ? ' · VIP' : '' %></span>
             <small class="muted"><%= course.lessons.length %> lessons</small>
           </div>
           <h3 class="mt-1"><%= course.title %></h3>
           <p class="muted"><%= course.summary %></p>
           <ul class="lesson-preview">
-            <% course.lessons.forEach((l) => { %><li><span>▶</span><%= l.title %> <small class="muted"><%= l.minutes %> min</small></li><% }) %>
+            <% course.lessons.forEach((l) => { %><li><%= l.title %> <small class="muted"><%= l.minutes %> min</small></li><% }) %>
           </ul>
         </div>
       <% }) %>
@@ -36,12 +36,12 @@
 <section class="section section-soft">
   <div class="container">
     <h2 class="center">Meal &amp; Movement Plans</h2>
-    <p class="center muted narrow" style="margin:0 auto">Each plan pairs a weekly menu with a matching workout routine and runs on set dates. A 1-minute quiz matches you to the right one.</p>
+    <p class="center muted narrow" style="margin:0 auto">Each plan pairs a weekly menu with a matching workout routine and runs on set dates. A one-minute plan finder matches you to the right one.</p>
     <div class="grid-3 mt-3">
       <% mealPlans.forEach((p) => { %>
         <div class="card"><div class="row-between"><h3 class="mb-0"><%= p.name %></h3><span class="badge"><%= p.weeks %> weeks</span></div><p class="small muted mt-1"><%= p.tagline %></p></div>
       <% }) %>
-      <div class="card"><h3>🧭 Blueprints</h3><p class="small muted">14–28 day action programs with daily checklists, streaks and weekly check-ins — run one alongside your plan.</p></div>
+      <div class="card"><h3>Blueprints</h3><p class="small muted">14–28 day action programs with daily checklists, streaks and weekly check-ins — run one alongside your plan.</p></div>
     </div>
   </div>
 </section>
@@ -49,7 +49,7 @@
 <section class="section">
   <div class="container narrow center">
     <h2>Ready to see which plan fits you?</h2>
-    <a href="/quiz" class="btn btn-primary btn-lg mt-2">Take the 2-minute quiz →</a>
+    <a href="/quiz" class="btn btn-primary btn-lg mt-2">Take the free 2-minute assessment →</a>
   </div>
 </section>
 

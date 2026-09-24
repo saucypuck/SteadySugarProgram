@@ -28,7 +28,7 @@
   <div class="container proof-row">
     <div><strong>[500+]</strong><span>clients coached</span></div>
     <div><strong>[0.6%]</strong><span>avg A1C drop*</span></div>
-    <div><strong>[4.9★]</strong><span>client rating</span></div>
+    <div><strong>[4.9 / 5]</strong><span>average client rating</span></div>
     <div><strong>[CDCES]</strong><span>certified coach</span></div>
   </div>
 </section>
@@ -36,7 +36,7 @@
 <section class="section section-soft">
   <div class="container">
     <div class="grid-3 steps">
-      <div class="step"><span class="num">1</span><h3>Take the quiz</h3><p>Find your blood sugar pattern in 2 minutes.</p></div>
+      <div class="step"><span class="num">1</span><h3>Take the assessment</h3><p>Find your blood sugar pattern in 2 minutes.</p></div>
       <div class="step"><span class="num">2</span><h3>Start free</h3><p>Try the first lessons, tracker and a sample meal plan.</p></div>
       <div class="step"><span class="num">3</span><h3>Go further</h3><p>Unlock the full program and coaching when you’re ready.</p></div>
     </div>
@@ -47,7 +47,7 @@
   <section class="section">
     <div class="container grid-3">
       <% c.testimonials.forEach((t) => { %>
-        <figure class="card quote"><div class="stars">★★★★★</div><blockquote>“<%= t.quote %>”</blockquote>
+        <figure class="card quote"><blockquote>“<%= t.quote %>”</blockquote>
           <figcaption><div class="avatar"></div><div><strong><%= t.name %></strong><small><%= t.meta %></small></div></figcaption></figure>
       <% }) %>
     </div>

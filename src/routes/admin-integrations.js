@@ -83,7 +83,7 @@ router.post('/:id/test', h(async (req, res, next) => {
   let result = { ok: false, error: 'Connection test becomes available once this integration’s adapter is built.' };
   if (def.id === 'slack') {
     const cfg = await registry.getConfig('slack');
-    result = cfg.webhookUrl ? await webhooks.post(cfg.webhookUrl, { text: '✅ Steady Sugar is connected to Slack.' }) : { ok: false, error: 'Add a webhook URL first.' };
+    result = cfg.webhookUrl ? await webhooks.post(cfg.webhookUrl, { text: 'Steady Sugar is connected to Slack.' }) : { ok: false, error: 'Add a webhook URL first.' };
   }
   await registry.recordTest(def.id, { ok: result.ok, status: result.status || null, error: result.error || null });
   flash(req, result.ok ? 'success' : 'error', result.ok ? 'Test message sent.' : `Test failed: ${result.error || `HTTP ${result.status}`}`);

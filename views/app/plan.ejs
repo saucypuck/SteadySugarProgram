@@ -14,8 +14,8 @@
     <p><%= plan.description %></p>
     <% if (match && match.why.length) { %><div class="why"><% match.why.forEach((w) => { %><span>✓ <%= w %></span><% }) %></div><% } %>
     <ul class="plan-facts mt-1">
-      <li>🥗 <%= plan.diet === 'plant' ? 'Vegetarian (eggs & dairy)' : 'Omnivore' %> · meals in ≤<%= plan.cookTime %> min</li>
-      <li>💪 <%= plan.workoutMinutes %>-min workouts · <%= { none: 'no equipment needed', basic: 'bands or dumbbells', gym: 'gym access' }[plan.equipment] %><%= plan.lowImpact ? ' · low impact' : '' %></li>
+      <li><%= plan.diet === 'plant' ? 'Vegetarian (eggs & dairy)' : 'Omnivore' %> · meals in ≤<%= plan.cookTime %> min</li>
+      <li><%= plan.workoutMinutes %>-min workouts · <%= { none: 'no equipment needed', basic: 'bands or dumbbells', gym: 'gym access' }[plan.equipment] %><%= plan.lowImpact ? ' · low impact' : '' %></li>
     </ul>
   </div>
 
@@ -62,11 +62,11 @@
 
 <div class="grid-2 mt-2">
   <section class="card">
-    <h3>🎯 Daily targets</h3>
+    <h3>Daily targets</h3>
     <div class="target-row"><% plan.targets.forEach((tg) => { %><div class="target"><small class="muted"><%= tg.label %></small><strong><%= tg.value %></strong></div><% }) %></div>
   </section>
   <section class="card">
-    <h3>📈 How it progresses</h3>
+    <h3>How it progresses</h3>
     <ol class="phase-list"><% plan.phases.forEach((ph) => { %><li><strong>Weeks <%= ph.weeks[0] %>–<%= ph.weeks[1] %>: <%= ph.title %></strong><span><%= ph.focus %></span></li><% }) %></ol>
   </section>
 </div>
@@ -86,7 +86,7 @@
         <% }) %>
       </tbody>
     </table>
-    <% if (!full) { %><div class="locked-overlay"><div class="card"><h3>🔒 See the full week</h3><p class="muted">Every day’s meals and workouts unlock with Core.</p><a href="/checkout?plan=core" class="btn btn-primary">Unlock — <%= money(c.plans.core.price) %>/mo</a></div></div><% } %>
+    <% if (!full) { %><div class="locked-overlay"><div class="card"><h3>See the full week</h3><p class="muted">Every day’s meals and workouts unlock with Core.</p><a href="/checkout?plan=core" class="btn btn-primary">Unlock — <%= money(c.plans.core.price) %>/mo</a></div></div><% } %>
   </div>
 </section>
 
@@ -98,7 +98,7 @@
         <div class="card">
           <h3><%= name %> <small class="muted">~<%= w.minutes %> min</small></h3>
           <div class="table-wrap"><table class="traffic"><thead><tr><th>Exercise</th><th>Sets</th><th>Reps</th></tr></thead>
-            <tbody><% w.moves.forEach(([n, sets, reps]) => { %><tr><td><span class="demo-thumb">▶</span><%= n %></td><td><%= sets %></td><td><%= reps %></td></tr><% }) %></tbody></table></div>
+            <tbody><% w.moves.forEach(([n, sets, reps]) => { %><tr><td><span class="demo-thumb" title="Demo video"><%- icon('play') %></span><%= n %></td><td><%= sets %></td><td><%= reps %></td></tr><% }) %></tbody></table></div>
         </div>
       <% }) %>
     </div>

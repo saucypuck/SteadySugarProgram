@@ -3,7 +3,7 @@
 <section class="quiz-wrap">
   <div class="container quiz-container">
     <div class="quiz-progress" aria-hidden="true"><span data-quiz-bar></span></div>
-    <p class="muted small center" data-quiz-count>Blood Sugar Profile Quiz</p>
+    <p class="muted small center" data-quiz-count>Blood Sugar Profile Assessment</p>
 
     <% if (error) { %><div class="alert alert-error"><%= error %></div><% } %>
 
@@ -29,7 +29,7 @@
         <div class="field"><label for="q-email">Email</label><input id="q-email" type="email" name="email" autocomplete="email" required></div>
         <label class="check"><input type="checkbox" name="consent" required> I agree to receive emails from <%= c.brand.name %>. Unsubscribe anytime.</label>
         <button class="btn btn-primary btn-lg btn-block mt-2">See my results →</button>
-        <p class="micro center">🔒 We never sell your data.</p>
+        <p class="micro center">We never sell your data.</p>
       </fieldset>
 
       <div class="quiz-nav" data-quiz-nav>

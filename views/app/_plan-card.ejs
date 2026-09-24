@@ -4,9 +4,9 @@
   <div class="row-between"><h3 class="mb-0"><%= p.name %></h3><span class="pill"><%= p.weeks %> weeks</span></div>
   <p class="small muted"><%= p.tagline %></p>
   <ul class="plan-facts">
-    <li>🥗 <%= p.diet === 'plant' ? 'Vegetarian' : 'Omnivore' %> · ≤<%= p.cookTime %> min meals</li>
-    <li>💪 <%= p.workoutMinutes %>-min workouts · <%= { none: 'no equipment', basic: 'bands/dumbbells', gym: 'gym' }[p.equipment] %></li>
-    <li>📈 <%= p.level %><%= p.lowImpact ? ' · low impact' : '' %></li>
+    <li><%= p.diet === 'plant' ? 'Vegetarian' : 'Omnivore' %> · ≤<%= p.cookTime %> min meals</li>
+    <li><%= p.workoutMinutes %>-min workouts · <%= { none: 'no equipment', basic: 'bands/dumbbells', gym: 'gym' }[p.equipment] %></li>
+    <li><%= p.level %><%= p.lowImpact ? ' · low impact' : '' %></li>
   </ul>
   <% if (locals.why && why.length) { %><div class="why"><% why.forEach((w) => { %><span>✓ <%= w %></span><% }) %></div><% } %>
 </a>

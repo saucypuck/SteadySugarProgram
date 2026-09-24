@@ -1,24 +1,47 @@
 <%- include('../partials/header') %>
 
 <section class="section">
+  <div class="container narrow center">
+    <p class="eyebrow">Our team</p>
+    <h1>Credentialed people behind every lesson and plan</h1>
+    <p class="lead">Steady Sugar is built and reviewed by licensed and certified professionals. Here’s who they are.</p>
+  </div>
+</section>
+
+<section class="section pt-0">
   <div class="container grid-2 align-center">
-    <div class="wire wire-square">Coach photo</div>
+    <div class="wire wire-square">Professional headshot</div>
     <div>
-      <p class="eyebrow">Meet your coach</p>
-      <h1><%= c.brand.coach %></h1>
+      <p class="eyebrow">Founder &amp; lead coach</p>
+      <h2><%= c.brand.coach %></h2>
       <p class="muted"><%= c.brand.coachTitle %></p>
-      <p>[Your story. Why blood sugar? A personal or family connection works well here. Who you've helped and the transformation they experienced.]</p>
-      <p>[Your philosophy: no extreme diets, small sustainable changes, working alongside the client's doctor.]</p>
+      <p>[Your background in two or three short paragraphs: training and licenses, years in practice, the kinds of people you help, and why blood sugar is your focus.]</p>
+      <p>[Your approach: practical changes, no extreme diets, and always working alongside each member’s healthcare team.]</p>
       <ul class="check-list">
-        <li>[Credential / certification]</li>
-        <li>[Years of experience / clients helped]</li>
-        <li>[Featured in / speaking]</li>
+        <li>[License or certification — issuing body, year]</li>
+        <li>[Years of experience and number of clients]</li>
+        <li>[Professional memberships, publications or speaking]</li>
       </ul>
       <div class="cta-row">
-        <a href="/book-call" class="btn btn-primary">Book a free call with me</a>
-        <a href="/quiz" class="btn btn-secondary">Take the quiz</a>
+        <a href="/book-call" class="btn btn-primary">Schedule a free call</a>
+        <a href="/quiz" class="btn btn-secondary">Take the free assessment</a>
       </div>
     </div>
+  </div>
+</section>
+
+<section class="section section-soft">
+  <div class="container">
+    <div class="center narrow">
+      <p class="eyebrow">Clinical review</p>
+      <h2>How we keep the information accurate</h2>
+    </div>
+    <div class="standards mt-3">
+      <div class="standard"><%- icon('stethoscope') %><h3>Content reviewer</h3><p><strong><%= c.brand.reviewer %></strong><br>[Short bio: credentials, practice setting, areas of expertise.]</p></div>
+      <div class="standard"><%- icon('shield') %><h3>Sources</h3><p>Lessons and plans are based on <%= c.brand.guidelines %> and peer-reviewed research. Each course lists its references.</p></div>
+      <div class="standard"><%- icon('clock') %><h3>Regular updates</h3><p>Content is reviewed at least once a year and whenever major guidelines change. Last full review: <%= c.brand.lastReviewed %>.</p></div>
+    </div>
+    <p class="center small muted mt-2">Steady Sugar provides education and lifestyle coaching, not medical care. <a href="/legal/disclaimer">Read our medical disclaimer</a>.</p>
   </div>
 </section>
 

@@ -11,6 +11,7 @@ const { captureUtm } = require('./src/track');
 const { seedDemo } = require('./src/seed');
 const sched = require('./src/scheduling');
 const mealPlans = require('./src/plans').PLANS;
+const { icon } = require('./src/icons');
 
 const app = express();
 const PORT = process.env.PORT || 3000;
@@ -49,6 +50,7 @@ app.use((req, res, next) => {
   res.locals.c = content;
   res.locals.sched = sched;
   res.locals.mealPlans = mealPlans;
+  res.locals.icon = icon;
   res.locals.path = req.path;
   res.locals.variant = 'marketing';
   res.locals.assetVersion = assetVersion;

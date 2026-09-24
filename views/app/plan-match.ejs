@@ -8,7 +8,7 @@
   <% if (top.why.length) { %><div class="why center-why"><% top.why.forEach((w) => { %><span>✓ <%= w %></span><% }) %></div><% } %>
   <div class="cta-row center-row">
     <a href="/app/plans/<%= top.plan.id %>" class="btn btn-primary btn-lg"><%= full ? 'Review & enroll →' : 'See the plan →' %></a>
-    <a href="/app/plans/quiz" class="btn btn-ghost">Retake quiz</a>
+    <a href="/app/plans/quiz" class="btn btn-ghost">Retake the plan finder</a>
   </div>
 </section>
 
@@ -16,7 +16,7 @@
   <h2 class="h3">Line it up for faster results</h2>
   <p class="muted small">Plans work best alongside a blueprint (daily actions + accountability) or a course (the “why”). You can start them on the same day when you enroll.</p>
   <div class="grid-2">
-    <% [[pairBlueprint, '🧭 Suggested blueprint'], [pairCourse, '🎓 Suggested course']].forEach(([co, label]) => { if (!co) return; %>
+    <% [[pairBlueprint, 'Suggested blueprint'], [pairCourse, 'Suggested course']].forEach(([co, label]) => { if (!co) return; %>
       <a href="/app/courses/<%= co.slug %>" class="card pair-card cat-<%= co.category %>">
         <small class="eyebrow"><%= label %></small>
         <strong><%= co.title %></strong>

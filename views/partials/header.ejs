@@ -4,79 +4,87 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title><%= locals.title ? title + ' · ' : '' %><%= c.brand.name %></title>
-  <meta name="description" content="<%= c.brand.name %> — coach-led blood sugar program for prediabetes and type 2 diabetes. Simple food, movement and habit changes.">
+  <meta name="description" content="<%= c.brand.name %> — evidence-based, coach-led program for adults with prediabetes and type 2 diabetes. Practical food, movement and habit changes, reviewed by credentialed professionals.">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Source+Sans+3:wght@400;500;600;700&family=Source+Serif+4:opsz,wght@8..60,600;8..60,700&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="/css/styles.css?v=<%= assetVersion %>">
-  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'><circle cx='16' cy='16' r='15' fill='%230f766e'/><path d='M6 18c4 0 5-6 10-6s6 6 10 6' stroke='white' stroke-width='3' fill='none' stroke-linecap='round'/></svg>">
-  <script>document.documentElement.classList.add('js')</script>
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'><rect width='32' height='32' rx='7' fill='%230b5a53'/><path d='M7 18c3.5 0 4.5-5 9-5s5.5 5 9 5' stroke='white' stroke-width='2.6' fill='none' stroke-linecap='round'/></svg>">
+  <script>document.documentElement.classList.add('js');try{if(localStorage.getItem('ss_text')==='lg')document.documentElement.classList.add('text-lg')}catch(e){}</script>
 </head>
 <body class="v-<%= variant %>">
+<a href="#main" class="skip-link">Skip to main content</a>
 <% if (demoMode) { %>
-  <div class="demo-bar">Wireframe / demo mode — payments, email &amp; video calls are simulated.
+  <div class="demo-bar">Preview site — payments, email and video calls are simulated.
     <% if (!user) { %><a href="/login">Demo logins</a><% } %>
   </div>
 <% } %>
 
-<% const brandMark = `<a href="/" class="logo"><svg width="28" height="28" viewBox="0 0 32 32" aria-hidden="true"><circle cx="16" cy="16" r="15" fill="currentColor"/><path d="M6 18c4 0 5-6 10-6s6 6 10 6" stroke="#fff" stroke-width="3" fill="none" stroke-linecap="round"/></svg><span>${c.brand.name}</span></a>`; %>
+<% const brandMark = `<a href="/" class="logo" aria-label="${c.brand.name} home"><svg width="30" height="30" viewBox="0 0 32 32" aria-hidden="true"><rect width="32" height="32" rx="7" fill="currentColor"/><path d="M7 18c3.5 0 4.5-5 9-5s5.5 5 9 5" stroke="#fff" stroke-width="2.6" fill="none" stroke-linecap="round"/></svg><span>${c.brand.name}</span></a>`; %>
+<% const textToggle = `<button type="button" class="text-toggle" data-text-toggle aria-pressed="false" title="Make text larger">${icon('text')}<span>Text size</span></button>`; %>
 
 <% if (variant === 'app' || variant === 'admin') { %>
   <%
     const nav = variant === 'admin'
-      ? [['/admin', 'Overview', '📊'], ['/admin/members', 'Members', '👥'], ['/admin/crm', 'CRM', '🗂️'], ['/admin/marketing', 'Marketing', '📣'], ['/admin/integrations', 'Integrations', '🔌'], ['/app', 'Member view', '👤', 'desk-only'], ['/', 'Public site', '🌐', 'desk-only']]
-      : [['/app', 'Home', '🏠'], ['/app/courses', 'Courses', '🎓'], ['/app/plans', 'Plans', '🥗'], ['/app/log', 'Tracker', '📈'], ['/app/schedule', 'Calendar', '📅'], ['/app/account', 'Account', '⚙️']];
+      ? [['/admin', 'Overview', 'bars'], ['/admin/members', 'Members', 'users'], ['/admin/crm', 'CRM', 'briefcase'], ['/admin/marketing', 'Marketing', 'megaphone'], ['/admin/integrations', 'Integrations', 'plug'], ['/app', 'Member view', 'eye', 'desk-only'], ['/', 'Public site', 'globe', 'desk-only']]
+      : [['/app', 'Home', 'home'], ['/app/courses', 'Courses', 'book'], ['/app/plans', 'Plans', 'clipboard'], ['/app/log', 'Tracker', 'chart'], ['/app/schedule', 'Calendar', 'calendar'], ['/app/account', 'Account', 'user']];
     const active = (href) => href === path || (href === '/app/schedule' && path.startsWith('/app/calendar')) || (href === '/app/plans' && (path.startsWith('/app/plans') || path.startsWith('/app/blueprint'))) || (href !== '/app' && href !== '/admin' && href !== '/' && path.startsWith(href.split('/').slice(0, 3).join('/')));
   %>
   <div class="shell">
     <aside class="sidebar">
       <%- brandMark %>
-      <nav class="side-nav">
-        <% nav.forEach(([href, label, icon, cls]) => { %>
-          <a href="<%= href %>" class="<%= active(href) ? 'active' : '' %> <%= cls || '' %>"><span class="ico"><%= icon %></span><span><%= label %></span></a>
+      <nav class="side-nav" aria-label="Main">
+        <% nav.forEach(([href, label, ico, cls]) => { %>
+          <a href="<%= href %>" class="<%= active(href) ? 'active' : '' %> <%= cls || '' %>" <%- active(href) ? 'aria-current="page"' : '' %>><%- icon(ico) %><span><%= label %></span></a>
         <% }) %>
-        <% if (variant === 'app' && tier === 'free' && !isAdmin) { %><a href="/pricing" class="side-upgrade"><span class="ico">⭐</span><span>Upgrade</span></a><% } %>
-        <% if (isAdmin && variant === 'app') { %><a href="/admin"><span class="ico">📊</span><span>Admin</span></a><% } %>
+        <% if (variant === 'app' && tier === 'free' && !isAdmin) { %><a href="/pricing" class="side-upgrade"><%- icon('award') %><span>Upgrade</span></a><% } %>
+        <% if (isAdmin && variant === 'app') { %><a href="/admin" class="desk-only"><%- icon('bars') %><span>Admin</span></a><% } %>
       </nav>
       <div class="side-foot">
-        <div class="who"><strong><%= user.name %></strong><small><%= isAdmin ? 'Admin' : c.plans[tier].name + (tier === 'free' ? ' account' : ' plan') %></small></div>
+        <% if (variant === 'app') { %>
+          <a href="mailto:<%= c.brand.supportEmail %>" class="help-link"><%- icon('help') %><span>Help &amp; support</span></a>
+          <%- textToggle %>
+        <% } %>
+        <div class="who"><strong><%= user.name %></strong><small><%= isAdmin ? 'Administrator' : c.plans[tier].name + (tier === 'free' ? ' account' : ' plan') %></small></div>
         <form method="post" action="/logout"><button class="btn btn-ghost btn-sm">Log out</button></form>
       </div>
     </aside>
-    <main class="shell-main">
+    <main class="shell-main" id="main">
       <header class="shell-top">
         <%- brandMark %>
-        <form method="post" action="/logout"><button class="btn btn-ghost btn-sm">Log out</button></form>
+        <div class="shell-top-actions">
+          <% if (variant === 'app') { %><%- textToggle %><% } %>
+          <form method="post" action="/logout"><button class="btn btn-ghost btn-sm">Log out</button></form>
+        </div>
       </header>
 <% } else { %>
   <header class="site-header">
     <div class="container nav-row">
       <%- brandMark %>
       <% if (variant !== 'minimal') { %>
-        <button class="nav-toggle" aria-label="Menu" aria-expanded="false" data-nav-toggle>☰</button>
-        <nav class="site-nav" data-nav>
+        <button class="nav-toggle" aria-label="Open menu" aria-expanded="false" data-nav-toggle><%- icon('menu') %><span>Menu</span></button>
+        <nav class="site-nav" data-nav aria-label="Main">
           <a href="/program">How it works</a>
           <a href="/pricing">Pricing</a>
-          <a href="/about">Coach</a>
+          <a href="/about">Our team</a>
           <a href="/free-guide">Free guide</a>
           <% if (user) { %>
             <a href="<%= isAdmin ? '/admin' : '/app' %>" class="btn btn-secondary btn-sm">My dashboard</a>
           <% } else { %>
             <a href="/login">Log in</a>
-            <a href="/signup">Start free</a>
-            <a href="/quiz" class="btn btn-primary btn-sm">Take the quiz</a>
+            <a href="/quiz" class="btn btn-primary btn-sm">Take the free assessment</a>
           <% } %>
         </nav>
       <% } else { %>
-        <nav class="site-nav-min">
+        <nav class="site-nav-min" aria-label="Account">
           <% if (user) { %><a href="/app">Dashboard</a><% } else { %><a href="/login">Log in</a><% } %>
         </nav>
       <% } %>
     </div>
   </header>
-  <main>
+  <main id="main">
 <% } %>
 
 <% if (flash) { %>
-  <div class="flash flash-<%= flash.type %>"><%= flash.msg %></div>
+  <div class="flash flash-<%= flash.type %>" role="status"><%= flash.msg %></div>
 <% } %>

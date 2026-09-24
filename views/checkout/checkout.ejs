@@ -32,7 +32,7 @@
           <strong>Stripe Payment Element mounts here</strong>
           <small>Card · Apple Pay · Google Pay · HSA/FSA</small>
         </div>
-        <p class="small muted">🔒 Demo mode — no card is charged. Wire up in <code>src/integrations/payments.js</code>.</p>
+        <p class="small muted">Demo mode — no card is charged. Wire up in <code>src/integrations/payments.js</code>.</p>
       </div>
 
       <button class="btn btn-primary btn-lg btn-block">Start my program — <%= money(plan.price) %> today</button>
@@ -47,7 +47,7 @@
         <ul class="check-list small mt-2"><% plan.features.forEach((f) => { %><li><%= f %></li><% }) %></ul>
       </div>
       <div class="guarantee small-g">
-        <div class="seal">30<br><small>DAY</small></div>
+        <div class="seal"><%- icon('shield') %></div>
         <div><strong><%= c.guarantee.title %></strong><p class="small"><%= c.guarantee.body %></p></div>
       </div>
       <figure class="card quote">

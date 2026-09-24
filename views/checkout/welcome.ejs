@@ -10,14 +10,14 @@
     </ol>
 
     <div class="center mt-3">
-      <p class="eyebrow">🎉 You’re in, <%= user.name %>!</p>
+      <p class="eyebrow">You’re in, <%= user.name %>!</p>
       <h1>Let’s set your goals</h1>
       <p class="lead">This takes 60 seconds and helps your coach personalize your plan.</p>
     </div>
 
     <form method="post" action="/welcome" class="card stack mt-3">
       <% if (lead && lead.answers) { %>
-        <div class="alert alert-info">We pulled in your quiz answers — your coach will see them too.</div>
+        <div class="alert alert-info">We’ve added your assessment answers — your coach will see them too.</div>
       <% } %>
       <div class="field">
         <label for="w-target">What result would make the next 12 weeks a win?</label>

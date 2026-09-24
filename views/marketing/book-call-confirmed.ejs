@@ -2,7 +2,7 @@
 
 <section class="section">
   <div class="container narrow center">
-    <p class="eyebrow">✅ You’re booked</p>
+    <p class="eyebrow">You’re booked</p>
     <h1><%= sched.formatDate(booking.date) %> at <%= sched.formatTime(booking.time) %> <%= c.brand.timezoneLabel %></h1>
     <p class="lead">A confirmation and calendar invite are on their way to <strong><%= booking.email %></strong>.</p>
     <p><a href="<%= booking.joinUrl %>" class="btn btn-secondary">Video call link (placeholder)</a></p>

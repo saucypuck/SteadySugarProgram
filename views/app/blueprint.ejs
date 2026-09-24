@@ -9,11 +9,11 @@
   <section class="prog-hero">
     <div>
       <span class="pill"><%= b.state === 'upcoming' ? 'Starts ' + sched.formatDate(b.startDate) : b.state === 'completed' ? 'Completed' : 'Day ' + b.dayNumber + ' of ' + b.bp.days %></span>
-      <h2 class="mt-1 mb-0"><%= b.state === 'completed' ? '🏁 Blueprint complete!' : 'Week ' + b.week + ': ' + b.milestone.title %></h2>
+      <h2 class="mt-1 mb-0"><%= b.state === 'completed' ? 'Blueprint complete' : 'Week ' + b.week + ': ' + b.milestone.title %></h2>
       <p class="muted mb-0"><%= b.state === 'completed' ? 'You finished ' + b.course.title + '. Here’s how you did.' : 'Goal this week: ' + b.milestone.goal %></p>
     </div>
     <div class="bp-stats">
-      <div><strong>🔥 <%= b.streak %></strong><small>day streak</small></div>
+      <div><strong><%= b.streak %></strong><small>day streak</small></div>
       <div><strong><%= b.completion %>%</strong><small>tasks done</small></div>
       <div><strong><%= b.completeDays %></strong><small>perfect days</small></div>
     </div>
@@ -67,7 +67,7 @@
 
     <div class="stack-lg">
       <section class="card <%= b.checkinDue ? 'due' : '' %>" id="checkin">
-        <h3>📋 Weekly check-in <% if (b.checkinDue) { %><span class="count">due</span><% } %></h3>
+        <h3>Weekly check-in <% if (b.checkinDue) { %><span class="count">due</span><% } %></h3>
         <% if (b.checkinDone && b.state !== 'completed') { %>
           <p class="small muted">✓ Week <%= b.week %> check-in submitted. The next one opens at the end of week <%= b.week + 1 %>.</p>
         <% } else if (b.state === 'upcoming') { %>
@@ -76,7 +76,7 @@
           <form method="post" action="/app/blueprint/checkin" class="stack">
             <p class="small"><strong><%= b.bp.checkin %></strong></p>
             <div class="score-row"><% [1, 2, 3, 4, 5].forEach((n) => { %><label><input type="radio" name="score" value="<%= n %>" <%= n === 3 ? 'checked' : '' %>><span><%= n %></span></label><% }) %></div>
-            <small class="muted">1 = rough week · 5 = nailed it</small>
+            <small class="muted">1 = a difficult week · 5 = a very good week</small>
             <div class="field"><label for="wins">A win this week</label><input id="wins" name="wins" placeholder="e.g. walked after dinner 5 nights"></div>
             <div class="field"><label for="blk">What got in the way?</label><input id="blk" name="blockers" placeholder="e.g. late meetings, travel"></div>
             <% if (hasCoach) { %><label class="check small"><input type="checkbox" name="help"> I’d like my coach to reach out</label><% } %>
@@ -119,7 +119,7 @@
               <button class="btn btn-primary btn-sm">Start blueprint</button>
             </form>
           <% } else { %>
-            <a href="/checkout?plan=core" class="btn btn-secondary btn-sm">🔒 Unlock with Core</a>
+            <a href="/checkout?plan=core" class="btn btn-secondary btn-sm">Unlock with Core</a>
           <% } %>
           <a href="/app/courses/<%= co.slug %>" class="btn btn-ghost btn-sm">Details</a>
         </div>

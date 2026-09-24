@@ -4,13 +4,13 @@
   <div><p class="eyebrow">My plan</p><h1>Calendar</h1></div>
   <div class="cta-row mt-0">
     <a href="#plan" class="btn btn-secondary btn-sm">Edit my plan</a>
-    <a href="/app/calendar" class="btn btn-primary btn-sm">📞 Coaching calls</a>
+    <a href="/app/calendar" class="btn btn-primary btn-sm">Coaching calls</a>
   </div>
 </div>
 
 <% if (welcome) { %>
   <div class="card upsell mb-2">
-    <h3>🎉 Your plan is ready</h3>
+    <h3>Your plan is ready</h3>
     <p class="mb-0">We’ve scheduled your lessons<%= full ? ', meals and workouts' : '' %> and daily reminders. <strong>Add it to your phone’s calendar below</strong> so reminders come to you — no need to log in each day.</p>
   </div>
 <% } %>
@@ -19,16 +19,16 @@
 <section class="card sync-card" id="sync">
   <div class="sync-head">
     <div>
-      <h3 class="mb-0">📲 Put your plan on your phone</h3>
+      <h3 class="mb-0">Put your plan on your phone</h3>
       <p class="small muted mb-0">Subscribe once. Lessons, <%= full ? 'meals, workouts, ' : '' %>reminders and coaching calls show up in your calendar with alerts, and update automatically as your plan changes.</p>
     </div>
     <span class="sync-status <%= synced ? 'ok' : '' %>"><%= synced ? '✓ Synced ' + new Date(synced).toLocaleDateString('en-US', { month: 'short', day: 'numeric' }) : 'Not synced yet' %></span>
   </div>
   <div class="sync-buttons">
-    <a href="<%= feed.webcal %>" class="sync-btn"><span>🍎</span>Apple Calendar<small>iPhone, iPad, Mac</small></a>
-    <a href="<%= feed.google %>" target="_blank" rel="noopener" class="sync-btn"><span>📅</span>Google Calendar<small>Android, Gmail</small></a>
-    <a href="<%= feed.outlook %>" target="_blank" rel="noopener" class="sync-btn"><span>📧</span>Outlook<small>Outlook.com, Office</small></a>
-    <button type="button" class="sync-btn" data-copy="<%= feed.https %>"><span>🔗</span>Copy link<small>Any other calendar app</small></button>
+    <a href="<%= feed.webcal %>" class="sync-btn"><%- icon('calendar') %>Apple Calendar<small>iPhone, iPad, Mac</small></a>
+    <a href="<%= feed.google %>" target="_blank" rel="noopener" class="sync-btn"><%- icon('calendar') %>Google Calendar<small>Android, Gmail</small></a>
+    <a href="<%= feed.outlook %>" target="_blank" rel="noopener" class="sync-btn"><%- icon('mail') %>Outlook<small>Outlook.com, Office</small></a>
+    <button type="button" class="sync-btn" data-copy="<%= feed.https %>"><%- icon('link') %>Copy link<small>Any other calendar app</small></button>
   </div>
   <details class="more mt-1">
     <summary>Privacy &amp; troubleshooting</summary>
@@ -52,7 +52,7 @@
     <a href="/app/schedule?week=<%= week + 1 %>" class="btn btn-ghost btn-sm" aria-label="Next week">Next ›</a>
   </div>
   <div class="legend-row">
-    <% [['lesson', '🎓 Lessons'], ['blueprint', '🧭 Blueprint'], ['meal', '🥗 Meals'], ['workout', '💪 Movement'], ['habit', '🩸 Habits'], ['call', '📞 Calls']].forEach(([t, label]) => { if (!counts[t]) return; %>
+    <% [['lesson', 'Lessons'], ['blueprint', 'Blueprint'], ['meal', 'Meals'], ['workout', 'Movement'], ['habit', 'Habits'], ['call', 'Calls']].forEach(([t, label]) => { if (!counts[t]) return; %>
       <span class="ev-chip ev-<%= t %>"><%= label %> <b><%= counts[t] %></b></span>
     <% }) %>
   </div>
@@ -64,7 +64,7 @@
         <% d.events.forEach((e) => { %>
           <a href="<%= e.url ? e.url.replace(/^https?:\/\/[^/]+/, '') : '#' %>" class="ev ev-<%= e.type %>" <%- e.type === 'call' && e.url && /^https?:/.test(e.url) && !e.url.includes('/app/') ? 'target="_blank" rel="noopener"' : '' %>>
             <span class="ev-time"><%= e.time ? sched.formatTime(e.time) : 'All day' %><%= e.tzid ? ' ' + c.brand.timezoneLabel : '' %></span>
-            <span class="ev-title"><%= e.icon %> <%= e.summary %></span>
+            <span class="ev-title"><%= e.summary %></span>
           </a>
         <% }) %>
       </div>
@@ -77,13 +77,13 @@
   <div class="section-head mt-0"><h2 class="h3 mb-0">My plan</h2><button class="btn btn-primary btn-sm">Save plan</button></div>
   <div class="plan-grid">
     <fieldset class="card">
-      <legend>🎓 Courses I’m following</legend>
-      <p class="small muted">Lessons are scheduled one per lesson day, in this order. Recommended for you based on your quiz and plan.</p>
+      <legend>Courses I’m following</legend>
+      <p class="small muted">Lessons are scheduled one per lesson day, in this order. Recommended for you based on your assessment and plan.</p>
       <div class="course-picks">
         <% courseOptions.forEach((co) => { %>
           <label class="check pick">
             <input type="checkbox" name="courses" value="<%= co.slug %>" <%= s.courses.includes(co.slug) ? 'checked' : '' %>>
-            <span><%= co.cat.icon %> <%= co.title %>
+            <span><%= co.title %>
               <% if (co.recommended) { %><span class="badge">Recommended</span><% } %>
               <small class="muted"><%= co.openLessons < co.total ? co.openLessons + ' of ' + co.total + ' lessons available on your plan' : co.total + ' lessons' %></small></span>
           </label>
@@ -93,7 +93,7 @@
 
     <div class="stack-lg">
       <fieldset class="card">
-        <legend>📚 Lesson days</legend>
+        <legend>Lesson days</legend>
         <div class="day-picks">
           <% ['mon', 'tue', 'wed', 'thu', 'fri', 'sat', 'sun'].forEach((d) => { %>
             <label class="day-pick"><input type="checkbox" name="lessonDays" value="<%= d %>" <%= s.lessonDays.includes(d) ? 'checked' : '' %>><span><%= DAY_NAMES[d] %></span></label>
@@ -103,7 +103,7 @@
       </fieldset>
 
       <fieldset class="card <%= full ? '' : 'is-locked' %>">
-        <legend>🥗 Meals</legend>
+        <legend>Meals</legend>
         <% if (full) { %>
           <p class="small muted"><%- program ? 'From <a href="/app/plans">' + program.plan.name + '</a> · ' + sched.formatDate(program.startDate) + ' – ' + sched.formatDate(program.endDate) : 'No meal &amp; movement plan yet — <a href="/app/plans/quiz">find one</a>. Meal reminders start when you enroll.' %></p>
           <div class="seg">
@@ -121,7 +121,7 @@
       </fieldset>
 
       <fieldset class="card <%= full ? '' : 'is-locked' %>">
-        <legend>💪 Workouts</legend>
+        <legend>Workouts</legend>
         <% if (full) { %>
           <label class="check"><input type="checkbox" name="workouts" <%= s.workouts ? 'checked' : '' %>> Add my plan’s workouts &amp; walks</label>
           <div class="field mt-1"><label for="wt">Strength workout time</label><input id="wt" type="time" name="workoutTime" value="<%= s.workoutTime %>"><small class="muted">Walk reminders go 30 min after lunch.</small></div>
@@ -133,7 +133,7 @@
 
     <div class="stack-lg">
       <fieldset class="card">
-        <legend>🩸 Daily &amp; weekly habits</legend>
+        <legend>Daily &amp; weekly habits</legend>
         <label class="check"><input type="checkbox" name="readings" <%= s.readings ? 'checked' : '' %>> Fasting reading reminder</label>
         <div class="field mt-1"><label for="rt">Time</label><input id="rt" type="time" name="readingTime" value="<%= s.readingTime %>"></div>
         <label class="check mt-2"><input type="checkbox" name="weeklyReview" <%= s.weeklyReview ? 'checked' : '' %>> Weekly check-in</label>
@@ -144,13 +144,13 @@
       </fieldset>
 
       <fieldset class="card">
-        <legend>🧭 Blueprint</legend>
+        <legend>Blueprint</legend>
         <p class="small muted"><%- blueprintRun ? '<a href="/app/blueprint">' + blueprintRun.course.title + '</a> · daily checklist reminder' : 'No blueprint running — <a href="/app/blueprint">start one</a>.' %></p>
         <div class="field"><label for="bt">Checklist reminder time</label><input id="bt" type="time" name="blueprintTime" value="<%= s.blueprintTime %>"></div>
       </fieldset>
 
       <fieldset class="card">
-        <legend>🔔 Reminders</legend>
+        <legend>Reminders</legend>
         <div class="field"><label for="al">Alert me before lessons &amp; workouts</label>
           <select id="al" name="alarm"><% ALARMS.forEach((m) => { %><option value="<%= m %>" <%= s.alarm === m ? 'selected' : '' %>><%= m === 0 ? 'At start time' : m < 60 ? m + ' minutes before' : (m / 60) + ' hour' + (m > 60 ? 's' : '') + ' before' %></option><% }) %></select>
         </div>

@@ -13,7 +13,7 @@
       <div class="footer-links">
         <a href="/program">How it works</a>
         <a href="/pricing">Pricing</a>
-        <a href="/quiz">Quiz</a>
+        <a href="/quiz">Free assessment</a>
         <a href="/book-call">Free call</a>
         <a href="/free-guide">Free guide</a>
         <a href="/login">Member login</a>
@@ -26,6 +26,7 @@
       </div>
     </div>
     <div class="container">
+      <p class="fine">Program content reviewed by <%= c.brand.reviewer %> · Last reviewed <%= c.brand.lastReviewed %>.</p>
       <p class="fine">This program provides education and lifestyle coaching and is not a substitute for medical advice, diagnosis or treatment. Always consult your physician before changing diet, exercise or medication. Results vary. © <%= new Date().getFullYear() %> <%= c.brand.name %></p>
     </div>
   </footer>

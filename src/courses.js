@@ -10,13 +10,13 @@
 //              turns a course into a dated action program with a daily checklist, streaks and weekly check-ins.
 
 const CATEGORIES = [
-  { id: 'education', name: 'Blood Sugar Education', icon: '🩸', blurb: 'Understand what’s happening in your body and what your numbers mean.' },
-  { id: 'frameworks', name: 'Blueprints', icon: '🧭', blurb: 'Step-by-step action plans with daily tasks, streaks and weekly check-ins — built to deliver results, not just information.' },
-  { id: 'nutrition', name: 'Nutrition', icon: '🥗', blurb: 'What, when and how to eat for steadier blood sugar.' },
-  { id: 'gut', name: 'Gut Health', icon: '🦠', blurb: 'How your gut shapes cravings, inflammation and glucose response.' },
-  { id: 'exercise', name: 'Exercise & Movement', icon: '🚶', blurb: 'Movement that improves insulin sensitivity — no gym required.' },
-  { id: 'lifestyle', name: 'Sleep & Stress', icon: '🌙', blurb: 'The hidden drivers of morning highs and cravings.' },
-  { id: 'tracking', name: 'Tracking & Tech', icon: '📈', blurb: 'Glucose meters, CGMs and using your data well.' },
+  { id: 'education', name: 'Blood Sugar Education', icon: 'droplet', blurb: 'Understand what’s happening in your body and what your numbers mean.' },
+  { id: 'frameworks', name: 'Blueprints', icon: 'compass', blurb: 'Step-by-step action plans with daily tasks, streaks and weekly check-ins — built to deliver results, not just information.' },
+  { id: 'nutrition', name: 'Nutrition', icon: 'utensils', blurb: 'What, when and how to eat for steadier blood sugar.' },
+  { id: 'gut', name: 'Gut Health', icon: 'leaf', blurb: 'How your gut shapes cravings, inflammation and glucose response.' },
+  { id: 'exercise', name: 'Exercise & Movement', icon: 'activity', blurb: 'Movement that improves insulin sensitivity — no gym required.' },
+  { id: 'lifestyle', name: 'Sleep & Stress', icon: 'moon', blurb: 'The hidden drivers of morning highs and cravings.' },
+  { id: 'tracking', name: 'Tracking & Tech', icon: 'bars', blurb: 'Glucose meters, CGMs and using your data well.' },
 ];
 
 // Bundles group courses by tag — useful for program tracks, upsells and future à-la-carte sales.

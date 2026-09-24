@@ -63,12 +63,12 @@ async function memberTimeline(user) {
     db.findBy('activity', 'userId', user.id),
   ]);
   const items = [
-    { at: user.createdAt, icon: '👋', text: 'Account created' },
-    ...events.filter((e) => EVENT_LABELS[e.name] && e.name !== 'purchase').map((e) => ({ at: e.createdAt, icon: '•', text: EVENT_LABELS[e.name] })),
-    ...orders.map((o) => ({ at: o.createdAt, icon: '💳', text: `Payment $${o.amount} — ${o.plan} (${o.status})` })),
-    ...bookings.map((b) => ({ at: b.createdAt, icon: '📅', text: `Booked ${b.type} call for ${b.date} ${b.time} (${b.status})` })),
-    ...notes.map((n) => ({ at: n.createdAt, icon: '📝', text: n.body, by: n.by, note: true })),
-    ...activity.map((a) => ({ at: a.createdAt, icon: '⚙️', text: a.text, by: a.by })),
+    { at: user.createdAt, icon: 'user', text: 'Account created' },
+    ...events.filter((e) => EVENT_LABELS[e.name] && e.name !== 'purchase').map((e) => ({ at: e.createdAt, icon: 'chart', text: EVENT_LABELS[e.name] })),
+    ...orders.map((o) => ({ at: o.createdAt, icon: 'file', text: `Payment $${o.amount} — ${o.plan} (${o.status})` })),
+    ...bookings.map((b) => ({ at: b.createdAt, icon: 'calendar', text: `Booked ${b.type} call for ${b.date} ${b.time} (${b.status})` })),
+    ...notes.map((n) => ({ at: n.createdAt, icon: 'pen', text: n.body, by: n.by, note: true })),
+    ...activity.map((a) => ({ at: a.createdAt, icon: 'settings', text: a.text, by: a.by })),
   ];
   return items.sort((a, b) => String(b.at).localeCompare(String(a.at))).slice(0, 50);
 }

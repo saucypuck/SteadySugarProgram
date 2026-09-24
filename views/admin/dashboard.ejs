@@ -9,7 +9,7 @@
   <div class="card kpi"><small>Free → paid</small><strong><%= kpis.freeToPaid %>%</strong></div>
   <div class="card kpi"><small>Total revenue</small><strong><%= money(kpis.revenue) %></strong></div>
   <div class="card kpi"><small>Leads</small><strong><%= kpis.leads %></strong></div>
-  <div class="card kpi hot"><small>🔥 Hot leads to call</small><strong><%= kpis.hotLeads %></strong></div>
+  <div class="card kpi hot"><small>Hot leads to call</small><strong><%= kpis.hotLeads %></strong></div>
   <div class="card kpi"><small>Upcoming calls</small><strong><%= kpis.upcomingCalls %></strong></div>
 </div>
 
@@ -51,7 +51,7 @@
             <td><%= l.source %><%= l.utm && l.utm.utm_source ? ' · ' + l.utm.utm_source : '' %></td>
             <td><span class="temp temp-<%= l.temperature %>"><%= l.temperature %></span></td>
             <% const rec = c.plans[c.legacyPlans[l.recommendedPlan] || l.recommendedPlan]; %><td><%= rec ? rec.name : '—' %></td>
-            <td><%= l.convertedUserId ? '✅ Customer' : l.bookedCall ? '📞 Call booked' : 'Open' %></td>
+            <td><%= l.convertedUserId ? 'Customer' : l.bookedCall ? 'Call booked' : 'Open' %></td>
             <td class="muted"><%= new Date(l.createdAt).toLocaleDateString() %></td>
           </tr>
         <% }) %>

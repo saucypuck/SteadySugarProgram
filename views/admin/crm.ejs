@@ -4,7 +4,7 @@
   <div><p class="eyebrow">Sales</p><h1>CRM</h1></div>
   <form method="get" class="range-form">
     <select name="temp" onchange="this.form.submit()" aria-label="Lead temperature">
-      <% [['all', 'All leads'], ['hot', '🔥 Hot'], ['warm', 'Warm'], ['cold', 'Cold']].forEach(([v, l]) => { %><option value="<%= v %>" <%= temp === v ? 'selected' : '' %>><%= l %></option><% }) %>
+      <% [['all', 'All leads'], ['hot', 'Hot'], ['warm', 'Warm'], ['cold', 'Cold']].forEach(([v, l]) => { %><option value="<%= v %>" <%= temp === v ? 'selected' : '' %>><%= l %></option><% }) %>
     </select>
   </form>
 </div>
@@ -39,7 +39,7 @@
 </section>
 
 <!-- Pipeline -->
-<div class="section-head"><h2>Lead pipeline</h2><span class="muted small">Leads come from the quiz, free guide and discovery calls. Won = became a member.</span></div>
+<div class="section-head"><h2>Lead pipeline</h2><span class="muted small">Leads come from the assessment, free guide and discovery calls. Won = became a member.</span></div>
 <div class="pipeline">
   <% columns.forEach((col) => { %>
     <section class="pipe-col pipe-<%= col.id %>">

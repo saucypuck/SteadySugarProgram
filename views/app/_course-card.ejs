@@ -1,9 +1,9 @@
 <%# Course card for the catalog / related rows. Expects a decorated `course`. %>
 <a href="/app/courses/<%= course.slug %>" class="course-card2">
   <div class="thumb cat-<%= course.category %>">
-    <span class="thumb-icon"><%= course.cat.icon %></span>
-    <span class="thumb-dur"><%= course.blueprint ? '🧭 ' + course.blueprint.days + '-day blueprint' : course.lessons.length + ' lessons · ' + course.totalMinutes + ' min' %></span>
-    <% if (course.state === 'locked') { %><span class="thumb-state">🔒 <%= course.needPlan.name %></span>
+    <span class="thumb-icon"><%- icon(course.cat.icon) %></span>
+    <span class="thumb-dur"><%= course.blueprint ? '' + course.blueprint.days + '-day blueprint' : course.lessons.length + ' lessons · ' + course.totalMinutes + ' min' %></span>
+    <% if (course.state === 'locked') { %><span class="thumb-state"><%- icon('lock') %> <%= course.needPlan.name %></span>
     <% } else if (course.state === 'preview') { %><span class="thumb-state free">Free preview</span>
     <% } else if (course.progress.pct === 100) { %><span class="thumb-state done">✓ Complete</span><% } %>
   </div>

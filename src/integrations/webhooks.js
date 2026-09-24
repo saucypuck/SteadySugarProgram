@@ -46,11 +46,11 @@ function slackText(event, p) {
   const who = (p.user && (p.user.email || p.user.name)) || p.email || 'someone';
   const src = p.attribution && p.attribution.utm_source ? ` · via ${p.attribution.utm_source}${p.attribution.lp ? ` → /lp/${p.attribution.lp}` : ''}` : '';
   switch (event) {
-    case 'purchase': return `💰 New ${p.plan || ''} sale — $${p.amount} — ${who}${src}`;
-    case 'quiz_complete': return `📝 New quiz lead (${p.plan || '—'} recommended) — ${who}${src}`;
-    case 'signup_free': return `🆕 Free signup — ${who}${src}`;
-    case 'discovery_booked': return `📞 Discovery call booked — ${who}${src}`;
-    default: return `🔔 ${EVENTS[event] || event} — ${who}${src}`;
+    case 'purchase': return `New ${p.plan || ''} sale — $${p.amount} — ${who}${src}`;
+    case 'quiz_complete': return `New quiz lead (${p.plan || '—'} recommended) — ${who}${src}`;
+    case 'signup_free': return `Free signup — ${who}${src}`;
+    case 'discovery_booked': return `Discovery call booked — ${who}${src}`;
+    default: return `${EVENTS[event] || event} — ${who}${src}`;
   }
 }
 

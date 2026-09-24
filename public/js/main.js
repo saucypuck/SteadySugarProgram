@@ -10,6 +10,18 @@
     });
   }
 
+  // Text size toggle (remembered per device)
+  document.querySelectorAll('[data-text-toggle]').forEach(function (btn) {
+    var root = document.documentElement;
+    var sync = function () { btn.setAttribute('aria-pressed', root.classList.contains('text-lg') ? 'true' : 'false'); };
+    sync();
+    btn.addEventListener('click', function () {
+      var on = root.classList.toggle('text-lg');
+      try { localStorage.setItem('ss_text', on ? 'lg' : 'md'); } catch (e) {}
+      document.querySelectorAll('[data-text-toggle]').forEach(function (b) { b.setAttribute('aria-pressed', on ? 'true' : 'false'); });
+    });
+  });
+
   // Confirm destructive actions
   document.querySelectorAll('form[data-confirm]').forEach(function (f) {
     f.addEventListener('submit', function (e) {

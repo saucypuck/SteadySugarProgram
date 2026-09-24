@@ -38,7 +38,7 @@ router.get('/free-guide/thanks', (req, res) => res.render('marketing/free-guide-
 // ---- Onboarding quiz -------------------------------------------------------
 router.get('/quiz', h(async (req, res) => {
   await track(req, 'quiz_start');
-  res.render('marketing/quiz', { title: 'Find your plan', variant: 'minimal', error: null });
+  res.render('marketing/quiz', { title: 'Free assessment', variant: 'minimal', error: null });
 }));
 
 router.post('/quiz', h(async (req, res) => {
@@ -47,7 +47,7 @@ router.post('/quiz', h(async (req, res) => {
   const addr = normalizeEmail(req.body.email);
   const missing = content.quiz.some((q) => !answers[q.id]);
   if (missing || !validEmail(addr)) {
-    return res.status(400).render('marketing/quiz', { title: 'Find your plan', variant: 'minimal', error: 'Please answer every question and enter a valid email.' });
+    return res.status(400).render('marketing/quiz', { title: 'Free assessment', variant: 'minimal', error: 'Please answer every question and enter a valid email.' });
   }
   const result = scoreQuiz(answers);
   const lead = await db.insert('leads', {

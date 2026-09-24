@@ -19,10 +19,10 @@
     <div class="continue-row">
       <% inProgress.forEach((ic) => { %>
         <a href="/app/courses/<%= ic.slug %>/<%= ic.next.slug %>" class="continue-card">
-          <span class="thumb-mini cat-<%= ic.category %>"><%= ic.cat.icon %></span>
+          <span class="thumb-mini cat-<%= ic.category %>"><%- icon(ic.cat.icon) %></span>
           <span class="cc-text"><small class="muted"><%= ic.title %></small><strong><%= ic.next.title %></strong>
             <span class="progress"><span style="width:<%= ic.progress.pct %>%"></span></span></span>
-          <span class="play-btn">▶</span>
+          <span class="play-btn"><%- icon('play') %></span>
         </a>
       <% }) %>
     </div>
@@ -33,7 +33,7 @@
 <nav class="chip-filter" aria-label="Filter courses by topic">
   <a href="/app/courses" class="<%= !filtered ? 'on' : '' %>">All</a>
   <% c.courseCategories.forEach((g) => { %>
-    <a href="/app/courses?cat=<%= g.id %>" class="<%= active.cat === g.id ? 'on' : '' %>"><%= g.icon %> <%= g.name %> <small><%= counts[g.id] %></small></a>
+    <a href="/app/courses?cat=<%= g.id %>" class="<%= active.cat === g.id ? 'on' : '' %>"><%= g.name %> <small><%= counts[g.id] %></small></a>
   <% }) %>
 </nav>
 <nav class="chip-filter bundles" aria-label="Filter courses by bundle">
@@ -55,7 +55,7 @@
 
 <% groups.forEach((g) => { %>
   <section class="course-group">
-    <div class="group-head"><h2 class="h3"><%= g.icon %> <%= g.name %></h2><p class="muted small mb-0"><%= g.blurb %></p></div>
+    <div class="group-head"><h2 class="h3 with-ico"><span class="cat-ico cat-<%= g.id %>"><%- icon(g.icon) %></span><%= g.name %></h2><p class="muted small mb-0"><%= g.blurb %></p></div>
     <div class="course-grid">
       <% g.courses.forEach((course) => { %><%- include('_course-card', { course }) %><% }) %>
     </div>

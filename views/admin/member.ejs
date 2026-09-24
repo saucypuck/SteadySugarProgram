@@ -63,8 +63,8 @@
       <dl class="kv mt-1">
         <dt>Calendar</dt><dd><%= m.calendarFetchedAt ? '✓ Synced to their phone · last ' + new Date(m.calendarFetchedAt).toLocaleDateString() : (m.calendarToken ? 'Link created, not synced yet' : 'Not set up') %></dd>
         <dt>Meal &amp; movement</dt><dd><%= program ? program.plan.name + ' · ' + program.startDate + ' → ' + program.endDate + ' (' + program.state + ')' : 'Not enrolled' %></dd>
-        <dt>Blueprint</dt><dd><%= bpRun ? bpRun.course.title + ' · day ' + bpRun.dayNumber + '/' + bpRun.bp.days + ' · ' + bpRun.completion + '% tasks · 🔥' + bpRun.streak : 'None running' %></dd>
-        <% if (bpRun && bpRun.checkins.length) { %><dt>Check-ins</dt><dd><% bpRun.checkins.forEach((ci) => { %><div class="small">Week <%= ci.week %>: <strong><%= ci.score %>/5</strong><%= ci.wins ? ' · Win: ' + ci.wins : '' %><%= ci.blockers ? ' · Blocker: ' + ci.blockers : '' %><%= ci.help ? ' · 🙋 asked for help' : '' %></div><% }) %></dd><% } %>
+        <dt>Blueprint</dt><dd><%= bpRun ? bpRun.course.title + ' · day ' + bpRun.dayNumber + '/' + bpRun.bp.days + ' · ' + bpRun.completion + '% tasks · ' + bpRun.streak : 'None running' %></dd>
+        <% if (bpRun && bpRun.checkins.length) { %><dt>Check-ins</dt><dd><% bpRun.checkins.forEach((ci) => { %><div class="small">Week <%= ci.week %>: <strong><%= ci.score %>/5</strong><%= ci.wins ? ' · Win: ' + ci.wins : '' %><%= ci.blockers ? ' · Blocker: ' + ci.blockers : '' %><%= ci.help ? ' · asked for help' : '' %></div><% }) %></dd><% } %>
         <dt>Following</dt><dd><%= m.schedule && m.schedule.courses ? m.schedule.courses.map((s) => (c.courses.find((x) => x.slug === s) || { title: s }).title).join(', ') : 'Default recommendations' %></dd>
       </dl>
     </section>
@@ -83,7 +83,7 @@
         <% if (lead) { %><dt>Lead record</dt><dd><a href="/admin/crm/leads/<%= lead.id %>"><%= lead.source %> lead · <%= lead.temperature %></a></dd><% } %>
       </dl>
       <% if (lead && lead.answers) { %>
-        <details class="more mt-1"><summary>Quiz answers</summary>
+        <details class="more mt-1"><summary>Assessment answers</summary>
           <dl class="kv mt-1"><% quiz.forEach((q) => { const o = q.options.find((x) => x.value === lead.answers[q.id]); %><dt><%= q.id %></dt><dd><%= o ? o.label : '—' %></dd><% }) %></dl>
         </details>
       <% } %>
@@ -110,7 +110,7 @@
       <h3>Timeline</h3>
       <ul class="timeline">
         <% timeline.forEach((t) => { %>
-          <li class="<%= t.note ? 'is-note' : '' %>"><span class="t-ico"><%= t.icon %></span><div><p><%= t.text %></p><small class="muted"><%= new Date(t.at).toLocaleString('en-US', { month: 'short', day: 'numeric', hour: 'numeric', minute: '2-digit' }) %><%= t.by ? ' · ' + t.by : '' %></small></div></li>
+          <li class="<%= t.note ? 'is-note' : '' %>"><span class="t-ico"><%- icon(t.icon) %></span><div><p><%= t.text %></p><small class="muted"><%= new Date(t.at).toLocaleString('en-US', { month: 'short', day: 'numeric', hour: 'numeric', minute: '2-digit' }) %><%= t.by ? ' · ' + t.by : '' %></small></div></li>
         <% }) %>
       </ul>
     </section>

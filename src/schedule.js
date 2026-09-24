@@ -122,7 +122,7 @@ function buildEvents(user, s, { from, to, base = '', bookings = [] }) {
   const bpRun = full ? enroll.activeBlueprint(user) : null;
   const bpActive = bpRun && bpRun.state !== 'completed' ? bpRun : null;
   const lessonEvent = (course, lesson, day, extra = '') => ({
-    uid: `lesson-${course.slug}-${lesson.slug}`, type: 'lesson', icon: '🎓', date: day, time: s.lessonTime, minutes: lesson.minutes,
+    uid: `lesson-${course.slug}-${lesson.slug}`, type: 'lesson', icon: 'book', date: day, time: s.lessonTime, minutes: lesson.minutes,
     summary: `Lesson: ${lesson.title}`,
     description: `${course.title} · ${lesson.minutes} min${extra}\n\nThis week’s action: ${lesson.action}\n\nOpen the lesson: ${link(`/app/courses/${course.slug}/${lesson.slug}`)}`,
     url: link(`/app/courses/${course.slug}/${lesson.slug}`), alarms: alarm,
@@ -158,7 +158,7 @@ function buildEvents(user, s, { from, to, base = '', bookings = [] }) {
     const label = DAY_NAMES[wd];
 
     if (s.readings) {
-      events.push({ uid: `reading-${day}`, type: 'habit', icon: '🩸', date: day, time: s.readingTime, minutes: 5,
+      events.push({ uid: `reading-${day}`, type: 'habit', icon: 'droplet', date: day, time: s.readingTime, minutes: 5,
         summary: 'Log your fasting reading', description: `Before breakfast. Log it here: ${link('/app/log')}`, url: link('/app/log'), alarms: [0] });
     }
 
@@ -168,13 +168,13 @@ function buildEvents(user, s, { from, to, base = '', bookings = [] }) {
     const menu = info && info.meals;
     if (menu && s.meals !== 'off') {
       if (s.meals === 'daily') {
-        events.push({ uid: `meals-${day}`, type: 'meal', icon: '🥗', date: day, time: s.mealTimes.breakfast, minutes: 15, summary: 'Today’s meals',
+        events.push({ uid: `meals-${day}`, type: 'meal', icon: 'utensils', date: day, time: s.mealTimes.breakfast, minutes: 15, summary: 'Today’s meals',
           description: `${planTag}\n\nBreakfast: ${menu.breakfast}\nLunch: ${menu.lunch}\nDinner: ${menu.dinner}\nSnack: ${menu.snack}\n\nYour plan + grocery list: ${link('/app/plans')}`,
           url: link('/app/plans'), alarms: [0] });
       } else {
         const m = [['breakfast', 'Breakfast', menu.breakfast, ''], ['lunch', 'Lunch', menu.lunch, `\nSnack idea: ${menu.snack}`], ['dinner', 'Dinner', menu.dinner, '\n\nTake a 10-minute walk after dinner.']];
         for (const [key, name, food, extra] of m) {
-          events.push({ uid: `meal-${key}-${day}`, type: 'meal', icon: '🥗', date: day, time: s.mealTimes[key], minutes: 30, summary: `${name}: ${food}`,
+          events.push({ uid: `meal-${key}-${day}`, type: 'meal', icon: 'utensils', date: day, time: s.mealTimes[key], minutes: 30, summary: `${name}: ${food}`,
             description: `${name}: ${food}${extra}\n\n${planTag}\nSteady Plate: ½ veggies · ¼ protein · ¼ smart carbs.\nYour plan: ${link('/app/plans')}`,
             url: link('/app/plans'), alarms: [Math.min(s.alarm, 15)] });
         }
@@ -184,7 +184,7 @@ function buildEvents(user, s, { from, to, base = '', bookings = [] }) {
     const w = info && info.workout;
     if (w && s.workouts && !w.rest) {
       events.push({
-        uid: `workout-${day}`, type: 'workout', icon: w.walk ? '🚶' : '💪', date: day,
+        uid: `workout-${day}`, type: 'workout', icon: 'activity', date: day,
         time: w.walk && w.focus === 'Walk' ? shiftTime(s.mealTimes.lunch, 30) : s.workoutTime,
         minutes: w.minutes || 20,
         summary: w.walk ? w.focus : `Workout: ${w.focus}`,
@@ -196,26 +196,26 @@ function buildEvents(user, s, { from, to, base = '', bookings = [] }) {
     // Blueprint: daily checklist + weekly check-in (replaces the generic weekly review while running).
     if (bpActive && day >= bpActive.startDate && day <= bpActive.endDate) {
       const n = enroll.daysBetween(bpActive.startDate, day) + 1;
-      events.push({ uid: `blueprint-${bpActive.slug}-${day}`, type: 'blueprint', icon: '🧭', date: day, time: s.blueprintTime, minutes: 5,
+      events.push({ uid: `blueprint-${bpActive.slug}-${day}`, type: 'blueprint', icon: 'compass', date: day, time: s.blueprintTime, minutes: 5,
         summary: `${bpActive.course.title}: Day ${n} checklist`,
-        description: `Day ${n} of ${bpActive.bp.days}\n\n${bpActive.bp.daily.map((t) => `☐ ${t.label}`).join('\n')}\n\nCheck off today: ${link('/app/blueprint')}`,
+        description: `Day ${n} of ${bpActive.bp.days}\n\n${bpActive.bp.daily.map((t) => `- ${t.label}`).join('\n')}\n\nCheck off today: ${link('/app/blueprint')}`,
         url: link('/app/blueprint'), alarms: alarm });
       if (n % 7 === 0 || day === bpActive.endDate) {
-        events.push({ uid: `bp-checkin-${bpActive.slug}-${day}`, type: 'blueprint', icon: '📋', date: day, time: s.reviewTime, minutes: 10,
+        events.push({ uid: `bp-checkin-${bpActive.slug}-${day}`, type: 'blueprint', icon: 'clipboard', date: day, time: s.reviewTime, minutes: 10,
           summary: `Blueprint check-in · Week ${Math.ceil(n / 7)}`, description: `${bpActive.bp.checkin}\n\nSubmit your check-in: ${link('/app/blueprint')}`,
           url: link('/app/blueprint'), alarms: alarm });
       }
     }
 
     if (s.weeklyReview && wd === s.reviewDay && !(bpActive && day >= bpActive.startDate && day <= bpActive.endDate)) {
-      events.push({ uid: `review-${day}`, type: 'habit', icon: '📋', date: day, time: s.reviewTime, minutes: 15, summary: 'Weekly check-in',
+      events.push({ uid: `review-${day}`, type: 'habit', icon: 'clipboard', date: day, time: s.reviewTime, minutes: 15, summary: 'Weekly check-in',
         description: `Review your readings, log your weight and pick one focus for next week.\n\nTracker: ${link('/app/log')}`, url: link('/app/log'), alarms: alarm });
     }
   }
 
   for (const b of bookings.filter((x) => x.status === 'booked' && x.date >= from && x.date <= to)) {
     const t = sched.CALL_TYPES[b.type] || sched.CALL_TYPES.coaching;
-    events.push({ uid: `call-${b.id}`, type: 'call', icon: '📞', date: b.date, time: b.time, minutes: t.minutes, tzid: content.brand.timezone, busy: true,
+    events.push({ uid: `call-${b.id}`, type: 'call', icon: 'phone', date: b.date, time: b.time, minutes: t.minutes, tzid: content.brand.timezone, busy: true,
       summary: `${t.name} with ${content.brand.coach}`, description: `${t.desc}\n\nJoin: ${b.joinUrl || link('/app/calendar')}\nReschedule or cancel: ${link('/app/calendar')}`,
       url: b.joinUrl || link('/app/calendar'), alarms: [60, 24 * 60] });
   }
